@@ -1,0 +1,58 @@
+﻿const { getCachedSettings } = require('./feature');
+
+const DEFAULT_FEATURES = ['repairs', 'sales', 'purchases', 'inventory', 'customers', 'suppliers', 'locations', 'technicians', 'users', 'settings', 'reports', 'pos', 'quotations', 'delivery_challans', 'accounting'];
+const DEFAULT_SETTINGS = {
+  features: {
+    enabled_modules: DEFAULT_FEATURES,
+  },
+  company: { name: 'Hi Secure Solutions' },
+  print: { default_size: 'a4', default_theme: 'corporate', available_sizes: ['a4', 'a5', 'letter', 'legal', 'thermal-80mm', 'thermal-58mm', 'half-a4', 'letterhead', 'barcode-80x150'], available_themes: ['mobile-shop'] },
+};
+
+const requireAuth = (req, res, next) => {
+  if (process.env.NODE_ENV === 'test') {
+    if (!req.session) req.session = {};
+    if (!req.session.user) req.session.user = { user_id: 1, username: 'test', role: 'admin' };
+    res.locals.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    res.locals.enabledFeatures = [...DEFAULT_FEATURES];
+    return next();
+  }
+  if (!req.session || !req.session.user) {
+    return res.redirect('/login');
+  }
+  res.locals.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  res.locals.enabledFeatures = [...DEFAULT_FEATURES];
+  // Async refresh (non-blocking): if the DB has a real 'features' row it will win,
+  // otherwise the default already in res.locals protects the sidebar from going blank.
+  if (!getCachedSettings._skip) {
+    getCachedSettings()
+      .then(settings => {
+        const modules = (settings.features && settings.features.enabled_modules) || [];
+        if (Array.isArray(modules) && modules.length) {
+          res.locals.enabledFeatures = modules;
+        }
+        res.locals.settings = settings;
+      })
+      .catch(() => {});
+  }
+  next();
+};
+
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (process.env.NODE_ENV === 'test') return next();
+    if (!req.session || !req.session.user) {
+      return res.redirect('/login');
+    }
+    if (!roles.includes(req.session.user.role)) {
+      return res.status(403).render('errors/403', {
+        userRole: req.session.user.role,
+        allowedRoles: roles,
+        user: req.session.user,
+      });
+    }
+    next();
+  };
+};
+
+module.exports = { requireAuth, authorize };

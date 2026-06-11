@@ -1,0 +1,255 @@
+@page {
+  size: A4 portrait;
+  margin: 0; /* Suppresses browser-added headers/footers (title, date, URL, pages) */
+}
+
+@media print {
+  body {
+    padding: 10mm 12mm !important;
+    background: #ffffff !important;
+  }
+
+  /* Hide everything except the invoice */
+  body > *:not(#print-area) { display: none !important; }
+  #print-area { display: block !important; }
+
+  /* Force print area and containers to fill the page width */
+  #print-area, .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* No buttons, nav, sidebar when printing */
+  .no-print, nav, header, footer,
+  .btn, button, .sidebar, .print-toolbar, .topbar { display: none !important; }
+
+  /* Force background colors and styles to print exactly as designed */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Prevent page break inside line items */
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+
+  /* ₹ symbol */
+  .rupee { font-family: 'Arial Unicode MS', Arial, sans-serif; }
+}
+
+/* Font fallbacks (no CDN — system fonts only) */
+.font-serif  { font-family: 'Times New Roman', Times, serif; }
+.font-sans   { font-family: Arial, Helvetica, sans-serif; }
+.font-mono   { font-family: 'Courier New', Courier, monospace; }
+
+/* Table defaults for all print themes */
+#print-area table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* =============================================================
+   THEME 1: CLASSIC (B&W Ledger style)
+   ============================================================= */
+.theme-classic {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 9pt;
+  color: #000000;
+}
+.theme-classic table,
+.theme-classic th,
+.theme-classic td {
+  border: 1px solid #333333 !important;
+}
+.theme-classic th {
+  background-color: #f0f0f0 !important;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.theme-classic .company-name {
+  font-size: 14pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.theme-classic .invoice-title {
+  font-size: 11pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* =============================================================
+   THEME 2: MODERN BLUE (Corporate Navy style)
+   ============================================================= */
+.theme-modern-blue {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 9pt;
+  color: #212121;
+}
+.theme-modern-blue table {
+  border-collapse: collapse;
+}
+.theme-modern-blue table th,
+.theme-modern-blue table td {
+  padding: 6px 8px;
+}
+.theme-modern-blue table th {
+  background-color: #1a237e !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  font-size: 9pt;
+  border: 1px solid #1a237e !important;
+}
+.theme-modern-blue table td {
+  border: 1px solid #d1d5db !important;
+}
+.theme-modern-blue tbody tr:nth-child(even) td {
+  background-color: #f5f8ff !important;
+}
+.theme-modern-blue .section-bar {
+  background-color: #1a237e !important;
+  color: #ffffff !important;
+  padding: 5px 8px;
+  font-weight: bold;
+}
+.theme-modern-blue .billto-box {
+  border-left: 4px solid #1565c0 !important;
+  background-color: #f8fafc;
+}
+.theme-modern-blue .summary-box {
+  border: 2px solid #1a237e !important;
+}
+
+/* =============================================================
+   THEME 3: MINIMAL (Whitespace/SaaS style)
+   ============================================================= */
+.theme-minimal {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 9pt;
+  color: #333333;
+}
+.theme-minimal table th,
+.theme-minimal table td {
+  border: none !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  padding: 8px 4px;
+}
+.theme-minimal table th {
+  background-color: transparent !important;
+  color: #666666 !important;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 2px solid #333333 !important;
+}
+.theme-minimal .company-name {
+  font-family: Georgia, serif !important;
+  font-size: 18pt;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.theme-minimal .invoice-word {
+  font-size: 24pt;
+  font-weight: 300;
+  color: #666666;
+}
+.theme-minimal .total-row td {
+  border-top: 2px solid #333333 !important;
+  border-bottom: none !important;
+  font-weight: bold;
+  font-size: 11pt;
+}
+.theme-minimal .words-italic {
+  font-style: italic;
+  color: #555555;
+}
+.theme-minimal .footer-text {
+  font-size: 7pt;
+  color: #999999;
+}
+
+/* =============================================================
+   THEME 4: SAFFRON (Patriotic Indian style)
+   ============================================================= */
+.theme-saffron {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 9pt;
+  color: #212121;
+}
+.theme-saffron table th,
+.theme-saffron table td {
+  border: 1px solid #ece6d6 !important;
+  padding: 5px 6px;
+}
+.theme-saffron table th {
+  background-color: #1B5E20 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+.theme-saffron .tricolor-bar {
+  height: 8px;
+  background: linear-gradient(to right, #FF6F00 33%, #FFFFFF 33%, #FFFFFF 66%, #1B5E20 66%);
+  border-bottom: 1px solid #ece6d6;
+}
+.theme-saffron .company-name {
+  color: #FF6F00;
+  font-size: 16pt;
+  font-weight: bold;
+}
+.theme-saffron .tax-invoice-divider {
+  border-top: 1px solid #FF6F00;
+  border-bottom: 1px solid #FF6F00;
+  color: #FF6F00;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+  padding: 3px 0;
+}
+.theme-saffron .saffron-bar {
+  background-color: #FF6F00 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  padding: 4px 8px;
+}
+.theme-saffron .totals-highlight {
+  color: #FF6F00;
+  font-weight: bold;
+}
+.theme-saffron .watermark-container {
+  position: relative;
+}
+.theme-saffron .watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  opacity: 0.06;
+  font-size: 48pt;
+  font-weight: bold;
+  color: #FF6F00;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+
+/* =============================================================
+   THEME 6: TALLY (Dense Accounting grid style)
+   ============================================================= */
+.theme-tally {
+  font-family: Consolas, Monaco, 'Courier New', Courier, monospace !important;
+  font-size: 8.5pt;
+  color: #000000;
+}
+.theme-tally table {
+  font-family: Consolas, Monaco, 'Courier New', Courier, monospace !important;
+}
+.theme-tally .rupee {
+  font-family: 'Arial Unicode MS', Arial, sans-serif !important;
+}

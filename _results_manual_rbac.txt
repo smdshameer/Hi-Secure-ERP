@@ -1,0 +1,19 @@
+=== RBAC ===
+users: FAIL [401] unauthorized
+technicians: FAIL [401] unauthorized
+complaints: FAIL [401] unauthorized
+amc: FAIL [401] unauthorized
+repairs: FAIL [401] unauthorized
+tickets: FAIL [401] unauthorized
+settings: FAIL [404] Not Found
+dashboard: FAIL [401] unauthorized
+reports: FAIL [401] unauthorized
+products: FAIL [401] unauthorized
+customers: FAIL [401] unauthorized
+payments: FAIL [404] Not Found
+parts: FAIL [401] unauthorized
+suppliers: FAIL [404] Not Found
+stores: FAIL [401] unauthorized
+invoices: FAIL [401] unauthorized
+accounting: FAIL [404] Not Found
+RBAC total: 0/17 pass 17 fail

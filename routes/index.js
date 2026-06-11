@@ -1,0 +1,28 @@
+﻿module.exports = function(app) {
+require('./auth')(app);
+require('./dashboard')(app);
+require('./search')(app);
+require('./repairs')(app);
+require('./customers')(app);
+require('./parts')(app);
+require('./technicians')(app);
+require('./suppliers')(app);
+require('./users')(app);
+require('./locations')(app);
+require('./sales')(app);
+require('./invoices')(app);
+require('./quotations')(app);
+require('./purchases')(app);
+require('./deliveryChallans')(app);
+require('./pos')(app);
+require('./reports')(app);
+require('./crm')(app);
+require('./settings')(app);
+  require('./india')(app);
+  require('./accounting')(app);
+require('./banking')(app);
+require('./payroll')(app);
+require('./companies')(app);
+require('./audit')(app);
+require('./stores')(app);
+}

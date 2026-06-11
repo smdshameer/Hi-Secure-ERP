@@ -1,0 +1,96 @@
+{
+  "suite": "all",
+  "login": 200,
+  "results": {
+    "users": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "technicians": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "complaints": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "amc": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "repairs": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "tickets": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "settings": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "dashboard": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "reports": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "products": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "customers": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "payments": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "parts": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "suppliers": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "stores": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "invoices": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    },
+    "accounting": {
+      "status": 0,
+      "pass": false,
+      "detail": "connection"
+    }
+  },
+  "passCount": 0,
+  "failCount": 17,
+  "total": 17,
+  "timestamp": "2026-06-05T11:16:32.762Z",
+  "verdict": "FAIL"
+}

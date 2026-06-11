@@ -1,0 +1,138 @@
+{
+  "suite": "ProductionValidation",
+  "timestamp": "2026-06-05T11:51:17Z",
+  "server": "http://localhost:3099",
+  "pass": 0,
+  "fail": 17,
+  "total": 17,
+  "verdict": "FAIL",
+  "results": {
+    "users": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "technicians": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "complaints": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "amc_contracts": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "repairs": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "tickets": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "settings": {
+      "status": 404,
+      "pass": false,
+      "detail": {
+        "message": "Route GET:/api/settings not found",
+        "error": "Not Found",
+        "statusCode": 404
+      }
+    },
+    "dashboard": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "reports": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "products": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "customers": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "payments": {
+      "status": 404,
+      "pass": false,
+      "detail": {
+        "message": "Route GET:/api/payments?limit=1 not found",
+        "error": "Not Found",
+        "statusCode": 404
+      }
+    },
+    "parts": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "suppliers": {
+      "status": 404,
+      "pass": false,
+      "detail": {
+        "message": "Route GET:/api/suppliers?limit=1 not found",
+        "error": "Not Found",
+        "statusCode": 404
+      }
+    },
+    "stores": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "invoices": {
+      "status": 0,
+      "pass": false,
+      "detail": {
+        "error": "timed out"
+      }
+    },
+    "accounting": {
+      "status": 404,
+      "pass": false,
+      "detail": {
+        "message": "Route GET:/api/accounting?limit=1 not found",
+        "error": "Not Found",
+        "statusCode": 404
+      }
+    }
+  }
+}

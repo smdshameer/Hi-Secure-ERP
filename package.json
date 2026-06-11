@@ -1,0 +1,18 @@
+{
+  "name": "hisecure-erp-unified",
+  "version": "2.0.0",
+  "description": "Unified React + Express TS ERP Stack for Hi Secure Solutions",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
+    "build": "npm run build --prefix client && npm run build --prefix server",
+    "start": "cross-env NODE_ENV=production node server/dist/index.js",
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "db:push": "npm --prefix server run db:push",
+    "db:generate": "npm --prefix server run db:generate"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  }
+}

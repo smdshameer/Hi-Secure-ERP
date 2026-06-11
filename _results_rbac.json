@@ -1,0 +1,28 @@
+{
+  "suite": "RBAC",
+  "timestamp": "2026-06-05T10:37:59.769Z",
+  "login": 200,
+  "results": {
+    "users": "ERROR: timeout 15s",
+    "technicians": "ERROR: timeout 15s",
+    "complaints": "ERROR: timeout 15s",
+    "contracts": "ERROR: timeout 15s",
+    "repairs": "ERROR: timeout 15s",
+    "tickets": "ERROR: timeout 15s",
+    "settings": "FAIL(404)",
+    "dashboard": "ERROR: timeout 15s",
+    "stats": "ERROR: timeout 15s",
+    "products": "ERROR: timeout 15s",
+    "customers": "ERROR: timeout 15s",
+    "payments": "FAIL(404)",
+    "parts": "ERROR: timeout 15s",
+    "suppliers": "FAIL(404)",
+    "stores": "ERROR: timeout 15s",
+    "invoices": "ERROR: timeout 15s",
+    "accounting": "FAIL(404)"
+  },
+  "passCount": 0,
+  "failCount": 17,
+  "total": 17,
+  "verdict": "FAIL"
+}

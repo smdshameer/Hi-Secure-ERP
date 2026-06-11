@@ -1,0 +1,25 @@
+﻿# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment & secrets
+.env
+*.env
+
+# Logs
+*.log
+logs/
+
+# Build output
+dist/
+build/
+client/build/
+client/dist/
+
+# Binary / large files
+*.jar
+*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db

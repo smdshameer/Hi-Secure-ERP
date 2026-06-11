@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi Secure Solutions - ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/print-themes.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 600;
+        }
+
+        .stat-card {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card.success { border-left-color: var(--success-color); }
+        .stat-card.warning { border-left-color: var(--warning-color); }
+        .stat-card.danger { border-left-color: var(--danger-color); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge-received { background-color: #dbeafe; color: #1e40af; }
+        .badge-diagnosed { background-color: #fef3c7; color: #92400e; }
+        .badge-awaiting_parts { background-color: #fce7f3; color: #9d174d; }
+        .badge-in_repair { background-color: #e0e7ff; color: #3730a3; }
+        .badge-ready_for_pickup { background-color: #dcfce7; color: #166534; }
+        .badge-completed { background-color: #d1fae5; color: #065f46; }
+        .badge-cancelled { background-color: #fee2e2; color: #991b1b; }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+        }
+
+        .sidebar .nav-link {
+            color: #cbd5e1;
+            border-radius: 8px;
+            margin: 2px 8px;
+            padding: 10px 16px;
+        }
+
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 1040;
+                transition: left 0.3s;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .navbar, .sidebar {
+                display: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+                background: white;
+            }
+            .container-fluid {
+                padding-left: 0;
+                padding-right: 0;
+                margin: 0;
+            }
+            main {
+                padding: 0;
+                margin: 0;
+                width: 100%;
+            }
+        }
+
+        /* Login page specific */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .company-tagline {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .login-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #374151;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border: none;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .demo-credentials {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 13px;
+        }
+
+        .demo-credentials h6 {
+            color: #0369a1;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .demo-credentials ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .demo-credentials li {
+            margin-bottom: 5px;
+            color: #0c4a6e;
+        }
+
+        .demo-credentials code {
+            background: #e0f2fe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .security-notice {
+            font-size: 11px;
+            color: #dc2626;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body class="m-0 p-0">
+    <% if (typeof currentPage === 'undefined' || currentPage !== 'login') { %>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shop"></i> Hi Secure Solutions
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Global Search -->
+            <form class="d-flex mx-3" action="/search" method="GET" style="max-width: 400px;">
+                <div class="input-group">
+                    <input class="form-control" type="search" name="q" placeholder="Search customers, parts, repairs..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- User Menu -->
+            <div class="d-flex align-items-center">
+                <% if (user) { %>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <%= user.full_name || user.username %>
+                            <span class="badge bg-secondary ms-1"><%= user.role.replace('_', ' ') %></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text text-muted"><%= user.email %></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+    <% } %>
+
+    <div class="container-fluid">
+        <div class="row">
+            <% if (typeof currentPage === 'undefined' || currentPage !== 'login') { %>
+            <!-- Sidebar -->
+            <div class="col-lg-2 col-md-3 d-md-block sidebar offcanvas-lg offcanvas-start" id="sidebar">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title text-white">Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>" href="/">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'sales' ? 'active' : '' %>" href="/sales">
+                                <i class="bi bi-receipt"></i> Sales Invoices
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'quotations' ? 'active' : '' %>" href="/quotations">
+                                <i class="bi bi-file-earmark-text"></i> Quotations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'purchases' ? 'active' : '' %>" href="/purchases">
+                                <i class="bi bi-cart"></i> Purchase Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'delivery-challans' ? 'active' : '' %>" href="/delivery-challans">
+                                <i class="bi bi-truck"></i> Delivery Challan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'repairs' ? 'active' : '' %>" href="/repairs">
+                                <i class="bi bi-wrench"></i> Repairs
+                                <% if (typeof stats !== 'undefined' && stats && stats.new_repairs > 0) { %>
+                                    <span class="badge bg-danger ms-2"><%= stats.new_repairs %></span>
+                                <% } %>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'customers' ? 'active' : '' %>" href="/customers">
+                                <i class="bi bi-people"></i> Customers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'parts' ? 'active' : '' %>" href="/parts">
+                                <i class="bi bi-box-seam"></i> Products
+                                <% if (typeof stats !== 'undefined' && stats && stats.low_stock > 0) { %>
+                                    <span class="badge bg-warning ms-2"><%= stats.low_stock %></span>
+                                <% } %>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'suppliers' ? 'active' : '' %>" href="/suppliers">
+                                <i class="bi bi-truck"></i> Suppliers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'pos' ? 'active' : '' %>" href="/pos">
+                                <i class="bi bi-cash-register"></i> POS
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'technicians' ? 'active' : '' %>" href="/technicians">
+                                <i class="bi bi-person"></i> Technicians
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'locations' ? 'active' : '' %>" href="/locations">
+                                <i class="bi bi-geo-alt"></i> Locations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'users' ? 'active' : '' %>" href="/users">
+                                <i class="bi bi-person-badge"></i> Users
+                            </a>
+                            <% if (user && user.role === 'admin') { %>
+                                <span class="badge bg-primary ms-2">Admin</span>
+                            <% } %>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'reports' ? 'active' : '' %>" href="/reports">
+                                <i class="bi bi-graph-up"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>" href="/settings">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Main Content -->
+            <main class="col-lg-<%= (typeof currentPage !== 'undefined' && currentPage === 'login') ? '12' : '10' %> col-md-<%= (typeof currentPage !== 'undefined' && currentPage === 'login') ? '12' : '9' %> ms-sm-auto px-4 py-4 <%= (typeof currentPage !== 'undefined' && currentPage === 'login') ? 'd-flex align-items-center justify-content-center' : '' %>">
+                <% if (typeof currentPage === 'undefined' || currentPage !== 'login') { %>
+                    <% if (typeof messages !== 'undefined' && messages && messages.error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <%= messages.error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+                    <% if (typeof messages !== 'undefined' && messages && messages.success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> <%= messages.success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+                <% } %>
+
+                <%- body %>
+            </main>
+        </div>
+    </div>
+
+    <% if (typeof currentPage === 'undefined' || currentPage !== 'login') { %>
+    <footer class="text-center py-3 border-top">
+        <div class="container">
+            <p class="text-muted mb-0">
+                © 2026 Hi Secure Solutions - LED TV & CCTV Service Center
+            </p>
+        </div>
+    </footer>
+    <% } %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

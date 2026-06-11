@@ -1,0 +1,19 @@
+{
+  "name": "hisecure-ai-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev":   "node --watch index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0",
+    "fastify": "^5.0.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "pg": "^8.11.0"
+  }
+}

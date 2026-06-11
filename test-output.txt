@@ -1,0 +1,1381 @@
+﻿  console.log
+    ◇ injecting env (7) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ◇ injecting env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /logout
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /this-page-does-not-exist
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /sales
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /sales/1
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /parts
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /parts/new
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /parts/1336
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /parts/1337/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /parts/1338/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /sales/1
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /sales/1/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /customers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers/1
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers/1/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /sales
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /sales
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs/new
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /reports
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    ✅ Connected to PostgreSQL database
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm/leads
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /delivery-challans
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /delivery-challans/new
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /delivery-challans
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /delivery-challans/6/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /quotations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /quotations/new
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /purchases
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /purchases/new
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /purchases
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /pos
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/add-item
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/add-item
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/checkout
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /pos
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/add-item
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/checkout
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/add-item
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /locations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /settings
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /users
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /suppliers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /technicians
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers/1/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /quotations/89
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations/89/status
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations/70/convert
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /quotations/17/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs/4
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs/126/status
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.warn
+    Skipping technician assignment: no technicians in DB
+
+    [0m [90m  7 |[39m console[method] [33m=[39m ([33m...[39margs) [33m=>[39m {
+     [90m  8 |[39m logStream[33m.[39mwrite(args[33m.[39mmap((a) [33m=>[39m ([36mtypeof[39m a [33m===[39m [32m'object'[39m [33m?[39m [33mJSON[39m[33m.[39mstringify(a) [33m:[39m [33mString[39m(a)))[33m.[39mjoin([32m' '[39m) [33m+[39m [32m'\n'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  9 |[39m original[33m.[39mapply(console[33m,[39m args)[33m;[39m
+     [90m    |[39m          [31m[1m^[22m[39m
+     [90m 10 |[39m }[33m;[39m
+     [90m 11 |[39m })[33m;[39m
+     [90m 12 |[39m [36mconst[39m express [33m=[39m require([32m'express'[39m)[33m;[39m[0m
+
+      at console.apply [as warn] (server.js:9:10)
+      at Object.warn (tests/smoke.test.js:574:15)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs/4/payments
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs/4/print
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /delivery-challans/6
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.warn
+    Skipping challan status update: no pending challans in DB
+
+    [0m [90m  7 |[39m console[method] [33m=[39m ([33m...[39margs) [33m=>[39m {
+     [90m  8 |[39m logStream[33m.[39mwrite(args[33m.[39mmap((a) [33m=>[39m ([36mtypeof[39m a [33m===[39m [32m'object'[39m [33m?[39m [33mJSON[39m[33m.[39mstringify(a) [33m:[39m [33mString[39m(a)))[33m.[39mjoin([32m' '[39m) [33m+[39m [32m'\n'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  9 |[39m original[33m.[39mapply(console[33m,[39m args)[33m;[39m
+     [90m    |[39m          [31m[1m^[22m[39m
+     [90m 10 |[39m }[33m;[39m
+     [90m 11 |[39m })[33m;[39m
+     [90m 12 |[39m [36mconst[39m express [33m=[39m require([32m'express'[39m)[33m;[39m[0m
+
+      at console.apply [as warn] (server.js:9:10)
+      at Object.warn (tests/smoke.test.js:634:15)
+
+  console.log
+    Request: GET /locations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /settings
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /users
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /suppliers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /technicians
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search?q=a
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /quotations/90/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs/4/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs/4/parts
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs/4/parts
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.error
+    Error adding part: Error: Part not found
+        at Object.addPartToRepair (C:\Users\Admin\Desktop\Calude Test\erp-app\models\repairs.js:74:44)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at C:\Users\Admin\Desktop\Calude Test\erp-app\routes\repairs.js:269:7
+
+    [0m [90m  7 |[39m console[method] [33m=[39m ([33m...[39margs) [33m=>[39m {
+     [90m  8 |[39m logStream[33m.[39mwrite(args[33m.[39mmap((a) [33m=>[39m ([36mtypeof[39m a [33m===[39m [32m'object'[39m [33m?[39m [33mJSON[39m[33m.[39mstringify(a) [33m:[39m [33mString[39m(a)))[33m.[39mjoin([32m' '[39m) [33m+[39m [32m'\n'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  9 |[39m original[33m.[39mapply(console[33m,[39m args)[33m;[39m
+     [90m    |[39m          [31m[1m^[22m[39m
+     [90m 10 |[39m }[33m;[39m
+     [90m 11 |[39m })[33m;[39m
+     [90m 12 |[39m [36mconst[39m express [33m=[39m require([32m'express'[39m)[33m;[39m[0m
+
+      at console.apply (server.js:9:10)
+      at error (routes/repairs.js:272:15)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations/72/status
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm/leads
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /delivery-challans/6
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /reports
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /users
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /locations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /locations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /suppliers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /suppliers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /technicians
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /technicians
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /api/nonexistent-endpoint
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search?q=a
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /users/33/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /users
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /users/135
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /locations/27
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /locations/27/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /locations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /locations/144
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /suppliers/1
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /suppliers/1/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm/leads/24
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm/leads/24/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /crm/follow-ups
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/follow-ups
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/follow-ups
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /reports/gstr1
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /reports/gstr3b
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /compliance
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /banking
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /banking/import
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /banking/reconcile
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /payroll
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /payroll/process
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /payroll/reports
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /companies
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /companies/switch
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /audit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /audit/export
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads/203/convert
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads/24/interactions
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/leads/24
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /purchases/5
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /customers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers/215
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /settings/update
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /search?q=Main%20
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /repairs/4
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/follow-ups/31/complete
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /sales/14/cancel
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /customers
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /customers/216
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /crm/follow-ups/32/complete
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /repairs/4/delete
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.error
+    error: update or delete on table "repairs" violates foreign key constraint "payments_repair_id_fkey" on table "payments"
+        at C:\Users\Admin\Desktop\Calude Test\erp-app\node_modules\pg-pool\index.js:45:11
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at Object.deleteRepair (C:\Users\Admin\Desktop\Calude Test\erp-app\models\repairs.js:89:3)
+        at C:\Users\Admin\Desktop\Calude Test\erp-app\routes\repairs.js:333:7 {
+      length: 289,
+      severity: 'ERROR',
+      code: '23503',
+      detail: 'Key (repair_id)=(4) is still referenced from table "payments".',
+      hint: undefined,
+      position: undefined,
+      internalPosition: undefined,
+      internalQuery: undefined,
+      where: undefined,
+      schema: 'public',
+      table: 'payments',
+      column: undefined,
+      dataType: undefined,
+      constraint: 'payments_repair_id_fkey',
+      file: 'ri_triggers.c',
+      line: '2811',
+      routine: 'ri_ReportViolation'
+    }
+
+    [0m [90m  7 |[39m console[method] [33m=[39m ([33m...[39margs) [33m=>[39m {
+     [90m  8 |[39m logStream[33m.[39mwrite(args[33m.[39mmap((a) [33m=>[39m ([36mtypeof[39m a [33m===[39m [32m'object'[39m [33m?[39m [33mJSON[39m[33m.[39mstringify(a) [33m:[39m [33mString[39m(a)))[33m.[39mjoin([32m' '[39m) [33m+[39m [32m'\n'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  9 |[39m original[33m.[39mapply(console[33m,[39m args)[33m;[39m
+     [90m    |[39m          [31m[1m^[22m[39m
+     [90m 10 |[39m }[33m;[39m
+     [90m 11 |[39m })[33m;[39m
+     [90m 12 |[39m [36mconst[39m express [33m=[39m require([32m'express'[39m)[33m;[39m[0m
+
+      at console.apply (server.js:9:10)
+      at error (routes/repairs.js:336:15)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /sales/14/edit
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /sales/14
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /pos
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /api/parts/quick
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/add-item
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /pos/checkout
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: GET /pos/receipt/465
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /quotations/90
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /login
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /users
+
+      at console.apply [as log] (server.js:9:10)
+
+  console.log
+    Request: POST /users/136/delete
+
+      at console.apply [as log] (server.js:9:10)
+
+node.exe : FAIL tests/smoke.test.js (16.766 s)
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL tests/smoke.test.js (16.766 s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ● Smoke tests › updates a sales invoice
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 302
+    Received: 400
+
+    [0m [90m 1372 |[39m       [33m.[39mtype([32m'form'[39m)
+     [90m 1373 |[39m       [33m.[39msend({ customer_id[33m:[39m parseInt(result[33m.[39mrows[[35m0[39m][33m.[39mcustomer_id)[33m,[39m notes[33m:[39m 
+[32m'Updated via smoke test'[39m })[33m;[39m
+    [31m[1m>[22m[39m[90m 1374 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m302[39m)[33m;[39m
+     [90m      |[39m                        [31m[1m^[22m[39m
+     [90m 1375 |[39m   })[33m;[39m
+     [90m 1376 |[39m
+     [90m 1377 |[39m   it([32m'loads POS receipt page'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/smoke.test.js:1374:24)
+
+
+  ● Test suite failed to run
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+    [0m [90m 1437 |[39m })[33m;[39m
+     [90m 1438 |[39m
+    [31m[1m>[22m[39m[90m 1439 |[39m afterAll([36masync[39m () [33m=>[39m {
+     [90m      |[39m [31m[1m^[22m[39m
+     [90m 1440 |[39m   [36mawait[39m pool[33m.[39mend()[33m;[39m
+     [90m 1441 |[39m })[33m;[39m
+     [90m 1442 |[39m[0m
+
+      at Object.afterAll (tests/smoke.test.js:1439:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 140 passed, 141 total
+Snapshots:   0 total
+Time:        16.885 s, estimated 17 s
+Ran all test suites matching tests/smoke.test.js.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this 
+issue.
