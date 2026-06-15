@@ -1,0 +1,1198 @@
+﻿diff --git a/client/src/pages/Products.tsx b/client/src/pages/Products.tsx
+index 89c6c4a..678149b 100644
+--- a/client/src/pages/Products.tsx
++++ b/client/src/pages/Products.tsx
+@@ -1,18 +1,853 @@
+-import { useEffect, useState } from 'react';
++import { useEffect, useRef, useState } from 'react';
+ import { Link } from 'react-router-dom';
+-import { IconPackage, IconPlus, IconSearch, IconEye, IconEdit, IconAlertTriangle } from '@tabler/icons-react';
++import {
++  IconPackage, IconPlus, IconSearch, IconEye, IconEdit,
++  IconAlertTriangle, IconUpload, IconX, IconDownload,
++  IconCheck, IconFileSpreadsheet, IconTrash,
++} from '@tabler/icons-react';
+ import PageBanner from '../components/PageBanner';
+ import api from '../services/api';
+ import type { Product } from '../types';
+ 
++/* ΓöÇΓöÇΓöÇ Lightweight CSV parser ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
++function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
++  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
++  const nonEmpty = lines.filter(l => l.trim() !== '');
++  if (nonEmpty.length < 2) return { headers: [], rows: [] };
++
++  function splitRow(line: string): string[] {
++    const cols: string[] = [];
++    let cur = '';
++    let inQuotes = false;
++    for (let i = 0; i < line.length; i++) {
++      const ch = line[i];
++      if (ch === '"') {
++        if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
++        else inQuotes = !inQuotes;
++      } else if (ch === ',' && !inQuotes) {
++        cols.push(cur.trim()); cur = '';
++      } else {
++        cur += ch;
++      }
++    }
++    cols.push(cur.trim());
++    return cols;
++  }
++
++  const headers = splitRow(nonEmpty[0]).map(h => h.toLowerCase().replace(/\s+/g, '_'));
++  const rows = nonEmpty.slice(1).map(line => {
++    const vals = splitRow(line);
++    const obj: Record<string, string> = {};
++    headers.forEach((h, i) => { obj[h] = vals[i] ?? ''; });
++    return obj;
++  });
++  return { headers, rows };
++}
++
++/* ΓöÇΓöÇΓöÇ CSV template content ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
++const CSV_TEMPLATE = `part_number,name,brand_name,description,cost_price,selling_price,tax_rate,initial_stock,reorder_level
++HIK-DS-2CD2143G2-I,Hikvision 4MP AcuSense Fixed Dome,Hikvision,4MP IR Fixed Dome Network Camera,2800,3999,18,5,3
++HIK-DS-2CD2T47G2-L,Hikvision 4MP ColorVu Fixed Bullet,Hikvision,4MP ColorVu Fixed Bullet Network Camera,3200,4499,18,3,2
++`;
++
++function downloadTemplate() {
++  const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8;' });
++  const url = URL.createObjectURL(blob);
++  const a = document.createElement('a');
++  a.href = url;
++  a.download = 'products_import_template.csv';
++  a.click();
++  URL.revokeObjectURL(url);
++}
++
++/* ΓöÇΓöÇΓöÇ Required columns for validation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
++const REQUIRED_COLS = ['part_number', 'name'];
++const OPTIONAL_COLS = ['brand_name', 'description', 'cost_price', 'selling_price', 'tax_rate', 'initial_stock', 'reorder_level'];
++const ALL_COLS = [...REQUIRED_COLS, ...OPTIONAL_COLS];
++
++/* ΓöÇΓöÇΓöÇ Shared preview table ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
++const PREVIEW_COLS = ['part_number', 'name', 'brand_name', 'selling_price', 'cost_price', 'tax_rate', 'initial_stock'];
++
++function PreviewTable({ rows }: { rows: any[] }) {
++  return (
++    <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0', maxHeight: '260px', overflowY: 'auto' }}>
++      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
++        <thead>
++          <tr style={{ background: '#f1f5f9' }}>
++            <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>#</th>
++            {PREVIEW_COLS.map(c => (
++              <th key={c} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
++                {c}{['part_number', 'name'].includes(c) ? <span style={{ color: '#ef4444' }}>*</span> : ''}
++              </th>
++            ))}
++          </tr>
++        </thead>
++        <tbody>
++          {rows.slice(0, 100).map((row, idx) => (
++            <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
++              <td style={{ padding: '6px 10px', color: '#94a3b8', borderBottom: '1px solid #f1f5f9' }}>{idx + 1}</td>
++              {PREVIEW_COLS.map(c => (
++                <td key={c} style={{ padding: '6px 10px', borderBottom: '1px solid #f1f5f9', color: '#374151', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
++                  {row[c] !== undefined && row[c] !== '' && row[c] !== 0
++                    ? String(row[c])
++                    : <span style={{ color: '#cbd5e1' }}>ΓÇö</span>}
++                </td>
++              ))}
++            </tr>
++          ))}
++        </tbody>
++      </table>
++      {rows.length > 100 && (
++        <p style={{ padding: '8px 10px', margin: 0, fontSize: '12px', color: '#94a3b8', background: '#f8fafc' }}>
++          Showing first 100 of {rows.length} rows. All will be imported.
++        </p>
++      )}
++    </div>
++  );
++}
++
++/* ΓöÇΓöÇΓöÇ ImportModal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
++interface ImportModalProps {
++  onClose: () => void;
++  onSuccess: () => void;
++}
++
++function ImportModal({ onClose, onSuccess }: ImportModalProps) {
++  const [tab, setTab] = useState<'csv' | 'pdf'>('pdf');
++
++  // ΓöÇΓöÇ Shared ΓöÇΓöÇ
++  const [products, setProducts] = useState<any[] | null>(null);
++  const [errors, setErrors] = useState<string[]>([]);
++  const [importing, setImporting] = useState(false);
++  const [result, setResult] = useState<{ importedCount: number; skippedCount: number; details: string[] } | null>(null);
++
++  // ΓöÇΓöÇ CSV state ΓöÇΓöÇ
++  const [csvDragging, setCsvDragging] = useState(false);
++  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
++  const csvFileRef = useRef<HTMLInputElement>(null);
++
++  // ΓöÇΓöÇ PDF state ΓöÇΓöÇ
++  const [pdfDragging, setPdfDragging] = useState(false);
++  const [pdfParsing, setPdfParsing] = useState(false);
++  const [pdfFileName, setPdfFileName] = useState('');
++  const pdfFileRef = useRef<HTMLInputElement>(null);
++
++  const resetState = () => { setProducts(null); setErrors([]); setCsvHeaders([]); setPdfFileName(''); };
++
++  // ΓöÇΓöÇ CSV handlers ΓöÇΓöÇ
++  const handleCsvFile = (file: File) => {
++    if (!file.name.endsWith('.csv') && file.type !== 'text/csv') {
++      setErrors(['Please upload a valid .csv file.']); return;
++    }
++    const reader = new FileReader();
++    reader.onload = (e) => {
++      const text = e.target?.result as string;
++      const { headers: hdrs, rows } = parseCSV(text);
++      const missing = REQUIRED_COLS.filter(c => !hdrs.includes(c));
++      if (missing.length > 0) { setErrors([`Missing required columns: ${missing.join(', ')}`]); return; }
++      setErrors([]);
++      setCsvHeaders(hdrs);
++      setProducts(rows.filter(r => r.part_number?.trim() && r.name?.trim()).map(r => ({
++        part_number: r.part_number,
++        name: r.name,
++        brand_name: r.brand_name || r.brand || '',
++        description: r.description || '',
++        cost_price: r.cost_price ? Number(r.cost_price) : 0,
++        selling_price: r.selling_price ? Number(r.selling_price) : 0,
++        tax_rate: r.tax_rate ? Number(r.tax_rate) : 18,
++        initial_stock: r.initial_stock ? Number(r.initial_stock) : 0,
++        reorder_level: r.reorder_level ? Number(r.reorder_level) : 5,
++      })));
++    };
++    reader.readAsText(file);
++  };
++
++  // ΓöÇΓöÇ PDF handlers ΓöÇΓöÇ
++  const handlePdfFile = async (file: File) => {
++    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
++      setErrors(['Please upload a valid .pdf file.']); return;
++    }
++    setPdfFileName(file.name);
++    setPdfParsing(true);
++    setErrors([]);
++    setProducts(null);
++    try {
++      const formData = new FormData();
++      formData.append('pdf', file);
++      const res = await api.post('/parts/parse-pdf', formData, {
++        headers: { 'Content-Type': 'multipart/form-data' },
++        timeout: 120000, // 2 min for AI parsing
++      });
++      setProducts(res.data.products || []);
++    } catch (err: any) {
++      const msg = err?.response?.data?.error || 'Failed to parse PDF. Please try again.';
++      setErrors([msg]);
++      setPdfFileName('');
++    } finally {
++      setPdfParsing(false);
++    }
++  };
++
++  // ΓöÇΓöÇ Import ΓöÇΓöÇ
++  const handleImport = async () => {
++    if (!products || products.length === 0) return;
++    setImporting(true);
++    try {
++      const res = await api.post('/parts/import', { products });
++      setResult(res.data);
++      onSuccess();
++    } catch (err: any) {
++      setErrors([err?.response?.data?.error || 'Import failed. Please try again.']);
++    } finally {
++      setImporting(false);
++    }
++  };
++
++  const tabBtn = (t: 'csv' | 'pdf', label: string, icon: string) => (
++    <button
++      onClick={() => { setTab(t); resetState(); }}
++      style={{
++        flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: 600,
++        fontSize: '13px', borderBottom: tab === t ? '2px solid #2563eb' : '2px solid transparent',
++        color: tab === t ? '#2563eb' : '#64748b',
++        background: tab === t ? '#eff6ff' : '#f8fafc',
++        transition: 'all 0.15s',
++      }}
++    >{icon} {label}</button>
++  );
++
++  return (
++    <div
++      style={{
++        position: 'fixed', inset: 0, zIndex: 1000,
++        background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)',
++        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
++      }}
++      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
++    >
++      <div style={{
++        background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '900px',
++        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
++        boxShadow: '0 25px 60px rgba(0,0,0,0.18)', overflow: 'hidden',
++      }}>
++        {/* Header */}
++        <div style={{
++          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
++          padding: '20px 24px 16px', borderBottom: '1px solid #e2e8f0',
++          background: 'linear-gradient(135deg, #1a3480 0%, #2563eb 100%)',
++        }}>
++          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
++              <IconFileSpreadsheet size={20} color="#fff" />
++            </div>
++            <div>
++              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff' }}>Bulk Import Products</h2>
++              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>
++                Import from a PDF price list or CSV spreadsheet
++              </p>
++            </div>
++          </div>
++          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
++            <IconX size={16} />
++          </button>
++        </div>
++
++        {/* Tabs */}
++        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0' }}>
++          {tabBtn('pdf', 'PDF Price List (AI)', '≡ƒôä')}
++          {tabBtn('csv', 'CSV / Excel', '≡ƒôè')}
++        </div>
++
++        {/* Body */}
++        <div style={{ overflowY: 'auto', flex: 1, padding: '20px 24px' }}>
++
++          {/* ΓöÇΓöÇ Success result ΓöÇΓöÇ */}
++          {result ? (
++            <div style={{ textAlign: 'center', padding: '32px 16px' }}>
++              <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
++                <IconCheck size={32} color="#16a34a" />
++              </div>
++              <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>Import Complete!</h3>
++              <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px' }}>
++                <strong style={{ color: '#16a34a' }}>{result.importedCount}</strong> products imported.
++                {result.skippedCount > 0 && <> &nbsp;<strong style={{ color: '#f59e0b' }}>{result.skippedCount}</strong> skipped (duplicates).</>}
++              </p>
++              {result.details.length > 0 && (
++                <div style={{ maxHeight: 160, overflowY: 'auto', textAlign: 'left', background: '#f8fafc', borderRadius: '8px', padding: '12px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
++                  {result.details.map((d, i) => <div key={i} style={{ padding: '2px 0', borderBottom: i < result.details.length - 1 ? '1px solid #f1f5f9' : 'none' }}>{d}</div>)}
++                </div>
++              )}
++              <button onClick={onClose} style={{ marginTop: '20px', background: '#1a3480', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 28px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
++                Done
++              </button>
++            </div>
++          ) : tab === 'pdf' ? (
++            /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ PDF TAB ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
++            <>
++              {/* Info banner */}
++              <div style={{ background: 'linear-gradient(135deg, #eff6ff, #f0fdf4)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px', border: '1px solid #bfdbfe', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
++                <span style={{ fontSize: '24px', lineHeight: 1 }}>≡ƒñû</span>
++                <div>
++                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#1e40af' }}>AI-Powered PDF Import</p>
++                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#3b82f6', lineHeight: 1.5 }}>
++                    Upload any Hikvision, CP Plus, Dahua, or other brand PDF price list. The AI will automatically identify model numbers, product names, and prices.
++                    Works best with <strong>text-based PDFs</strong> (not scanned images).
++                  </p>
++                </div>
++              </div>
++
++              {/* Drop zone or parsing state */}
++              {pdfParsing ? (
++                <div style={{ border: '2px dashed #bfdbfe', borderRadius: '12px', padding: '48px 20px', textAlign: 'center', background: '#eff6ff', marginBottom: '16px' }}>
++                  <div style={{ width: 52, height: 52, border: '4px solid #bfdbfe', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
++                  <p style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 700, color: '#1e40af' }}>AI is reading your price listΓÇª</p>
++                  <p style={{ margin: 0, fontSize: '12px', color: '#60a5fa' }}>
++                    Extracting text from <strong>{pdfFileName}</strong> and identifying products. This may take 20ΓÇô60 seconds.
++                  </p>
++                </div>
++              ) : !products ? (
++                <div
++                  onDragEnter={() => setPdfDragging(true)}
++                  onDragLeave={() => setPdfDragging(false)}
++                  onDragOver={e => e.preventDefault()}
++                  onDrop={e => { e.preventDefault(); setPdfDragging(false); const f = e.dataTransfer.files[0]; if (f) handlePdfFile(f); }}
++                  onClick={() => pdfFileRef.current?.click()}
++                  style={{
++                    border: `2px dashed ${pdfDragging ? '#2563eb' : '#cbd5e1'}`,
++                    borderRadius: '12px', padding: '48px 20px', textAlign: 'center',
++                    cursor: 'pointer', background: pdfDragging ? '#eff6ff' : '#f8fafc',
++                    transition: 'all 0.2s', marginBottom: '16px',
++                  }}
++                >
++                  <div style={{ width: 56, height: 56, borderRadius: '14px', background: pdfDragging ? '#bfdbfe' : '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: '28px', transition: 'background 0.2s' }}>
++                    ≡ƒôä
++                  </div>
++                  <p style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: 700, color: '#374151' }}>
++                    {pdfDragging ? 'Drop your PDF here' : 'Drag & drop PDF price list here'}
++                  </p>
++                  <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>
++                    or click to browse ┬╖ .pdf files up to 20 MB
++                  </p>
++                  <input ref={pdfFileRef} type="file" accept=".pdf,application/pdf" style={{ display: 'none' }}
++                    onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfFile(f); e.target.value = ''; }} />
++                </div>
++              ) : null}
++
++              {/* Errors */}
++              {errors.length > 0 && (
++                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px' }}>
++                  {errors.map((e, i) => <p key={i} style={{ margin: 0, fontSize: '13px', color: '#dc2626' }}>ΓÜá {e}</p>)}
++                </div>
++              )}
++
++              {/* Products preview */}
++              {products && products.length > 0 && (
++                <div>
++                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
++                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#374151' }}>
++                      ≡ƒñû AI found <span style={{ color: '#2563eb' }}>{products.length} products</span> in <strong>{pdfFileName}</strong>
++                    </p>
++                    <button onClick={resetState} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '12px', color: '#64748b' }}>
++                      <IconX size={12} /> Try another file
++                    </button>
++                  </div>
++                  <PreviewTable rows={products} />
++                </div>
++              )}
++            </>
++          ) : (
++            /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ CSV TAB ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
++            <>
++              <div style={{ background: '#f0f7ff', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #bfdbfe' }}>
++                <div>
++                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#1e40af' }}>≡ƒôÑ Download Template</p>
++                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#3b82f6' }}>
++                    Required: <code style={{ background: '#dbeafe', padding: '1px 4px', borderRadius: '4px' }}>part_number</code>, <code style={{ background: '#dbeafe', padding: '1px 4px', borderRadius: '4px' }}>name</code>
++                    &nbsp;┬╖ Optional: brand_name, cost_price, selling_price, tax_rate, initial_stock, reorder_level
++                  </p>
++                </div>
++                <button onClick={downloadTemplate} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a3480', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
++                  <IconDownload size={14} /> Template
++                </button>
++              </div>
++
++              {!products && (
++                <div
++                  onDragEnter={() => setCsvDragging(true)}
++                  onDragLeave={() => setCsvDragging(false)}
++                  onDragOver={e => e.preventDefault()}
++                  onDrop={e => { e.preventDefault(); setCsvDragging(false); const f = e.dataTransfer.files[0]; if (f) handleCsvFile(f); }}
++                  onClick={() => csvFileRef.current?.click()}
++                  style={{
++                    border: `2px dashed ${csvDragging ? '#2563eb' : '#cbd5e1'}`,
++                    borderRadius: '12px', padding: '40px 20px', textAlign: 'center',
++                    cursor: 'pointer', background: csvDragging ? '#eff6ff' : '#f8fafc',
++                    transition: 'all 0.2s', marginBottom: '16px',
++                  }}
++                >
++                  <div style={{ width: 52, height: 52, borderRadius: '12px', background: csvDragging ? '#bfdbfe' : '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', transition: 'background 0.2s' }}>
++                    <IconUpload size={26} color={csvDragging ? '#1d4ed8' : '#94a3b8'} />
++                  </div>
++                  <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 600, color: '#374151' }}>
++                    {csvDragging ? 'Drop your CSV file here' : 'Drag & drop CSV file here'}
++                  </p>
++                  <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>or click to browse ┬╖ .csv files only</p>
++                  <input ref={csvFileRef} type="file" accept=".csv,text/csv" style={{ display: 'none' }}
++                    onChange={e => { const f = e.target.files?.[0]; if (f) handleCsvFile(f); e.target.value = ''; }} />
++                </div>
++              )}
++
++              {errors.length > 0 && (
++                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px' }}>
++                  {errors.map((e, i) => <p key={i} style={{ margin: 0, fontSize: '13px', color: '#dc2626' }}>ΓÜá {e}</p>)}
++                </div>
++              )}
++
++              {products && products.length > 0 && (
++                <div>
++                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
++                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#374151' }}>
++                      Preview ΓÇö <span style={{ color: '#2563eb' }}>{products.length} rows</span> ready to import
++                    </p>
++                    <button onClick={resetState} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '12px', color: '#64748b' }}>
++                      <IconX size={12} /> Clear
++                    </button>
++                  </div>
++                  <PreviewTable rows={products} />
++                </div>
++              )}
++            </>
++          )}
++        </div>
++
++        {/* Footer */}
++        {!result && (
++          <div style={{ padding: '14px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: '#f8fafc' }}>
++            <button onClick={onClose} style={{ background: '#fff', color: '#374151', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '9px 20px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>
++              Cancel
++            </button>
++            <button
++              onClick={handleImport}
++              disabled={!products || products.length === 0 || importing || pdfParsing}
++              style={{
++                background: products && products.length > 0 && !importing && !pdfParsing
++                  ? 'linear-gradient(135deg, #1a3480, #2563eb)' : '#e2e8f0',
++                color: products && products.length > 0 && !importing && !pdfParsing ? '#fff' : '#94a3b8',
++                border: 'none', borderRadius: '8px', padding: '9px 22px',
++                cursor: products && products.length > 0 && !importing && !pdfParsing ? 'pointer' : 'not-allowed',
++                fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s',
++              }}
++            >
++              {importing ? (
++                <><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> ImportingΓÇª</>
++              ) : (
++                <><IconUpload size={14} /> Import {products ? `${products.length} Products` : 'Products'}</>
++              )}
++            </button>
++          </div>
++        )}
++      </div>
++      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
++    </div>
++  );
++}
++
++
++function ImportModal({ onClose, onSuccess }: ImportModalProps) {
++  const [dragging, setDragging] = useState(false);
++  const [parsedRows, setParsedRows] = useState<Record<string, string>[] | null>(null);
++  const [headers, setHeaders] = useState<string[]>([]);
++  const [errors, setErrors] = useState<string[]>([]);
++  const [importing, setImporting] = useState(false);
++  const [result, setResult] = useState<{ importedCount: number; skippedCount: number; details: string[] } | null>(null);
++  const fileRef = useRef<HTMLInputElement>(null);
++
++  const handleFile = (file: File) => {
++    if (!file.name.endsWith('.csv') && file.type !== 'text/csv') {
++      setErrors(['Please upload a valid .csv file.']);
++      return;
++    }
++    const reader = new FileReader();
++    reader.onload = (e) => {
++      const text = e.target?.result as string;
++      const { headers: hdrs, rows } = parseCSV(text);
++      const missing = REQUIRED_COLS.filter(c => !hdrs.includes(c));
++      if (missing.length > 0) {
++        setErrors([`Missing required columns: ${missing.join(', ')}`]);
++        setParsedRows(null);
++        return;
++      }
++      setErrors([]);
++      setHeaders(hdrs);
++      setParsedRows(rows.filter(r => r.part_number?.trim() && r.name?.trim()));
++    };
++    reader.readAsText(file);
++  };
++
++  const handleDrop = (e: React.DragEvent) => {
++    e.preventDefault();
++    setDragging(false);
++    const file = e.dataTransfer.files[0];
++    if (file) handleFile(file);
++  };
++
++  const handleImport = async () => {
++    if (!parsedRows || parsedRows.length === 0) return;
++    setImporting(true);
++    try {
++      const products = parsedRows.map(r => ({
++        part_number: r.part_number,
++        name: r.name,
++        brand_name: r.brand_name || r.brand || '',
++        brand: r.brand_name || r.brand || '',
++        description: r.description || '',
++        cost_price: r.cost_price ? Number(r.cost_price) : 0,
++        selling_price: r.selling_price ? Number(r.selling_price) : 0,
++        tax_rate: r.tax_rate ? Number(r.tax_rate) : 18,
++        initial_stock: r.initial_stock ? Number(r.initial_stock) : 0,
++        reorder_level: r.reorder_level ? Number(r.reorder_level) : 5,
++      }));
++      const res = await api.post('/parts/import', { products });
++      setResult(res.data);
++      onSuccess();
++    } catch (err: any) {
++      setErrors([err?.response?.data?.error || 'Import failed. Please try again.']);
++    } finally {
++      setImporting(false);
++    }
++  };
++
++  return (
++    <div
++      style={{
++        position: 'fixed', inset: 0, zIndex: 1000,
++        background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)',
++        display: 'flex', alignItems: 'center', justifyContent: 'center',
++        padding: '16px',
++      }}
++      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
++    >
++      <div style={{
++        background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '860px',
++        maxHeight: '90vh', display: 'flex', flexDirection: 'column',
++        boxShadow: '0 25px 60px rgba(0,0,0,0.18)',
++        overflow: 'hidden',
++      }}>
++        {/* Header */}
++        <div style={{
++          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
++          padding: '20px 24px 16px', borderBottom: '1px solid #e2e8f0',
++          background: 'linear-gradient(135deg, #1a3480 0%, #2563eb 100%)',
++        }}>
++          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <div style={{
++              width: 36, height: 36, borderRadius: '10px',
++              background: 'rgba(255,255,255,0.2)',
++              display: 'flex', alignItems: 'center', justifyContent: 'center',
++            }}>
++              <IconFileSpreadsheet size={20} color="#fff" />
++            </div>
++            <div>
++              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff' }}>
++                Bulk Import Products
++              </h2>
++              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>
++                Upload a CSV file to add multiple products at once
++              </p>
++            </div>
++          </div>
++          <button onClick={onClose} style={{
++            background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px',
++            width: 32, height: 32, cursor: 'pointer', display: 'flex',
++            alignItems: 'center', justifyContent: 'center', color: '#fff',
++          }}>
++            <IconX size={16} />
++          </button>
++        </div>
++
++        {/* Body */}
++        <div style={{ overflowY: 'auto', flex: 1, padding: '20px 24px' }}>
++
++          {/* Success result view */}
++          {result ? (
++            <div style={{ textAlign: 'center', padding: '32px 16px' }}>
++              <div style={{
++                width: 64, height: 64, borderRadius: '50%',
++                background: '#dcfce7', display: 'flex', alignItems: 'center',
++                justifyContent: 'center', margin: '0 auto 16px',
++              }}>
++                <IconCheck size={32} color="#16a34a" />
++              </div>
++              <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
++                Import Complete!
++              </h3>
++              <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px' }}>
++                <strong style={{ color: '#16a34a' }}>{result.importedCount}</strong> products imported successfully.
++                {result.skippedCount > 0 && (
++                  <> &nbsp;<strong style={{ color: '#f59e0b' }}>{result.skippedCount}</strong> skipped (duplicates or errors).</>
++                )}
++              </p>
++              {result.details.length > 0 && (
++                <div style={{
++                  maxHeight: 180, overflowY: 'auto', textAlign: 'left',
++                  background: '#f8fafc', borderRadius: '8px', padding: '12px',
++                  border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569',
++                }}>
++                  {result.details.map((d, i) => (
++                    <div key={i} style={{ padding: '2px 0', borderBottom: i < result.details.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
++                      {d}
++                    </div>
++                  ))}
++                </div>
++              )}
++              <button onClick={onClose} style={{
++                marginTop: '20px',
++                background: '#1a3480', color: '#fff', border: 'none',
++                borderRadius: '8px', padding: '10px 28px', cursor: 'pointer',
++                fontSize: '14px', fontWeight: 600,
++              }}>
++                Done
++              </button>
++            </div>
++          ) : (
++            <>
++              {/* Template download + instructions */}
++              <div style={{
++                background: '#f0f7ff', borderRadius: '10px', padding: '14px 16px',
++                marginBottom: '16px', display: 'flex', alignItems: 'center',
++                justifyContent: 'space-between', gap: '12px', border: '1px solid #bfdbfe',
++              }}>
++                <div>
++                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#1e40af' }}>
++                    ≡ƒôÑ Download Template
++                  </p>
++                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#3b82f6' }}>
++                    Required: <code style={{ background: '#dbeafe', padding: '1px 4px', borderRadius: '4px' }}>part_number</code>, <code style={{ background: '#dbeafe', padding: '1px 4px', borderRadius: '4px' }}>name</code>
++                    &nbsp;┬╖ Optional: brand_name, cost_price, selling_price, tax_rate, initial_stock, reorder_level
++                  </p>
++                </div>
++                <button onClick={downloadTemplate} style={{
++                  display: 'flex', alignItems: 'center', gap: '6px',
++                  background: '#1a3480', color: '#fff', border: 'none',
++                  borderRadius: '8px', padding: '8px 14px', cursor: 'pointer',
++                  fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
++                }}>
++                  <IconDownload size={14} /> Template
++                </button>
++              </div>
++
++              {/* Drag-drop zone */}
++              {!parsedRows && (
++                <div
++                  onDragEnter={() => setDragging(true)}
++                  onDragLeave={() => setDragging(false)}
++                  onDragOver={e => e.preventDefault()}
++                  onDrop={handleDrop}
++                  onClick={() => fileRef.current?.click()}
++                  style={{
++                    border: `2px dashed ${dragging ? '#2563eb' : '#cbd5e1'}`,
++                    borderRadius: '12px',
++                    padding: '40px 20px',
++                    textAlign: 'center',
++                    cursor: 'pointer',
++                    background: dragging ? '#eff6ff' : '#f8fafc',
++                    transition: 'all 0.2s ease',
++                    marginBottom: '16px',
++                  }}
++                >
++                  <div style={{
++                    width: 52, height: 52, borderRadius: '12px',
++                    background: dragging ? '#bfdbfe' : '#e2e8f0',
++                    display: 'flex', alignItems: 'center', justifyContent: 'center',
++                    margin: '0 auto 12px',
++                    transition: 'background 0.2s',
++                  }}>
++                    <IconUpload size={26} color={dragging ? '#1d4ed8' : '#94a3b8'} />
++                  </div>
++                  <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 600, color: '#374151' }}>
++                    {dragging ? 'Drop your CSV file here' : 'Drag & drop CSV file here'}
++                  </p>
++                  <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>
++                    or click to browse ┬╖ .csv files only
++                  </p>
++                  <input
++                    ref={fileRef}
++                    type="file"
++                    accept=".csv,text/csv"
++                    style={{ display: 'none' }}
++                    onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
++                  />
++                </div>
++              )}
++
++              {/* Errors */}
++              {errors.length > 0 && (
++                <div style={{
++                  background: '#fef2f2', border: '1px solid #fecaca',
++                  borderRadius: '8px', padding: '10px 14px', marginBottom: '12px',
++                }}>
++                  {errors.map((e, i) => (
++                    <p key={i} style={{ margin: 0, fontSize: '13px', color: '#dc2626' }}>ΓÜá {e}</p>
++                  ))}
++                </div>
++              )}
++
++              {/* Preview table */}
++              {parsedRows && parsedRows.length > 0 && (
++                <div>
++                  <div style={{
++                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
++                    marginBottom: '10px',
++                  }}>
++                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#374151' }}>
++                      Preview ΓÇö <span style={{ color: '#2563eb' }}>{parsedRows.length} rows</span> ready to import
++                    </p>
++                    <button
++                      onClick={() => { setParsedRows(null); setHeaders([]); setErrors([]); }}
++                      style={{
++                        display: 'flex', alignItems: 'center', gap: '4px',
++                        background: 'none', border: '1px solid #e2e8f0',
++                        borderRadius: '6px', padding: '4px 10px', cursor: 'pointer',
++                        fontSize: '12px', color: '#64748b',
++                      }}
++                    >
++                      <IconX size={12} /> Clear
++                    </button>
++                  </div>
++                  <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0', maxHeight: '280px', overflowY: 'auto' }}>
++                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
++                      <thead>
++                        <tr style={{ background: '#f1f5f9' }}>
++                          <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>#</th>
++                          {ALL_COLS.filter(c => headers.includes(c)).map(col => (
++                            <th key={col} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
++                              {col}
++                              {REQUIRED_COLS.includes(col) && <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span>}
++                            </th>
++                          ))}
++                        </tr>
++                      </thead>
++                      <tbody>
++                        {parsedRows.slice(0, 50).map((row, idx) => (
++                          <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
++                            <td style={{ padding: '6px 12px', color: '#94a3b8', borderBottom: '1px solid #f1f5f9' }}>{idx + 1}</td>
++                            {ALL_COLS.filter(c => headers.includes(c)).map(col => (
++                              <td key={col} style={{ padding: '6px 12px', borderBottom: '1px solid #f1f5f9', color: '#374151', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
++                                {row[col] || <span style={{ color: '#cbd5e1' }}>ΓÇö</span>}
++                              </td>
++                            ))}
++                          </tr>
++                        ))}
++                      </tbody>
++                    </table>
++                    {parsedRows.length > 50 && (
++                      <p style={{ padding: '8px 12px', margin: 0, fontSize: '12px', color: '#94a3b8', background: '#f8fafc' }}>
++                        Showing first 50 of {parsedRows.length} rows. All rows will be imported.
++                      </p>
++                    )}
++                  </div>
++                </div>
++              )}
++            </>
++          )}
++        </div>
++
++        {/* Footer */}
++        {!result && (
++          <div style={{
++            padding: '14px 24px', borderTop: '1px solid #e2e8f0',
++            display: 'flex', justifyContent: 'flex-end', gap: '10px',
++            background: '#f8fafc',
++          }}>
++            <button onClick={onClose} style={{
++              background: '#fff', color: '#374151', border: '1px solid #e2e8f0',
++              borderRadius: '8px', padding: '9px 20px', cursor: 'pointer',
++              fontSize: '13px', fontWeight: 500,
++            }}>
++              Cancel
++            </button>
++            <button
++              onClick={handleImport}
++              disabled={!parsedRows || parsedRows.length === 0 || importing}
++              style={{
++                background: parsedRows && parsedRows.length > 0 && !importing
++                  ? 'linear-gradient(135deg, #1a3480, #2563eb)'
++                  : '#e2e8f0',
++                color: parsedRows && parsedRows.length > 0 && !importing ? '#fff' : '#94a3b8',
++                border: 'none', borderRadius: '8px', padding: '9px 22px',
++                cursor: parsedRows && parsedRows.length > 0 && !importing ? 'pointer' : 'not-allowed',
++                fontSize: '13px', fontWeight: 600,
++                display: 'flex', alignItems: 'center', gap: '6px',
++                transition: 'all 0.2s',
++              }}
++            >
++              {importing ? (
++                <>
++                  <span style={{
++                    width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)',
++                    borderTopColor: '#fff', borderRadius: '50%',
++                    animation: 'spin 0.7s linear infinite', display: 'inline-block',
++                  }} />
++
++
++/* ΓöÇΓöÇΓöÇ Main Products page ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+ export default function Products() {
+   const fromDashboard = typeof window !== 'undefined' && window.location.search.includes('dashboard');
+   const [products, setProducts] = useState<Product[]>([]);
+   const [search, setSearch]     = useState('');
+   const [filter, setFilter]     = useState<'all' | 'low'>('all');
+   const [loading, setLoading]   = useState(true);
++  const [locations, setLocations] = useState<any[]>([]);
++  const [showImport, setShowImport] = useState(false);
++  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
++  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
++  const [deleting, setDeleting] = useState(false);
++  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+ 
+-  useEffect(() => {
++  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
++    setToast({ message, type });
++    setTimeout(() => setToast(null), 3500);
++  };
++
++  const allSelected = products.length > 0 && products.every(p => selectedIds.has(p.id));
++  const someSelected = selectedIds.size > 0;
++
++  const toggleSelect = (id: number) => {
++    setSelectedIds(prev => {
++      const next = new Set(prev);
++      if (next.has(id)) next.delete(id); else next.add(id);
++      return next;
++    });
++  };
++
++  const toggleAll = () => {
++    if (allSelected) {
++      setSelectedIds(new Set());
++    } else {
++      setSelectedIds(new Set(products.map(p => p.id)));
++    }
++  };
++
++  const handleBulkDelete = async () => {
++    const count = selectedIds.size;
++    setDeleting(true);
++    try {
++      // Call the bulk delete API endpoint
++      await api.delete('/parts/bulk', {
++        data: { ids: Array.from(selectedIds) }
++      });
++      setSelectedIds(new Set());
++      setShowDeleteConfirm(false);
++      loadProducts();
++      showToast(`≡ƒùæ∩╕Å ${count} product${count !== 1 ? 's' : ''} deleted successfully`);
++    } catch (err: any) {
++      showToast(err?.response?.data?.error || 'Failed to delete one or more products.', 'error');
++    } finally {
++      setDeleting(false);
++    }
++  };
++
++  const loadProducts = () => {
+     setLoading(true);
+     api.get('/products', { params: { search, lowStock: filter === 'low' ? true : undefined } })
+       .then(r => {
+@@ -29,53 +864,178 @@ export default function Products() {
+           minStock: p.reorder_level ?? p.minStock ?? 0,
+           taxRate: Number(p.tax_rate ?? p.taxRate ?? 18),
+           unit: p.unit ?? 'pcs',
++          stocks: p.stocks || [],
+         }));
+         setProducts(mapped);
+       })
+       .catch(() => setProducts([]))
+       .finally(() => setLoading(false));
+-  }, [search, filter]);
++  };
++
++  useEffect(() => {
++    api.get('/locations')
++      .then(res => setLocations(res.data || []))
++      .catch(() => setLocations([]));
++  }, []);
++
++  useEffect(() => { loadProducts(); }, [search, filter]);
+ 
+   return (
+     <div className="max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
+       <style>{`
+-
+-        .no-scrollbar::-webkit-scrollbar {
+-          display: none;
+-        }
+-        .no-scrollbar {
+-          -ms-overflow-style: none;
+-          scrollbar-width: none;
+-        }
++        .no-scrollbar::-webkit-scrollbar { display: none; }
++        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+         thead th {
+-          position: sticky;
+-          top: 0;
+-          z-index: 10;
++          position: sticky; top: 0; z-index: 10;
+           background-color: #fcfdfe !important;
+           box-shadow: inset 0 -1px 0 #e2e8f0;
+         }
+-        .page-banner {
+-          margin-bottom: 0px !important;
++        .page-banner { margin-bottom: 0px !important; }
++        @keyframes slideInRight {
++          from { transform: translateX(110%); opacity: 0; }
++          to   { transform: translateX(0);    opacity: 1; }
++        }
++        @keyframes fadeOutRight {
++          from { transform: translateX(0);    opacity: 1; }
++          to   { transform: translateX(110%); opacity: 0; }
+         }
+       `}</style>
+ 
++      {/* ΓöÇΓöÇ Toast notification ΓöÇΓöÇ */}
++      {toast && (
++        <div style={{
++          position: 'fixed', bottom: 28, right: 28, zIndex: 2000,
++          display: 'flex', alignItems: 'center', gap: '10px',
++          background: toast.type === 'success' ? '#0f172a' : '#7f1d1d',
++          color: '#fff',
++          padding: '14px 20px',
++          borderRadius: '12px',
++          boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
++          fontSize: '14px', fontWeight: 500,
++          animation: 'slideInRight 0.35s cubic-bezier(0.34,1.56,0.64,1)',
++          minWidth: 240, maxWidth: 360,
++          borderLeft: `4px solid ${toast.type === 'success' ? '#22c55e' : '#ef4444'}`,
++        }}>
++          <span style={{
++            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
++            background: toast.type === 'success' ? '#166534' : '#991b1b',
++            display: 'flex', alignItems: 'center', justifyContent: 'center',
++            fontSize: '16px',
++          }}>
++            {toast.type === 'success' ? 'Γ£ô' : 'Γ£ò'}
++          </span>
++          <div>
++            <p style={{ margin: 0, fontWeight: 600, fontSize: '13px' }}>
++              {toast.type === 'success' ? 'Success' : 'Error'}
++            </p>
++            <p style={{ margin: 0, fontSize: '12px', opacity: 0.85, marginTop: 2 }}>
++              {toast.message}
++            </p>
++          </div>
++          <button
++            onClick={() => setToast(null)}
++            style={{
++              marginLeft: 'auto', background: 'none', border: 'none',
++              color: 'rgba(255,255,255,0.6)', cursor: 'pointer',
++              fontSize: '18px', lineHeight: 1, padding: '0 2px', flexShrink: 0,
++            }}
++          >├ù</button>
++        </div>
++      )}
++
++      {showImport && (
++        <ImportModal
++          onClose={() => setShowImport(false)}
++          onSuccess={() => { loadProducts(); }}
++        />
++      )}
++
++      {/* ΓöÇΓöÇ Delete confirmation modal ΓöÇΓöÇ */}
++      {showDeleteConfirm && (
++        <div
++          style={{
++            position: 'fixed', inset: 0, zIndex: 1100,
++            background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)',
++            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
++          }}
++          onClick={e => { if (e.target === e.currentTarget) setShowDeleteConfirm(false); }}
++        >
++          <div style={{
++            background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '420px',
++            padding: '28px 28px 24px', boxShadow: '0 25px 60px rgba(0,0,0,0.2)',
++          }}>
++            <div style={{
++              width: 52, height: 52, borderRadius: '14px', background: '#fef2f2',
++              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px',
++            }}>
++              <IconTrash size={26} color="#dc2626" />
++            </div>
++            <h3 style={{ margin: '0 0 8px', fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
++              Delete {selectedIds.size} Product{selectedIds.size !== 1 ? 's' : ''}?
++            </h3>
++            <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#64748b', lineHeight: 1.5 }}>
++              This will <strong>permanently remove</strong> the selected products along with all
++              their stock levels and movement history. This action cannot be undone.
++            </p>
++            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
++              <button
++                onClick={() => setShowDeleteConfirm(false)}
++                style={{
++                  background: '#fff', color: '#374151', border: '1px solid #e2e8f0',
++                  borderRadius: '8px', padding: '9px 20px', cursor: 'pointer',
++                  fontSize: '13px', fontWeight: 500,
++                }}
++              >
++                Cancel
++              </button>
++              <button
++                onClick={handleBulkDelete}
++                disabled={deleting}
++                style={{
++                  background: deleting ? '#fca5a5' : '#dc2626', color: '#fff',
++                  border: 'none', borderRadius: '8px', padding: '9px 20px',
++                  cursor: deleting ? 'not-allowed' : 'pointer',
++                  fontSize: '13px', fontWeight: 600,
++                  display: 'flex', alignItems: 'center', gap: '6px',
++                }}
++              >
++                {deleting ? (
++                  <><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> DeletingΓÇª</>
++                ) : (
++                  <><IconTrash size={14} /> Yes, Delete {selectedIds.size}
++                </>
++                )}
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
+       <PageBanner
+         icon={<IconPackage size={28} />}
+         title="Products & Parts"
+         subtitle="Manage inventory, stock levels and pricing"
+-        backLabel={fromDashboard ? "Back to Dashboard" : "Back"}
++        backLabel={fromDashboard ? 'Back to Dashboard' : 'Back'}
+         backPath="/"
+         action={
+-          <Link to="/parts/new"
+-            className="flex items-center gap-1.5 bg-white text-[#1a3480] text-[13px] font-semibold px-3 py-1.5 rounded-lg">
+-            <IconPlus size={15} /> Add Product
+-          </Link>
++          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
++            <button
++              onClick={() => setShowImport(true)}
++              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-all border border-white/25"
++            >
++              <IconUpload size={15} /> Import CSV
++            </button>
++            <Link to="/parts/new"
++              className="flex items-center gap-1.5 bg-white text-[#1a3480] text-[13px] font-semibold px-3 py-1.5 rounded-lg">
++              <IconPlus size={15} /> Add Product
++            </Link>
++          </div>
+         }
+       />
+ 
+       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 gap-4">
+-          <div className="flex gap-2">
++          <div className="flex gap-2 items-center">
+             {[
+               { label: 'All Products', value: 'all' },
+               { label: 'ΓÜá Low Stock',  value: 'low' },
+@@ -91,11 +1051,46 @@ export default function Products() {
+               </button>
+             ))}
+           </div>
+-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
+-            <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
+-            <input type="text" placeholder="Search product, SKU..."
+-              value={search} onChange={e => setSearch(e.target.value)}
+-              className="outline-none border-none text-[13px] text-gray-700 placeholder:text-gray-400 w-full" />
++          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
++            {/* Bulk-delete toolbar ΓÇö shown when items are selected */}
++            {someSelected && (
++              <div style={{
++                display: 'flex', alignItems: 'center', gap: '8px',
++                background: '#fef2f2', border: '1px solid #fecaca',
++                borderRadius: '8px', padding: '4px 10px 4px 12px',
++                animation: 'fadeIn 0.15s ease',
++              }}>
++                <span style={{ fontSize: '12px', fontWeight: 600, color: '#b91c1c' }}>
++                  {selectedIds.size} selected
++                </span>
++                <button
++                  onClick={() => setShowDeleteConfirm(true)}
++                  style={{
++                    display: 'flex', alignItems: 'center', gap: '5px',
++                    background: '#dc2626', color: '#fff', border: 'none',
++                    borderRadius: '6px', padding: '5px 10px', cursor: 'pointer',
++                    fontSize: '12px', fontWeight: 600,
++                  }}
++                >
++                  <IconTrash size={13} /> Delete Selected
++                </button>
++                <button
++                  onClick={() => setSelectedIds(new Set())}
++                  style={{
++                    background: 'none', border: 'none', cursor: 'pointer',
++                    color: '#9ca3af', padding: '2px', display: 'flex', alignItems: 'center',
++                  }}
++                >
++                  <IconX size={14} />
++                </button>
++              </div>
++            )}
++            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
++              <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
++              <input type="text" placeholder="Search product, SKU..."
++                value={search} onChange={e => setSearch(e.target.value)}
++                className="outline-none border-none text-[13px] text-gray-700 placeholder:text-gray-400 w-full" />
++            </div>
+           </div>
+         </div>
+ 
+@@ -103,6 +1098,16 @@ export default function Products() {
+           <table className="erp-table">
+             <thead>
+               <tr>
++                <th style={{ width: 36, paddingLeft: 12 }}>
++                  <input
++                    type="checkbox"
++                    checked={allSelected}
++                    ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
++                    onChange={toggleAll}
++                    title={allSelected ? 'Deselect all' : 'Select all'}
++                    style={{ cursor: 'pointer', width: 15, height: 15, accentColor: '#1a3480' }}
++                  />
++                </th>
+                 <th>SKU</th>
+                 <th>Product Name</th>
+                 <th>Category</th>
+@@ -117,12 +1122,20 @@ export default function Products() {
+             </thead>
+             <tbody>
+               {loading ? (
+-                <tr><td colSpan={10} className="text-center py-10 text-gray-400">Loading...</td></tr>
++                <tr><td colSpan={11} className="text-center py-10 text-gray-400">Loading...</td></tr>
+               ) : products.length === 0 ? (
+-                <tr><td colSpan={10} className="text-center py-10 text-gray-400">No products found</td></tr>
++                <tr><td colSpan={11} className="text-center py-10 text-gray-400">No products found</td></tr>
+               ) : (
+                 products.map(p => (
+-                  <tr key={p.id}>
++                  <tr key={p.id} style={{ background: selectedIds.has(p.id) ? '#eff6ff' : undefined }}>
++                    <td style={{ paddingLeft: 12 }}>
++                      <input
++                        type="checkbox"
++                        checked={selectedIds.has(p.id)}
++                        onChange={() => toggleSelect(p.id)}
++                        style={{ cursor: 'pointer', width: 15, height: 15, accentColor: '#1a3480' }}
++                      />
++                    </td>
+                     <td className="font-mono text-[11px] text-gray-500">{p.sku}</td>
+                     <td className="font-medium text-[13px]">{p.name}</td>
+                     <td className="text-[12px]"><span className="pill pill-blue">{p.category}</span></td>
+@@ -130,23 +1143,32 @@ export default function Products() {
+                     <td className="text-right text-[13px]">Γé╣{p.purchasePrice.toLocaleString('en-IN')}</td>
+                     <td className="text-right text-[13px] font-medium">Γé╣{p.salePrice.toLocaleString('en-IN')}</td>
+                     <td className="text-center">
+-                      <span className={[
+-                        'font-semibold text-[13px]',
+-                        p.stock <= p.minStock ? 'text-red-600' : 'text-gray-800',
+-                      ].join(' ')}>
++                      <span className={['font-semibold text-[13px]', p.stock <= p.minStock ? 'text-red-600' : 'text-gray-800'].join(' ')}>
+                         {p.stock <= p.minStock && <IconAlertTriangle size={12} className="inline mr-0.5 text-red-500" />}
+                         {p.stock}
+                       </span>
++                      {p.stocks && p.stocks.length > 0 && (
++                        <div className="flex flex-col gap-0.5 mt-1 text-[10px] text-gray-400 items-center">
++                          {p.stocks.map((st: any) => {
++                            const locName = locations.find(l => l.location_id === st.location_id)?.name || `Loc #${st.location_id}`;
++                            return (
++                              <span key={st.location_id} className="whitespace-nowrap">
++                                {locName}: <strong>{st.quantity}</strong>
++                              </span>
++                            );
++                          })}
++                        </div>
++                      )}
+                     </td>
+                     <td className="text-center text-[12px] text-gray-400">{p.minStock}</td>
+                     <td className="text-[12px]">{p.taxRate}%</td>
+                     <td>
+                       <div className="flex items-center justify-center gap-1.5">
+-                        <Link to={"/parts/" + p.id}
++                        <Link to={'/parts/' + p.id}
+                           className="p-1.5 rounded border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors">
+                           <IconEye size={14} />
+                         </Link>
+-                        <Link to={"/parts/" + p.id + "/edit"}
++                        <Link to={'/parts/' + p.id + '/edit'}
+                           className="p-1.5 rounded border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors">
+                           <IconEdit size={14} />
+                         </Link>
+@@ -162,5 +1184,3 @@ export default function Products() {
+     </div>
+   );
+ }
+-
+-

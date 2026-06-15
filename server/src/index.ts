@@ -30,6 +30,18 @@ import { companiesRouter } from './routes/companies';
 import { crmRouter } from './routes/crm';
 import { posRouter } from './routes/pos';
 import searchRouter from './routes/search';
+import { aiRouter } from './routes/ai';
+import { approvalsRouter } from './routes/approvals';
+import { attachmentsRouter } from './routes/attachments';
+import { healthRouter } from './routes/health';
+import { notificationsRouter } from './routes/notifications';
+import { returnsRouter } from './routes/returns';
+import { pdfImportRouter } from './routes/pdfImport';
+import './jobs/TelegramBotWorker';
+import './jobs/JobWorker';
+import './jobs/JobScheduler';
+
+import { authMiddleware } from './middleware/auth';
 
 export const prisma = new PrismaClient();
 
@@ -64,35 +76,41 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.use('/api', healthRouter);
 
 // Mount all module routers
 app.use('/api/auth', authRouter);
-app.use('/api/dashboard', dashboardRouter);
-app.use('/api/repairs', repairsRouter);
-app.use('/api/customers', customersRouter);
-app.use('/api/products', partsRouter);
-app.use('/api/parts', partsRouter);
-app.use('/api/invoices', invoicesRouter);
-app.use('/api/sales', invoicesRouter);
-app.use('/api/quotations', quotationsRouter);
-app.use('/api/purchases', purchasesRouter);
-app.use('/api/suppliers', suppliersRouter);
-app.use('/api/delivery-challans', deliveryChallansRouter);
-app.use('/api/technicians', techniciansRouter);
-app.use('/api/locations', locationsRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/reports', reportsRouter);
-app.use('/api/settings', settingsRouter);
-app.use('/api/payroll', payrollRouter);
-app.use('/api/accounting', accountingRouter);
-app.use('/api/banking', bankingRouter);
-app.use('/api/companies', companiesRouter);
-app.use('/api/crm', crmRouter);
-app.use('/api/pos', posRouter);
-app.use('/api/search', searchRouter);
+app.use('/api/dashboard', authMiddleware, dashboardRouter);
+app.use('/api/repairs', authMiddleware, repairsRouter);
+app.use('/api/customers', authMiddleware, customersRouter);
+app.use('/api/products', authMiddleware, partsRouter);
+app.use('/api/parts', authMiddleware, partsRouter);
+app.use('/api/parts', authMiddleware, pdfImportRouter);
+app.use('/api/invoices', authMiddleware, invoicesRouter);
+app.use('/api/sales', authMiddleware, invoicesRouter);
+app.use('/api/quotations', authMiddleware, quotationsRouter);
+app.use('/api/purchases', authMiddleware, purchasesRouter);
+app.use('/api/suppliers', authMiddleware, suppliersRouter);
+app.use('/api/delivery-challans', authMiddleware, deliveryChallansRouter);
+app.use('/api/technicians', authMiddleware, techniciansRouter);
+app.use('/api/locations', authMiddleware, locationsRouter);
+app.use('/api/users', authMiddleware, usersRouter);
+app.use('/api/reports', authMiddleware, reportsRouter);
+app.use('/api/settings', authMiddleware, settingsRouter);
+app.use('/api/payroll', authMiddleware, payrollRouter);
+app.use('/api/accounting', authMiddleware, accountingRouter);
+app.use('/api/banking', authMiddleware, bankingRouter);
+app.use('/api/companies', authMiddleware, companiesRouter);
+app.use('/api/crm', authMiddleware, crmRouter);
+app.use('/api/pos', authMiddleware, posRouter);
+app.use('/api/search', authMiddleware, searchRouter);
+app.use('/api/ai', authMiddleware, aiRouter);
+app.use('/api/approvals', authMiddleware, approvalsRouter);
+app.use('/api/attachments', authMiddleware, attachmentsRouter);
+app.use('/api/notifications', authMiddleware, notificationsRouter);
+app.use('/api/returns', authMiddleware, returnsRouter);
+app.use('/temp', express.static(path.join(process.cwd(), 'temp')));
+
 
 // Redirect non-API routes to frontend dev server in development
 if (process.env.NODE_ENV !== 'production') {

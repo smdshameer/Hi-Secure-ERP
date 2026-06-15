@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { label: 'Suppliers',        path: '/suppliers',         icon: 'ti-building-store' },
   { label: 'Purchase Orders',  path: '/purchases',         icon: 'ti-shopping-cart' },
   { label: 'Delivery Challan', path: '/delivery-challans', icon: 'ti-truck-delivery' },
+  { label: 'Approvals',        path: '/approvals',         icon: 'ti-shield-check' },
   { label: 'Customers',        path: '/customers',         icon: 'ti-users' },
   { label: 'Technicians',      path: '/technicians',       icon: 'ti-cut' },
   { label: 'Locations',        path: '/locations',         icon: 'ti-map-pin' },

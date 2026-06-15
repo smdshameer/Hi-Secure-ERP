@@ -14,7 +14,8 @@ export async function getWhatsAppConfig() {
 
 export async function sendWhatsApp(
   to: string,
-  message: string
+  message: string,
+  _templateName?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const cfg = await getWhatsAppConfig();

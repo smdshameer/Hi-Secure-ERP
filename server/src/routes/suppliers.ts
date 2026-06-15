@@ -1,18 +1,13 @@
 import { Router } from 'express';
-import { prisma } from '../index';
+import { SupplierService } from '../services/SupplierService';
+import { requirePermission } from '../middleware/auth';
 
 export const suppliersRouter = Router();
+const supplierService = new SupplierService();
 
 suppliersRouter.get('/', async (req, res) => {
   try {
-    const { search } = req.query;
-    const where: any = {};
-    if (search) where.OR = [
-      { name: { contains: String(search), mode: 'insensitive' } },
-      { phone: { contains: String(search), mode: 'insensitive' } },
-      { gstin: { contains: String(search), mode: 'insensitive' } },
-    ];
-    const suppliers = await prisma.supplier.findMany({ where, orderBy: { name: 'asc' } });
+    const suppliers = await supplierService.getSuppliers(req.query);
     res.json(suppliers);
   } catch (err) {
     console.error(err);
@@ -22,13 +17,7 @@ suppliersRouter.get('/', async (req, res) => {
 
 suppliersRouter.get('/:id', async (req, res) => {
   try {
-    const supplier = await prisma.supplier.findUnique({
-      where: { supplier_id: Number(req.params.id) },
-      include: {
-        purchaseOrders: { take: 10, orderBy: { order_date: 'desc' } },
-        deliveryChallansSupplier: { take: 10, orderBy: { challan_date: 'desc' } }
-      },
-    });
+    const supplier = await supplierService.getSupplierById(Number(req.params.id));
     if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
     res.json(supplier);
   } catch (err) {
@@ -36,25 +25,9 @@ suppliersRouter.get('/:id', async (req, res) => {
   }
 });
 
-suppliersRouter.post('/', async (req, res) => {
+suppliersRouter.post('/', requirePermission('purchase:create'), async (req, res) => {
   try {
-    const { name, contact_person, phone, email, gstin, pan, address, city, state, pincode } = req.body;
-    const supplier = await prisma.supplier.create({
-      data: {
-        supplier_code: `SUP-${Date.now()}`,
-        name,
-        contact_person: contact_person || null,
-        phone: phone || null,
-        email: email || null,
-        gstin: gstin || null,
-        pan: pan || null,
-        address: address || null,
-        city: city || null,
-        state: state || null,
-        pincode: pincode || null,
-      },
-      select: { supplier_id: true, supplier_code: true },
-    });
+    const supplier = await supplierService.createSupplier(req.body);
     res.status(201).json(supplier);
   } catch (err) {
     console.error(err);
@@ -62,22 +35,18 @@ suppliersRouter.post('/', async (req, res) => {
   }
 });
 
-suppliersRouter.put('/:id', async (req, res) => {
+suppliersRouter.put('/:id', requirePermission('purchase:create'), async (req, res) => {
   try {
-    const { name, contact_person, phone, email, gstin, pan, address, city, state, pincode, is_active } = req.body;
-    await prisma.supplier.update({
-      where: { supplier_id: Number(req.params.id) },
-      data: { name, contact_person: contact_person || null, phone: phone || null, email: email || null, gstin: gstin || null, pan: pan || null, address: address || null, city: city || null, state: state || null, pincode: pincode || null, is_active },
-    });
+    await supplierService.updateSupplier(Number(req.params.id), req.body);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update supplier' });
   }
 });
 
-suppliersRouter.delete('/:id', async (req, res) => {
+suppliersRouter.delete('/:id', requirePermission('purchase:create'), async (req, res) => {
   try {
-    await prisma.supplier.delete({ where: { supplier_id: Number(req.params.id) } });
+    await supplierService.deleteSupplier(Number(req.params.id));
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete supplier' });

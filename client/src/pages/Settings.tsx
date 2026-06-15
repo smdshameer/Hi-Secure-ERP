@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   IconSettings, IconBuilding, IconFileInvoice, IconCurrencyRupee,
   IconMail, IconBrandWhatsapp, IconBrandTelegram, IconLink,
   IconUsers, IconPalette, IconDatabase, IconBell, IconActivity,
   IconDeviceFloppy, IconSend, IconCheck, IconX, IconRefresh,
   IconDownload, IconUpload, IconServer, IconCpu, IconChevronRight,
-  IconEye, IconEyeOff, IconAlertTriangle, IconInfoCircle,
+  IconEye, IconEyeOff, IconAlertTriangle, IconInfoCircle, IconHistory,
+  IconChevronDown, IconPlus
 } from '@tabler/icons-react';
 import PageBanner from '../components/PageBanner';
 import api from '../services/api';
@@ -15,7 +16,8 @@ type TabKey =
   | 'company' | 'invoice' | 'tax'
   | 'email' | 'whatsapp' | 'telegram'
   | 'integrations' | 'users' | 'appearance'
-  | 'backup' | 'notifications' | 'system';
+  | 'backup' | 'notifications' | 'system'
+  | 'audit' | 'ai';
 
 interface TestResult { status: 'idle' | 'loading' | 'success' | 'error'; message: string; }
 const idleResult: TestResult = { status: 'idle', message: '' };
@@ -46,7 +48,9 @@ const TABS = [
       { key: 'appearance',   label: 'Appearance',        icon: IconPalette },
       { key: 'backup',       label: 'Backup & Data',     icon: IconDatabase },
       { key: 'notifications',label: 'Notifications',     icon: IconBell },
+      { key: 'ai',           label: 'Hi-Secure AI',      icon: IconCpu },
       { key: 'system',       label: 'System Health',     icon: IconActivity },
+      { key: 'audit',        label: 'Audit Trail',       icon: IconHistory },
     ],
   },
 ] as const;
@@ -102,6 +106,236 @@ function SSelect({ value, onChange, options }: {
     <select value={value} onChange={e => onChange(e.target.value)} className="settings-input">
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
+  );
+}
+
+function SSearchableSelect({ value, onChange, options, placeholder = 'Search or enter model ID...' }: {
+  value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const matched = options.find(o => o.value === value);
+    if (matched) {
+      setInputValue(matched.label);
+    } else {
+      setInputValue(value || '');
+    }
+  }, [value, options]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(o => o.value === value);
+  const isDisplayingSelectedLabel = selectedOption && inputValue === selectedOption.label;
+
+  const filteredOptions = useMemo(() => {
+    if (isDisplayingSelectedLabel || !inputValue) {
+      return options.filter(o => o.value !== 'custom');
+    }
+    const term = inputValue.toLowerCase();
+    return options.filter(o => 
+      o.value !== 'custom' && (
+        o.label.toLowerCase().includes(term) || 
+        o.value.toLowerCase().includes(term)
+      )
+    );
+  }, [inputValue, options, isDisplayingSelectedLabel]);
+
+  const hasExactMatch = options.some(o => 
+    o.value !== 'custom' && (
+      o.value.toLowerCase() === inputValue.toLowerCase() || 
+      o.label.toLowerCase() === inputValue.toLowerCase()
+    )
+  );
+
+  const showCustomOption = inputValue && !hasExactMatch;
+
+  const handleSelectOption = (val: string) => {
+    onChange(val);
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (text: string) => {
+    setInputValue(text);
+    setIsOpen(true);
+    setHighlightedIndex(0);
+    const match = options.find(o => 
+      o.value !== 'custom' && (
+        o.label.toLowerCase() === text.toLowerCase() || 
+        o.value.toLowerCase() === text.toLowerCase()
+      )
+    );
+    if (match) {
+      onChange(match.value);
+    } else {
+      onChange(text);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setIsOpen(true);
+      setHighlightedIndex(prev => {
+        const max = filteredOptions.length + (showCustomOption ? 1 : 0) - 1;
+        return prev < max ? prev + 1 : 0;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setIsOpen(true);
+      setHighlightedIndex(prev => {
+        const max = filteredOptions.length + (showCustomOption ? 1 : 0) - 1;
+        return prev > 0 ? prev - 1 : max;
+      });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isOpen) {
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          handleSelectOption(filteredOptions[highlightedIndex].value);
+        } else if (showCustomOption && highlightedIndex === filteredOptions.length) {
+          handleSelectOption(inputValue);
+        } else {
+          handleSelectOption(inputValue);
+        }
+      } else {
+        setIsOpen(true);
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={e => handleInputChange(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="settings-input"
+          style={{ paddingRight: '30px' }}
+        />
+        <div 
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            position: 'absolute',
+            right: '10px',
+            cursor: 'pointer',
+            color: '#94a3b8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.15s',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+          }}
+        >
+          <IconChevronDown size={16} />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 4px)',
+          left: 0,
+          right: 0,
+          background: '#ffffff',
+          border: '1.5px solid #e2e8f0',
+          borderRadius: '8px',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          zIndex: 100,
+          maxHeight: '220px',
+          overflowY: 'auto',
+          padding: '4px'
+        }}>
+          {filteredOptions.map((opt, idx) => {
+            const isSelected = opt.value === value;
+            const isHighlighted = idx === highlightedIndex;
+            return (
+              <div
+                key={opt.value}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSelectOption(opt.value);
+                }}
+                onMouseEnter={() => setHighlightedIndex(idx)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: isSelected ? '#ffffff' : '#0f172a',
+                  background: isSelected 
+                    ? '#1a3480' 
+                    : isHighlighted 
+                      ? '#f1f5f9' 
+                      : 'transparent',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <IconCheck size={14} style={{ color: '#ffffff' }} />}
+              </div>
+            );
+          })}
+
+          {showCustomOption && (
+            <div
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSelectOption(inputValue);
+              }}
+              onMouseEnter={() => setHighlightedIndex(filteredOptions.length)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                color: highlightedIndex === filteredOptions.length ? '#1a3480' : '#64748b',
+                background: highlightedIndex === filteredOptions.length ? '#f1f5f9' : 'transparent',
+                borderTop: '1px solid #e2e8f0',
+                marginTop: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <IconPlus size={14} />
+              <span>Use custom model: <strong>{inputValue}</strong></span>
+            </div>
+          )}
+
+          {filteredOptions.length === 0 && !showCustomOption && (
+            <div style={{
+              padding: '12px',
+              textAlign: 'center',
+              fontSize: '13px',
+              color: '#94a3b8'
+            }}>
+              No matching models found.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -238,6 +472,7 @@ export default function Settings() {
     bot_token: '', chat_id: '', enabled: false,
   });
   const [tgTestResult, setTgTestResult] = useState<TestResult>(idleResult);
+  const [aiTestResult, setAiTestResult] = useState<TestResult>(idleResult);
 
   const [integrations, setIntegrations] = useState({
     exchange_rate_api_key: '',
@@ -258,6 +493,30 @@ export default function Settings() {
     upi_payment_id: '',
   });
 
+  const [backupConfig, setBackupConfig] = useState({
+    backup_enabled: false,
+    backup_type: 'json',
+    retention_days: 14,
+    backup_time: '01:00',
+  });
+
+  const [gdriveConfig, setGdriveConfig] = useState({
+    gdrive_enabled: false,
+    client_email: '',
+    private_key: '',
+    folder_id: '',
+  });
+
+  const [aiConfig, setAiConfig] = useState({
+    ai_enabled: false,
+    nvidia_api_key: '',
+    model_id: 'stepfun-ai/step-3.7-flash',
+    telegram_ai_enabled: false,
+  });
+
+  const [nvidiaModels, setNvidiaModels] = useState<string[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+
   const [notifications, setNotifications] = useState({
     low_stock_email: false, low_stock_whatsapp: false, low_stock_telegram: false,
     overdue_invoice_email: false, overdue_invoice_telegram: false,
@@ -270,6 +529,15 @@ export default function Settings() {
 
   const [backupLoading, setBackupLoading] = useState(false);
   const [csvLoading, setCsvLoading] = useState(false);
+
+  // Audit log states
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilterAction, setAuditFilterAction] = useState('');
+  const [auditFilterType, setAuditFilterType] = useState('');
+  const [auditFilterEntityId, setAuditFilterEntityId] = useState('');
+  const [auditLimit, setAuditLimit] = useState(50);
+  const [selectedLog, setSelectedLog] = useState<any>(null);
 
   // Import state
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -306,6 +574,9 @@ export default function Settings() {
         if (d?.appearance) setAppearance(p => ({ ...p, ...d.appearance }));
         if (d?.print) setPrint(p => ({ ...p, ...d.print }));
         if (d?.notifications) setNotifications(p => ({ ...p, ...d.notifications }));
+        if (d?.backup) setBackupConfig(p => ({ ...p, ...d.backup }));
+        if (d?.gdrive) setGdriveConfig(p => ({ ...p, ...d.gdrive }));
+        if (d?.ai) setAiConfig(p => ({ ...p, ...d.ai }));
       })
       .catch(() => setError('Failed to load settings from server.'))
       .finally(() => setLoading(false));
@@ -322,6 +593,49 @@ export default function Settings() {
     }
   }, [tab]);
 
+  // ── Fetch NVIDIA models when AI tab is selected and key is set ──
+  useEffect(() => {
+    if (tab === 'ai' && aiConfig.nvidia_api_key) {
+      setLoadingModels(true);
+      api.post('/settings/nvidia-models', { apiKey: aiConfig.nvidia_api_key })
+        .then(res => {
+          if (res.data && res.data.success && Array.isArray(res.data.models)) {
+            setNvidiaModels(res.data.models);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch NVIDIA models:', err);
+        })
+        .finally(() => {
+          setLoadingModels(false);
+        });
+    }
+  }, [tab, aiConfig.nvidia_api_key]);
+
+  // ── Fetch audit logs ──
+  const fetchAuditLogs = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const params: any = { limit: auditLimit };
+      if (auditFilterAction) params.action = auditFilterAction;
+      if (auditFilterType) params.entity_type = auditFilterType;
+      if (auditFilterEntityId) params.entity_id = parseInt(auditFilterEntityId);
+      
+      const res = await api.get('/settings/audit-logs', { params });
+      setAuditLogs(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch audit logs', err);
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [auditLimit, auditFilterAction, auditFilterType, auditFilterEntityId]);
+
+  useEffect(() => {
+    if (tab === 'audit') {
+      fetchAuditLogs();
+    }
+  }, [tab, fetchAuditLogs]);
+
   // ── Save ──
   const handleSave = async () => {
     setError(''); setSaveLoading(true);
@@ -334,6 +648,8 @@ export default function Settings() {
       await api.put('/settings', {
         company: companyPayload, invoice, tax, email, whatsapp, telegram,
         integrations, appearance, print, notifications,
+        backup: backupConfig, gdrive: gdriveConfig,
+        ai: aiConfig,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -375,6 +691,26 @@ export default function Settings() {
       .then(r => ({ ok: true, msg: r.data.message }))
       .catch(e => ({ ok: false, msg: e.response?.data?.error || 'Failed' }));
     setTgTestResult({ status: res.ok ? 'success' : 'error', message: res.msg });
+  };
+
+  // ── Test Hi-Secure AI ──
+  const handleTestAi = async () => {
+    setAiTestResult({ status: 'loading', message: '' });
+    try {
+      await api.put('/settings', { ai: aiConfig });
+      const res = await api.post('/settings/test-ai', {
+        apiKey: aiConfig.nvidia_api_key,
+        modelId: aiConfig.model_id
+      })
+        .then(r => ({ ok: true, msg: r.data.message }))
+        .catch(e => ({ ok: false, msg: e.response?.data?.error || 'Failed to connect' }));
+      setAiTestResult({ status: res.ok ? 'success' : 'error', message: res.msg });
+    } catch (e: any) {
+      setAiTestResult({
+        status: 'error',
+        message: e.response?.data?.error || e.message || 'Failed to save settings'
+      });
+    }
   };
 
   // ── Backup ── use direct GET download (most reliable approach)
@@ -1061,6 +1397,115 @@ export default function Settings() {
                 </div>
               </SectionCard>
 
+              {/* ── Google Drive Storage Integration ── */}
+              <SectionCard title="Google Drive Storage Integration (100% Free)" accent="#16a34a">
+                <div style={{ padding: '14px 18px' }}>
+                  <div className="settings-info-box" style={{ marginBottom: 16 }}>
+                    <IconInfoCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <strong>Google Cloud Project Guide (Free Tier):</strong>
+                      <ol style={{ margin: '4px 0 0 0', paddingLeft: 16, lineHeight: 1.8, fontSize: 12 }}>
+                        <li>Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#1a3480', textDecoration: 'underline' }}>Google Cloud Console</a>.</li>
+                        <li>Create a project, enable the <strong>Google Drive API</strong>.</li>
+                        <li>Go to <strong>IAM & Admin &rarr; Service Accounts</strong>, create an account, and generate a <strong>JSON Key</strong>.</li>
+                        <li>Open the JSON file and copy the <code>client_email</code> and <code>private_key</code> below.</li>
+                        <li>Create a folder in Google Drive and <strong>share it</strong> with the service account email as "Editor".</li>
+                      </ol>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <SToggle
+                      value={gdriveConfig.gdrive_enabled}
+                      onChange={v => setGdriveConfig(p => ({ ...p, gdrive_enabled: v }))}
+                      label="Enable Google Drive Cloud Storage"
+                    />
+                    <span className="settings-toggle-label">Google Drive {gdriveConfig.gdrive_enabled ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+
+                  <div className="settings-grid-2">
+                    <FieldRow label="Service Account Email" hint="client_email from JSON key file">
+                      <SInput
+                        value={gdriveConfig.client_email}
+                        onChange={v => setGdriveConfig(p => ({ ...p, client_email: v }))}
+                        placeholder="backup-agent@project.iam.gserviceaccount.com"
+                      />
+                    </FieldRow>
+                    <FieldRow label="Google Drive Folder ID" hint="The ID at the end of the folder share link">
+                      <SInput
+                        value={gdriveConfig.folder_id}
+                        onChange={v => setGdriveConfig(p => ({ ...p, folder_id: v }))}
+                        placeholder="18zxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      />
+                    </FieldRow>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <FieldRow label="Private Key" hint="private_key from JSON key (include BEGIN/END tags)">
+                      <STextarea
+                        value={gdriveConfig.private_key}
+                        onChange={v => setGdriveConfig(p => ({ ...p, private_key: v }))}
+                        rows={4}
+                        placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC..."
+                      />
+                    </FieldRow>
+                  </div>
+                </div>
+              </SectionCard>
+
+              {/* ── Automated Backup Configuration ── */}
+              <SectionCard title="Automated Daily Backup Schedule" accent="#ea580c">
+                <div style={{ padding: '14px 18px' }}>
+                  <div className="settings-info-box" style={{ marginBottom: 16 }}>
+                    <IconInfoCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <strong>Configuration Guide:</strong>
+                      <ul style={{ margin: '4px 0 0 0', paddingLeft: 16, lineHeight: 1.8, fontSize: 12 }}>
+                        <li><strong>Daily Backup Time</strong>: The hour of day (24h format) when the backup scheduler checks and executes.</li>
+                        <li><strong>Backup Type</strong>: <code>SQL Dump</code> (native pg_dump file, recommended for local servers) or <code>JSON Fallback</code> (stateless platform deployments).</li>
+                        <li><strong>Retention Policy</strong>: Outdated files will be purged automatically from local disk.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <SToggle
+                      value={backupConfig.backup_enabled}
+                      onChange={v => setBackupConfig(p => ({ ...p, backup_enabled: v }))}
+                      label="Enable Auto-Scheduled Backups"
+                    />
+                    <span className="settings-toggle-label">Auto Backup {backupConfig.backup_enabled ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+
+                  <div className="settings-grid-3">
+                    <FieldRow label="Backup Type" hint="File format type">
+                      <SSelect
+                        value={backupConfig.backup_type}
+                        onChange={v => setBackupConfig(p => ({ ...p, backup_type: v }))}
+                        options={[
+                          { value: 'json', label: 'JSON Data (Stateless fallback)' },
+                          { value: 'sql', label: 'SQL Schema & Data (pg_dump)' }
+                        ]}
+                      />
+                    </FieldRow>
+                    <FieldRow label="Daily Execution Time" hint="Hour of execution (24h format)">
+                      <SInput
+                        value={backupConfig.backup_time}
+                        onChange={v => setBackupConfig(p => ({ ...p, backup_time: v }))}
+                        placeholder="02:00"
+                      />
+                    </FieldRow>
+                    <FieldRow label="Retention Threshold" hint="Days to keep before auto-purging">
+                      <SInput
+                        type="number"
+                        value={backupConfig.retention_days}
+                        onChange={v => setBackupConfig(p => ({ ...p, retention_days: Number(v) || 14 }))}
+                        placeholder="14"
+                      />
+                    </FieldRow>
+                  </div>
+                </div>
+              </SectionCard>
+
               {/* ── Import Section ── */}
               <SectionCard title="Restore from Backup" accent="#7c3aed">
                 <div style={{ padding: '14px 18px' }}>
@@ -1249,6 +1694,145 @@ export default function Settings() {
             </div>
           )}
 
+          {/* ──── HI-SECURE AI ──── */}
+          {tab === 'ai' && (
+            <div className="settings-panel">
+              <SectionCard title="Hi-Secure AI Assistant Settings" accent="#1a3480">
+                <div style={{ padding: '14px 18px' }}>
+                  <div className="settings-info-box" style={{ marginBottom: 16 }}>
+                    <IconInfoCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <strong>Hi-Secure AI Assistant:</strong>
+                      <p style={{ margin: '4px 0 0 0', fontSize: 12, lineHeight: 1.6 }}>
+                        Hi-Secure AI is an intelligent assistant capable of managing your ERP. It can retrieve real-time inventory stock levels, locate invoices and customer records, check server health, and run database backups.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <SToggle
+                      value={aiConfig.ai_enabled}
+                      onChange={v => setAiConfig(p => ({ ...p, ai_enabled: v }))}
+                      label="Enable Hi-Secure AI Assistant"
+                    />
+                    <span className="settings-toggle-label">Hi-Secure AI {aiConfig.ai_enabled ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+
+                  <div className="settings-grid-2">
+                    <FieldRow label="NVIDIA NIM API Key" hint="NVIDIA API Key for LLM Inference">
+                      <SPassword
+                        value={aiConfig.nvidia_api_key}
+                        onChange={v => setAiConfig(p => ({ ...p, nvidia_api_key: v }))}
+                        placeholder="nvapi-xxxxxxxxxxxxxxxxxxxxxxxx"
+                      />
+                    </FieldRow>
+                    <FieldRow label="Hi-Secure AI Model" hint="Select from free NIM models or use a custom ID">
+                      <SSelect
+                        value={(() => {
+                          const options = [
+                            'stepfun-ai/step-3.7-flash',
+                            'meta/llama-3.1-70b-instruct',
+                            'nvidia/llama-3.1-nemotron-51b-instruct',
+                            'meta/llama-3.1-8b-instruct',
+                            'meta/llama-3.1-405b-instruct',
+                            'mistralai/mistral-large-2-instruct'
+                          ];
+                          if (options.includes(aiConfig.model_id)) return aiConfig.model_id;
+                          return aiConfig.model_id ? 'custom' : 'stepfun-ai/step-3.7-flash';
+                        })()}
+                        onChange={v => {
+                          if (v === 'custom') {
+                            setAiConfig(p => ({ ...p, model_id: '' }));
+                          } else {
+                            setAiConfig(p => ({ ...p, model_id: v }));
+                          }
+                        }}
+                        options={[
+                          { value: 'stepfun-ai/step-3.7-flash', label: 'Step-3.7-Flash (Primary Default)' },
+                          { value: 'meta/llama-3.1-70b-instruct', label: 'Llama 3.1 70B Instruct (Free)' },
+                          { value: 'nvidia/llama-3.1-nemotron-51b-instruct', label: 'Llama 3.1 Nemotron 51B Instruct (Free)' },
+                          { value: 'meta/llama-3.1-8b-instruct', label: 'Llama 3.1 8B Instruct (Free)' },
+                          { value: 'meta/llama-3.1-405b-instruct', label: 'Llama 3.1 405B Instruct (Free)' },
+                          { value: 'mistralai/mistral-large-2-instruct', label: 'Mistral Large 2 Instruct (Free)' },
+                          { value: 'custom', label: 'Custom Model ID...' }
+                        ]}
+                      />
+                    </FieldRow>
+                  </div>
+
+                  {!(
+                    [
+                      'stepfun-ai/step-3.7-flash',
+                      'meta/llama-3.1-70b-instruct',
+                      'nvidia/llama-3.1-nemotron-51b-instruct',
+                      'meta/llama-3.1-8b-instruct',
+                      'meta/llama-3.1-405b-instruct',
+                      'mistralai/mistral-large-2-instruct'
+                    ].includes(aiConfig.model_id)
+                  ) && (
+                    <div style={{ marginTop: 12 }}>
+                      <FieldRow label="Custom Model ID" hint={loadingModels ? "Loading models list..." : "Type to filter and select custom hosted model identifier"}>
+                        <SSearchableSelect
+                          value={aiConfig.model_id}
+                          onChange={v => setAiConfig(p => ({ ...p, model_id: v }))}
+                          options={
+                            nvidiaModels.length > 0
+                              ? nvidiaModels.map(m => ({ value: m, label: m }))
+                              : [
+                                  { value: 'stepfun-ai/step-3.7-flash', label: 'Step-3.7-Flash' },
+                                  { value: 'meta/llama-3.1-70b-instruct', label: 'Llama 3.1 70B Instruct' },
+                                  { value: 'nvidia/llama-3.1-nemotron-51b-instruct', label: 'Llama 3.1 Nemotron 51B Instruct' },
+                                  { value: 'meta/llama-3.1-8b-instruct', label: 'Llama 3.1 8B Instruct' },
+                                  { value: 'meta/llama-3.1-405b-instruct', label: 'Llama 3.1 405B Instruct' },
+                                  { value: 'mistralai/mistral-large-2-instruct', label: 'Mistral Large 2 Instruct' }
+                                ]
+                          }
+                          placeholder="e.g. nvidia/llama-3.1-nemotron-70b-instruct"
+                        />
+                      </FieldRow>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16 }}>
+                    <SToggle
+                      value={aiConfig.telegram_ai_enabled}
+                      onChange={v => setAiConfig(p => ({ ...p, telegram_ai_enabled: v }))}
+                      label="Enable AI Bot Control via Telegram"
+                    />
+                    <span className="settings-toggle-label">Telegram AI Control {aiConfig.telegram_ai_enabled ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+
+                  <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '8px' }}>
+                      Verify your connection credentials with the NVIDIA NIM API servers.
+                    </span>
+                    <TestButton
+                      label="Test NIM Connection"
+                      onClick={handleTestAi}
+                      result={aiTestResult}
+                      icon={IconCpu}
+                    />
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard title="NVIDIA NIM & Telegram Setup Guide" accent="#ea580c">
+                <div style={{ padding: '14px 18px' }}>
+                  <div style={{ fontSize: 13, lineHeight: 1.8 }}>
+                    <strong>Step-by-step Setup Instructions:</strong>
+                    <ol style={{ margin: '8px 0 0 0', paddingLeft: 18, fontSize: 12 }}>
+                      <li>Go to the <a href="https://build.nvidia.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#1a3480', textDecoration: 'underline' }}>NVIDIA Build Console</a>.</li>
+                      <li>Sign up for a free developer account (includes 1,000 free inference credits).</li>
+                      <li>Generate an API Key (it starts with <code>nvapi-</code>) and paste it into the <strong>NVIDIA NIM API Key</strong> field above.</li>
+                      <li>Set the model to <code>stepfun-ai/step-3.7-flash</code> (or any other NIM-supported model you want to use).</li>
+                      <li>To control the assistant via Telegram, toggle <strong>Telegram AI Control</strong> on. Make sure your Telegram bot token is configured in the <strong>Telegram</strong> settings tab. Only messages sent from the authorized Chat ID will be accepted.</li>
+                    </ol>
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+          )}
+
           {/* ──── SYSTEM HEALTH ──── */}
           {tab === 'system' && (
             <div className="settings-panel">
@@ -1342,8 +1926,189 @@ export default function Settings() {
             </div>
           )}
 
-          {/* ── Save button (hidden on system & users) ── */}
-          {tab !== 'system' && tab !== 'users' && (
+          {/* ──── AUDIT ──── */}
+          {tab === 'audit' && (
+            <div className="settings-panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0f172a' }}>System Audit Trail</h3>
+                <button onClick={fetchAuditLogs} className="settings-refresh-btn" disabled={auditLoading}>
+                  <IconRefresh size={14} className={auditLoading ? 'settings-spin' : ''} />
+                  Refresh Logs
+                </button>
+              </div>
+
+              {/* Filter controls */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gap: 12,
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                padding: 12
+              }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Action</label>
+                  <select
+                    value={auditFilterAction}
+                    onChange={e => setAuditFilterAction(e.target.value)}
+                    className="settings-input"
+                    style={{ padding: '6px 10px', height: 'auto', fontSize: 12 }}
+                  >
+                    <option value="">All Actions</option>
+                    <option value="CREATE">CREATE</option>
+                    <option value="UPDATE">UPDATE</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="TRANSFER">TRANSFER</option>
+                    <option value="RECEIVE">RECEIVE</option>
+                    <option value="APPROVE">APPROVE</option>
+                    <option value="REJECT">REJECT</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Entity Type</label>
+                  <select
+                    value={auditFilterType}
+                    onChange={e => setAuditFilterType(e.target.value)}
+                    className="settings-input"
+                    style={{ padding: '6px 10px', height: 'auto', fontSize: 12 }}
+                  >
+                    <option value="">All Types</option>
+                    <option value="Parts">Parts</option>
+                    <option value="SalesInvoice">SalesInvoice</option>
+                    <option value="PurchaseOrder">PurchaseOrder</option>
+                    <option value="Repair">Repair</option>
+                    <option value="PartStock">PartStock</option>
+                    <option value="Customer">Customer</option>
+                    <option value="Supplier">Supplier</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Entity ID</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 12"
+                    value={auditFilterEntityId}
+                    onChange={e => setAuditFilterEntityId(e.target.value)}
+                    className="settings-input"
+                    style={{ padding: '6px 10px', height: 'auto', fontSize: 12 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Show Limit</label>
+                  <select
+                    value={auditLimit}
+                    onChange={e => setAuditLimit(Number(e.target.value))}
+                    className="settings-input"
+                    style={{ padding: '6px 10px', height: 'auto', fontSize: 12 }}
+                  >
+                    <option value="50">50 rows</option>
+                    <option value="100">100 rows</option>
+                    <option value="200">200 rows</option>
+                    <option value="500">500 rows</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Audit Logs Table */}
+              <div style={{
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: 12,
+                overflow: 'hidden',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+              }}>
+                {auditLoading ? (
+                  <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
+                    <div className="settings-loading-spinner" style={{ margin: '0 auto 12px' }} />
+                    <span>Loading audit logs...</span>
+                  </div>
+                ) : auditLogs.length === 0 ? (
+                  <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
+                    <span>No audit logs found matching criteria.</span>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+                          <th style={{ padding: '12px 16px' }}>Timestamp</th>
+                          <th style={{ padding: '12px 16px' }}>User</th>
+                          <th style={{ padding: '12px 16px' }}>Action</th>
+                          <th style={{ padding: '12px 16px' }}>Entity</th>
+                          <th style={{ padding: '12px 16px' }}>IP Address</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody style={{ color: '#334155' }}>
+                        {auditLogs.map((log) => {
+                          let badgeColor = '#64748b'; // default gray
+                          if (log.action.includes('CREATE') || log.action === 'RECEIVE') badgeColor = '#16a34a'; // green
+                          else if (log.action.includes('UPDATE') || log.action === 'TRANSFER') badgeColor = '#2563eb'; // blue
+                          else if (log.action.includes('DELETE') || log.action === 'REJECT') badgeColor = '#dc2626'; // red
+                          else if (log.action === 'APPROVE') badgeColor = '#0d9488'; // teal
+
+                          return (
+                            <tr key={log.log_id} style={{ borderBottom: '1px solid #f1f5f9' }} className="hover:bg-slate-50/50">
+                              <td style={{ padding: '12px 16px', color: '#64748b' }}>
+                                {new Date(log.created_at).toLocaleString('en-IN')}
+                              </td>
+                              <td style={{ padding: '12px 16px', fontWeight: 500 }}>
+                                {log.username || 'System'}
+                              </td>
+                              <td style={{ padding: '12px 16px' }}>
+                                <span style={{
+                                  background: badgeColor + '15',
+                                  color: badgeColor,
+                                  padding: '2px 8px',
+                                  borderRadius: 4,
+                                  fontSize: 11,
+                                  fontWeight: 700
+                                }}>
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 16px' }}>
+                                <span style={{ fontWeight: 600, color: '#1a3480' }}>{log.entity_type}</span>
+                                {log.entity_id && <span style={{ color: '#64748b' }}> #{log.entity_id}</span>}
+                              </td>
+                              <td style={{ padding: '12px 16px', color: '#64748b', fontFamily: 'monospace' }}>
+                                {log.ip_address || '-'}
+                              </td>
+                              <td style={{ padding: '8px 16px', textAlign: 'right' }}>
+                                <button
+                                  onClick={() => setSelectedLog(log)}
+                                  className="settings-test-btn"
+                                  style={{
+                                    background: '#1a3480',
+                                    padding: '4px 10px',
+                                    fontSize: 11.5,
+                                    borderRadius: 6,
+                                    color: '#fff',
+                                    border: 'none',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <IconEye size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                  View Diff
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Save button (hidden on system, users & audit) ── */}
+          {tab !== 'system' && tab !== 'users' && tab !== 'audit' && (
             <div className="settings-save-bar">
               <button onClick={handleSave} disabled={saveLoading} className="settings-save-btn">
                 {saveLoading
@@ -1359,6 +2124,208 @@ export default function Settings() {
           )}
         </main>
       </div>
+
+      {/* Audit Log Details Drawer/Modal */}
+      {selectedLog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 9999,
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '650px',
+            background: '#fff',
+            height: '100%',
+            boxShadow: '-4px 0 24px rgba(0,0,0,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid #e2e8f0',
+              background: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+                  Audit Log Details
+                </h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: 12, color: '#64748b' }}>
+                  Log #{selectedLog.log_id} — {new Date(selectedLog.created_at).toLocaleString('en-IN')}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedLog(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  padding: 4,
+                  borderRadius: 4,
+                  display: 'flex'
+                }}
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px'
+            }}>
+              {/* Overview Box */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                padding: '14px 16px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                fontSize: '13px'
+              }}>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 600 }}>USER</span>
+                  <strong style={{ color: '#0f172a' }}>{selectedLog.username || 'System'}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 600 }}>ACTION</span>
+                  <strong style={{ color: '#0f172a' }}>{selectedLog.action}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 600 }}>ENTITY TARGET</span>
+                  <strong style={{ color: '#1a3480' }}>
+                    {selectedLog.entity_type} {selectedLog.entity_id ? `#${selectedLog.entity_id}` : ''}
+                  </strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 600 }}>IP ADDRESS</span>
+                  <strong style={{ color: '#0f172a', fontFamily: 'monospace' }}>{selectedLog.ip_address || '-'}</strong>
+                </div>
+              </div>
+
+              {/* State Changes / Diffs */}
+              <div>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: 13.5, fontWeight: 700, color: '#334155' }}>
+                  Field-Level Diffs
+                </h4>
+
+                {selectedLog.details && Object.keys(selectedLog.details).length > 0 ? (
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+                          <th style={{ padding: '10px 12px' }}>Field</th>
+                          <th style={{ padding: '10px 12px', background: '#fef2f2', color: '#991b1b' }}>Original Value</th>
+                          <th style={{ padding: '10px 12px', background: '#f0fdf4', color: '#166534' }}>New Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(selectedLog.details).map(([field, change]: [string, any]) => {
+                          const formatVal = (val: any) => {
+                            if (val === null || val === undefined) return <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>null</span>;
+                            if (typeof val === 'object') return JSON.stringify(val);
+                            return String(val);
+                          };
+                          return (
+                            <tr key={field} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '10px 12px', fontWeight: 600, fontFamily: 'monospace', color: '#1e293b' }}>
+                                {field}
+                              </td>
+                              <td style={{ padding: '10px 12px', background: '#fff8f8', color: '#b91c1c', verticalAlign: 'top', wordBreak: 'break-all' }}>
+                                {formatVal(change.from)}
+                              </td>
+                              <td style={{ padding: '10px 12px', background: '#f8fff9', color: '#15803d', verticalAlign: 'top', wordBreak: 'break-all' }}>
+                                {formatVal(change.to)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : selectedLog.action === 'CREATE' && selectedLog.new_value ? (
+                  <div style={{
+                    background: '#f8fff9',
+                    border: '1px solid #bbf7d0',
+                    color: '#166534',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    fontSize: '12px'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: 700 }}>Record Created</p>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 11.5, background: 'rgba(255,255,255,0.6)', padding: 10, borderRadius: 6 }}>
+                      {JSON.stringify(selectedLog.new_value, null, 2)}
+                    </pre>
+                  </div>
+                ) : selectedLog.action === 'DELETE' && selectedLog.old_value ? (
+                  <div style={{
+                    background: '#fff5f5',
+                    border: '1px solid #fecaca',
+                    color: '#991b1b',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    fontSize: '12px'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: 700 }}>Record Deleted</p>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 11.5, background: 'rgba(255,255,255,0.6)', padding: 10, borderRadius: 6 }}>
+                      {JSON.stringify(selectedLog.old_value, null, 2)}
+                    </pre>
+                  </div>
+                ) : (
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    padding: '16px',
+                    textAlign: 'center',
+                    fontSize: 12.5,
+                    color: '#64748b'
+                  }}>
+                    No field-level changes recorded for this action.
+                  </div>
+                )}
+              </div>
+
+              {/* Raw JSON Accordion */}
+              <details style={{ marginTop: 'auto', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                <summary style={{ padding: '10px 12px', background: '#f8fafc', fontSize: 12, fontWeight: 600, cursor: 'pointer', userSelect: 'none', color: '#475569' }}>
+                  View Raw Log JSON
+                </summary>
+                <pre style={{
+                  margin: 0,
+                  padding: 12,
+                  background: '#0f172a',
+                  color: '#f8fafc',
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  overflowX: 'auto',
+                  maxHeight: 200
+                }}>
+                  {JSON.stringify(selectedLog, null, 2)}
+                </pre>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

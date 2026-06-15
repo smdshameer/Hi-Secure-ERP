@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/routes/get_gst_captcha.py', 'dist/routes/get_gst_captcha.py')\"",
     "start": "node dist/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -14,9 +14,12 @@
   "dependencies": {
     "@prisma/client": "^6.0.0",
     "@types/archiver": "^8.0.0",
+    "@types/multer": "^2.1.0",
     "@types/nodemailer": "^8.0.0",
+    "@types/pdfkit": "^0.17.6",
     "archiver": "^8.0.0",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.78.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
@@ -24,14 +27,18 @@
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.0",
     "helmet": "^8.0.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^8.0.11"
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.11",
+    "pdfkit": "^0.19.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.0.0",
     "prisma": "^6.0.0",

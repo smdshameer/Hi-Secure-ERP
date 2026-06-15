@@ -1,0 +1,226 @@
+﻿diff --git a/client/src/pages/Products.tsx b/client/src/pages/Products.tsx
+index 89c6c4a..07e61bd 100644
+--- a/client/src/pages/Products.tsx
++++ b/client/src/pages/Products.tsx
+@@ -163,4 +163,221 @@ export default function Products() {
+   );
+ }
+ 
++function normalizeHeader(header: string): string {
++  const h = String(header || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
++  if (h === 'partnumber' || h === 'sku' || h === 'model' || h === 'modelnumber' || h === 'partno' || h === 'modelno') return 'part_number';
++  if (h === 'name' || h === 'productname' || h === 'itemname' || h === 'title' || h === 'spec' || h === 'specification') return 'name';
++  if (h === 'brand' || h === 'brandname' || h === 'make') return 'brand_name';
++  if (h === 'description' || h === 'desc') return 'description';
++  if (h === 'cost' || h === 'costprice' || h === 'purchaseprice' || h === 'dealerprice' || h === 'price' || h === 'costexclgst' || h === 'costexcl') return 'cost_price';
++  if (h === 'sell' || h === 'sellingprice' || h === 'saleprice' || h === 'mrp' || h === 'sellingexclgst' || h === 'sellingexcl') return 'selling_price';
++  if (h === 'tax' || h === 'taxrate' || h === 'gst' || h === 'gstpercent' || h === 'gstrate') return 'tax_rate';
++  if (h === 'stock' || h === 'quantity' || h === 'qty' || h === 'initialstock') return 'initial_stock';
++  if (h === 'reorder' || h === 'reorderlevel' || h === 'minstock' || h === 'minimumstock') return 'reorder_level';
++  return h;
++}
++
++interface ImportModalProps {
++  onClose: () => void;
++  onSuccess: () => void;
++}
++
++function ImportModal({ onClose, onSuccess }: ImportModalProps) {
++  const [tab, setTab] = useState<'csv' | 'pdf'>('pdf');
++  const [products, setProducts] = useState<any[] | null>(null);
++  const [errors, setErrors] = useState<string[]>([]);
++  const [importing, setImporting] = useState(false);
++  const [result, setResult] = useState<{ importedCount: number; skippedCount: number; details: string[] } | null>(null);
++  const [csvDragging, setCsvDragging] = useState(false);
++  const [pdfDragging, setPdfDragging] = useState(false);
++  const [pdfParsing, setPdfParsing] = useState(false);
++  const [pdfFileName, setPdfFileName] = useState('');
++  const pdfFileRef = useRef<HTMLInputElement>(null);
++  const csvFileRef = useRef<HTMLInputElement>(null);
++  const [originalProducts, setOriginalProducts] = useState<any[] | null>(null);
++  const [markupPercent, setMarkupPercent] = useState<number>(0);
++  const [customMarkup, setCustomMarkup] = useState<number | ''>('');
++  const [gstInclusive, setGstInclusive] = useState<boolean>(false);
++  const [previewSearch, setPreviewSearch] = useState<string>('');
++
++  const resetState = () => {
++    setProducts(null);
++    setOriginalProducts(null);
++    setErrors([]);
++    setPdfFileName('');
++    setMarkupPercent(0);
++    setCustomMarkup('');
++    setGstInclusive(false);
++    setPreviewSearch('');
++  };
++
++  const handleUpdateRow = (index: number, fields: any) => {
++    setOriginalProducts(prev => {
++      if (!prev) return null;
++      return prev.map(p => p._index === index ? { ...p, ...fields } : p);
++    });
++  };
++
++  const processProducts = (list: any[], percent: number, isGstInclusive: boolean) => {
++    const result = list.map(p => {
++      const taxRate = p.tax_rate !== undefined && !isNaN(Number(p.tax_rate)) ? Number(p.tax_rate) : 18;
++      let cost = Number(p.cost_price) || 0;
++      let sell = Number(p.selling_price) || 0;
++      if (isGstInclusive) {
++        cost = cost / (1 + taxRate / 100);
++        sell = sell / (1 + taxRate / 100);
++      }
++      if (percent > 0) {
++        sell = cost + (cost * percent) / 100;
++      }
++      return {
++        ...p,
++        cost_price: Math.round(cost * 100) / 100,
++        selling_price: Math.round(sell * 100) / 100,
++        tax_rate: taxRate
++      };
++    });
++    return result;
++  };
++
++  useEffect(() => {
++    if (originalProducts) {
++      setProducts(processProducts(originalProducts, markupPercent, gstInclusive));
++    } else {
++      setProducts(null);
++    }
++  }, [originalProducts, markupPercent, gstInclusive]);
++
++  const handleApplyMarkup = (percent: number) => {
++    setMarkupPercent(percent);
++  };
++
++  const handleImportFile = (file: File) => {
++    const reader = new FileReader();
++    reader.onload = (e) => {
++      try {
++        const data = new Uint8Array(e.target?.result as ArrayBuffer);
++        const workbook = XLSX.read(data, { type: 'array' });
++        const allProducts: any[] = [];
++        workbook.SheetNames.forEach(sheetName => {
++          const worksheet = workbook.Sheets[sheetName];
++          const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
++          if (rows.length < 2) return;
++          let headerRowIndex = 0;
++          const rawHeaders = rows[headerRowIndex] || [];
++          const normalizedHeaders = rawHeaders.map(h => normalizeHeader(String(h || '')));
++          let productIdx = 0;
++          for (let rowIdx = headerRowIndex + 1; rowIdx < rows.length; rowIdx++) {
++            const row = rows[rowIdx];
++            if (!row) continue;
++            const item: any = { _index: productIdx++ };
++            normalizedHeaders.forEach((h, idx) => { if (h) item[h] = row[idx]; });
++            if (item.part_number) allProducts.push(item);
++          }
++        });
++        setOriginalProducts(allProducts);
++      } catch (err) { setErrors(['Failed to parse file']); }
++    };
++    reader.readAsArrayBuffer(file);
++  };
++
++  const handlePdfFile = async (file: File) => {
++    setPdfFileName(file.name);
++    setPdfParsing(true);
++    try {
++      const formData = new FormData();
++      formData.append('pdf', file);
++      const res = await api.post('/parts/parse-pdf', formData);
++      setOriginalProducts((res.data.products || []).map((p: any, idx: number) => ({ _index: idx, ...p })));
++    } catch (err: any) { setErrors(['Failed to parse PDF']); }
++    finally { setPdfParsing(false); }
++  };
++
++  const handleImport = async () => {
++    if (!products) return;
++    setImporting(true);
++    try {
++      const res = await api.post('/parts/import', { products });
++      setResult(res.data);
++      onSuccess();
++    } catch (err: any) { setErrors(['Import failed']); }
++    finally { setImporting(false); }
++  };
+ 
++  const downloadTemplate = () => {
++    const link = document.createElement('a');
++    link.href = '/template.csv';
++    link.click();
++  };
++
++  const tabBtn = (t: 'csv' | 'pdf', label: string, icon: string) => (
++    <button onClick={() => { setTab(t); resetState(); }} className={`flex-1 p-3 text-[13px] font-semibold border-b-2 ${tab === t ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-50'}`}>
++      {icon} {label}
++    </button>
++  );
++
++  const filteredProducts = products ? products.filter(p => {
++    const term = previewSearch.trim().toLowerCase();
++    if (!term) return true;
++    return String(p?.part_number || '').toLowerCase().includes(term) || String(p?.name || '').toLowerCase().includes(term);
++  }) : [];
++
++  return (
++    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
++      <div className="bg-white rounded-2xl w-full max-w-[900px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
++        <div className="flex items-center justify-between p-5 border-b bg-blue-900 text-white">
++          <div>
++            <h2 className="text-[15px] font-bold">Bulk Import Products</h2>
++            <p className="text-[12px] opacity-75">Import from PDF price list or CSV</p>
++          </div>
++          <button onClick={onClose}><IconX size={18} /></button>
++        </div>
++        {!products && !result && <div className="flex border-b">{tabBtn('pdf', 'PDF Price List (AI)', '≡ƒôä')} {tabBtn('csv', 'CSV / Excel', '≡ƒôè')}</div>}
++        <div className="overflow-y-auto flex-1 p-6">
++          {result ? (
++            <div className="text-center py-10">
++              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><IconCheck size={32} className="text-green-600" /></div>
++              <h3 className="font-bold text-lg">Import Complete!</h3>
++              <button onClick={onClose} className="mt-4 px-6 py-2 bg-blue-900 text-white rounded-lg">Done</button>
++            </div>
++          ) : products && products.length > 0 ? (
++            <div>
++              <div className="flex items-center gap-4 mb-4">
++                <p className="text-[13px] font-semibold">Preview ΓÇö {products.length} rows</p>
++                <div className="relative flex-1">
++                  <input type="text" placeholder="Search preview..." value={previewSearch} onChange={e => setPreviewSearch(e.target.value)} className="w-full pl-8 p-1.5 border rounded-lg text-[12px]"/>
++                  <IconSearch size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
++                </div>
++              </div>
++              <table className="w-full text-[12px] text-left border-collapse">
++                <thead className="bg-gray-50 border-b">
++                  <tr><th className="p-2">Part Number</th><th className="p-2">Name</th><th className="p-2 text-right">Cost</th><th className="p-2 text-right">Sell</th></tr>
++                </thead>
++                <tbody>
++                  {filteredProducts.map((p, i) => (
++                    <tr key={i} className="border-b">
++                      <td className="p-2">{p.part_number}</td><td className="p-2">{p.name}</td>
++                      <td className="p-2 text-right">{p.cost_price}</td><td className="p-2 text-right">{p.selling_price}</td>
++                    </tr>
++                  ))}
++                </tbody>
++              </table>
++            </div>
++          ) : (
++            <div className="p-10 border-2 border-dashed rounded-xl text-center cursor-pointer" onClick={() => (tab === 'pdf' ? pdfFileRef : csvFileRef).current?.click()}>
++              <IconUpload size={40} className="mx-auto text-gray-400 mb-2" />
++              <p>Click to browse {tab.toUpperCase()} file</p>
++              <input ref={tab === 'pdf' ? pdfFileRef : csvFileRef} type="file" className="hidden" onChange={e => { const f = e.target.files?.[0]; if(f) tab === 'pdf' ? handlePdfFile(f) : handleImportFile(f); }} />
++            </div>
++          )}
++        </div>
++        {!result && products && (
++          <div className="p-4 border-t flex justify-end gap-2">
++            <button onClick={onClose} className="px-4 py-2 border rounded-lg text-[13px]">Cancel</button>
++            <button onClick={handleImport} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[13px]">Confirm Import</button>
++          </div>
++        )}
++      </div>
++    </div>
++  );
++}

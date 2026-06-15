@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../index';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hisecure-jwt-secret-change-in-production';
 
@@ -31,3 +32,40 @@ export function requireRole(...roles: string[]) {
     next();
   };
 }
+
+export function requirePermission(permission: string) {
+  return async (req: AuthRequest, res: Response, nextFn: NextFunction) => {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const userRoles = await prisma.userRole.findMany({
+        where: { user_id: req.userId },
+        include: {
+          role: {
+            include: {
+              permissions: {
+                include: {
+                  permission: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const hasPermission = userRoles.some(ur =>
+        ur.role.permissions.some(rp => rp.permission.name === permission)
+      );
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+      }
+
+      nextFn();
+    } catch (err) {
+      console.error('RBAC authorization error:', err);
+      res.status(500).json({ error: 'Authorization check failed' });
+    }
+  };
+}

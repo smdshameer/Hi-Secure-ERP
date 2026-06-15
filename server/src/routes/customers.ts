@@ -1,29 +1,19 @@
 import { Router } from 'express';
-import { prisma } from '../index';
+import { CustomerService } from '../services/CustomerService';
+import { requirePermission } from '../middleware/auth';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
 export const customersRouter = Router();
+const customerService = new CustomerService();
 
 // Store active python processes keyed by GSTIN
 const activeProcesses = new Map<string, any>();
 
 customersRouter.get('/', async (req, res) => {
   try {
-    const { search, type } = req.query;
-    const where: any = {};
-    if (search) where.OR = [
-      { name: { contains: String(search), mode: 'insensitive' } },
-      { phone: { contains: String(search), mode: 'insensitive' } },
-      { email: { contains: String(search), mode: 'insensitive' } },
-    ];
-    if (type) where.customer_type = String(type);
-    const customers = await prisma.customer.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      include: { _count: { select: { repairs: true } } },
-    });
+    const customers = await customerService.getCustomers(req.query);
     res.json(customers);
   } catch (err) {
     console.error(err);
@@ -42,9 +32,6 @@ customersRouter.get('/captcha', async (req, res) => {
     const activeGstin = String(gstin).toUpperCase().trim();
     const uniqueSessionId = `${activeGstin}_${Date.now()}`;
     
-    // Do NOT kill existing processes to allow them to cleanly quit the headless browser.
-    // They will naturally timeout and close safely.
-
     const scriptPath = path.join(__dirname, 'get_gst_captcha.py');
     const child = spawn('python', ['-u', scriptPath, activeGstin, uniqueSessionId]);
 
@@ -152,15 +139,17 @@ customersRouter.get('/gstin/:gstin', async (req, res) => {
         if (results && results.success) {
           const d = results.data;
           
-          // Save or update in database
-          const existing = await prisma.customer.findFirst({
-            where: { gstin: { equals: gstin, mode: 'insensitive' } }
-          });
+          // Save or update in database using CustomerService
+          const existing = await customerService.getCustomerByGstin(gstin);
 
           if (existing) {
-            await prisma.customer.update({
-              where: { customer_id: existing.customer_id },
-              data: { name: d.name, address: d.address, city: d.city, state: d.state, pincode: d.pincode, contact_person: d.legal_name || null }
+            await customerService.updateCustomer(existing.customer_id, {
+              name: d.name,
+              address: d.address,
+              city: d.city,
+              state: d.state,
+              pincode: d.pincode,
+              contact_person: d.legal_name || null
             });
           }
 
@@ -185,9 +174,7 @@ customersRouter.get('/gstin/:gstin', async (req, res) => {
     }
 
     // Fallback: check database
-    const existing = await prisma.customer.findFirst({
-      where: { gstin: { equals: gstin, mode: 'insensitive' } }
-    });
+    const existing = await customerService.getCustomerByGstin(gstin);
 
     if (existing) {
       return res.json({
@@ -249,20 +236,9 @@ function getStateName(code: string): string {
   return STATE_MAP[code] || '';
 }
 
-
-
-
 customersRouter.get('/:id', async (req, res) => {
   try {
-    const customer = await prisma.customer.findUnique({
-      where: { customer_id: Number(req.params.id) },
-      include: { 
-        repairs: { orderBy: { received_date: 'desc' } },
-        salesInvoices: { orderBy: { invoice_date: 'desc' } },
-        quotations: { orderBy: { quote_date: 'desc' } },
-        deliveryChallans: { orderBy: { challan_date: 'desc' } }
-      },
-    });
+    const customer = await customerService.getCustomerDetailById(Number(req.params.id));
     if (!customer) return res.status(404).json({ error: 'Customer not found' });
     res.json(customer);
   } catch (err) {
@@ -270,52 +246,31 @@ customersRouter.get('/:id', async (req, res) => {
   }
 });
 
-customersRouter.post('/', async (req, res) => {
+customersRouter.post('/', requirePermission('invoice:create'), async (req, res) => {
   try {
-    const { name, phone, email, address, city, state, pincode, gstin, customer_type, credit_limit, contact_person } = req.body;
-    const customer = await prisma.customer.create({
-      data: {
-        customer_code: `CUS-${Date.now()}`,
-        name,
-        phone,
-        email: email || null,
-        address: address || null,
-        city: city || null,
-        state: state || null,
-        pincode: pincode || null,
-        gstin: gstin || null,
-        customer_type: customer_type || 'retail',
-        credit_limit: credit_limit ? Number(credit_limit) : 0,
-        contact_person: contact_person || null,
-      },
-      select: { customer_id: true, customer_code: true },
-    });
+    const customer = await customerService.createCustomer(req.body);
     res.status(201).json(customer);
   } catch (err: any) {
     console.error(err);
-    if (err.code === 'P2002' && err.meta?.target?.includes('phone')) {
+    if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint failed on the fields: (`phone`)'))) {
       return res.status(400).json({ error: 'A customer with this phone number already exists.' });
     }
     res.status(500).json({ error: 'Failed to create customer' });
   }
 });
 
-customersRouter.put('/:id', async (req, res) => {
+customersRouter.put('/:id', requirePermission('invoice:create'), async (req, res) => {
   try {
-    const { name, phone, email, address, city, state, pincode, gstin, customer_type, credit_limit, is_active, contact_person } = req.body;
-    await prisma.customer.update({
-      where: { customer_id: Number(req.params.id) },
-      data: { name, phone, email: email || null, address: address || null, city: city || null, state: state || null, pincode: pincode || null, gstin: gstin || null, customer_type: customer_type || 'retail', credit_limit: credit_limit ? Number(credit_limit) : 0, is_active, contact_person: contact_person || null },
-    });
+    await customerService.updateCustomer(Number(req.params.id), req.body);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update customer' });
   }
 });
 
-customersRouter.delete('/:id', async (req, res) => {
+customersRouter.delete('/:id', requirePermission('invoice:create'), async (req, res) => {
   try {
-    await prisma.customer.delete({ where: { customer_id: Number(req.params.id) } });
+    await customerService.deleteCustomer(Number(req.params.id));
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete customer' });

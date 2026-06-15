@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import AiAssistant from './AiAssistant';
 
 interface LayoutProps {
   children: ReactNode;
@@ -51,6 +52,7 @@ export default function Layout({ children }: LayoutProps) {
           {children}
         </main>
       </div>
+      <AiAssistant />
     </div>
   );
 }

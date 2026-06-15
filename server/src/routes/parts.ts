@@ -1,23 +1,14 @@
 import { Router } from 'express';
-import { prisma } from '../index';
+import { InventoryService } from '../services/InventoryService';
+import { AuthRequest, requirePermission } from '../middleware/auth';
 
 export const partsRouter = Router();
 
+const inventoryService = new InventoryService();
+
 partsRouter.get('/', async (req, res) => {
   try {
-    const { search, brand_id } = req.query;
-    const where: any = { is_active: true };
-    if (search) where.OR = [
-      { name: { contains: String(search), mode: 'insensitive' } },
-      { part_number: { contains: String(search), mode: 'insensitive' } },
-      { hsn_code: { contains: String(search), mode: 'insensitive' } },
-    ];
-    if (brand_id) where.brand_id = Number(brand_id);
-    const parts = await prisma.parts.findMany({
-      where,
-      include: { brand: { select: { brand_id: true, name: true } } },
-      orderBy: { name: 'asc' },
-    });
+    const parts = await inventoryService.getParts(req.query);
     res.json(parts);
   } catch (err) {
     console.error(err);
@@ -27,14 +18,8 @@ partsRouter.get('/', async (req, res) => {
 
 partsRouter.get('/stats', async (_req, res) => {
   try {
-    const allParts = await prisma.parts.findMany({
-      where: { is_active: true },
-      select: { stock_quantity: true, reorder_level: true },
-    });
-    const total = allParts.length;
-    const outOfStock = allParts.filter(p => p.stock_quantity === 0).length;
-    const lowStock = allParts.filter(p => p.stock_quantity > 0 && p.stock_quantity < p.reorder_level).length;
-    res.json({ total, lowStock, outOfStock });
+    const stats = await inventoryService.getStats();
+    res.json(stats);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
@@ -42,7 +27,7 @@ partsRouter.get('/stats', async (_req, res) => {
 
 partsRouter.get('/brands', async (_req, res) => {
   try {
-    const brands = await prisma.brand.findMany({ orderBy: { name: 'asc' }, select: { brand_id: true, name: true } });
+    const brands = await inventoryService.getBrands();
     res.json(brands);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch brands' });
@@ -51,10 +36,7 @@ partsRouter.get('/brands', async (_req, res) => {
 
 partsRouter.get('/:id', async (req, res) => {
   try {
-    const part = await prisma.parts.findUnique({
-      where: { part_id: Number(req.params.id) },
-      include: { brand: { select: { brand_id: true, name: true } } },
-    });
+    const part = await inventoryService.getPartById(Number(req.params.id));
     if (!part) return res.status(404).json({ error: 'Part not found' });
     res.json(part);
   } catch (err) {
@@ -62,25 +44,9 @@ partsRouter.get('/:id', async (req, res) => {
   }
 });
 
-partsRouter.post('/', async (req, res) => {
+partsRouter.post('/', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
   try {
-    const { part_number, name, description, brand_id, hsn_code, cost_price, selling_price, tax_rate, stock_quantity, reorder_level, is_active } = req.body;
-    const part = await prisma.parts.create({
-      data: {
-        part_number,
-        name,
-        description: description || null,
-        brand_id: brand_id ? Number(brand_id) : null,
-        hsn_code: hsn_code || null,
-        cost_price: cost_price ? Number(cost_price) : 0,
-        selling_price: selling_price ? Number(selling_price) : 0,
-        tax_rate: tax_rate ? Number(tax_rate) : 0,
-        stock_quantity: stock_quantity ? Number(stock_quantity) : 0,
-        reorder_level: reorder_level ? Number(reorder_level) : 5,
-        is_active: is_active !== false,
-      },
-      select: { part_id: true, part_number: true, name: true },
-    });
+    const part = await inventoryService.createPart(req.body, req.userId);
     res.status(201).json(part);
   } catch (err) {
     console.error(err);
@@ -88,37 +54,82 @@ partsRouter.post('/', async (req, res) => {
   }
 });
 
-partsRouter.put('/:id', async (req, res) => {
+partsRouter.post('/import', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
   try {
-    const { part_number, name, description, brand_id, hsn_code, cost_price, selling_price, tax_rate, reorder_level, is_active } = req.body;
-    await prisma.parts.update({
-      where: { part_id: Number(req.params.id) },
-      data: { part_number, name, description: description || null, brand_id: brand_id ? Number(brand_id) : null, hsn_code: hsn_code || null, cost_price: cost_price ? Number(cost_price) : 0, selling_price: selling_price ? Number(selling_price) : 0, tax_rate: tax_rate ? Number(tax_rate) : 0, reorder_level: reorder_level ? Number(reorder_level) : 5, is_active },
-    });
+    const { products } = req.body;
+    if (!products || !Array.isArray(products)) {
+      return res.status(400).json({ error: 'Invalid payload: products must be an array.' });
+    }
+    const result = await inventoryService.importPartsInBulk(products, req.userId);
+    res.json(result);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message || 'Failed to import parts' });
+  }
+});
+
+partsRouter.delete('/bulk', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Invalid payload: ids must be a non-empty array.' });
+    }
+    const result = await inventoryService.deletePartsBulk(ids.map(Number), req.userId);
+    res.json(result);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message || 'Failed to bulk delete parts' });
+  }
+});
+
+partsRouter.put('/:id', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
+  try {
+    await inventoryService.updatePart(Number(req.params.id), req.body, req.userId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update part' });
   }
 });
 
-partsRouter.delete('/:id', async (req, res) => {
+partsRouter.delete('/:id', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
   try {
-    await prisma.parts.delete({ where: { part_id: Number(req.params.id) } });
+    await inventoryService.deletePart(Number(req.params.id), req.userId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete part' });
   }
 });
 
-partsRouter.patch('/:id/stock', async (req, res) => {
+partsRouter.patch('/:id/stock', requirePermission('purchase:create'), async (req, res) => {
   try {
     const { quantity_change } = req.body;
-    await prisma.parts.update({
-      where: { part_id: Number(req.params.id) },
-      data: { stock_quantity: { increment: Number(quantity_change) } },
-    });
+    const partId = Number(req.params.id);
+    await inventoryService.adjustStock(partId, Number(quantity_change), 'ManualAdjustment', partId);
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to update stock' });
+  }
+});
+
+partsRouter.post('/:id/transfer', requirePermission('purchase:create'), async (req: AuthRequest, res) => {
+  try {
+    const partId = Number(req.params.id);
+    const { from_location_id, to_location_id, quantity } = req.body;
+    if (!from_location_id || !to_location_id || !quantity) {
+      return res.status(400).json({ error: 'Missing parameters: from_location_id, to_location_id, and quantity are required.' });
+    }
+    await inventoryService.transferStock(partId, Number(from_location_id), Number(to_location_id), Number(quantity), req.userId);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to transfer stock' });
+  }
+});
+
+partsRouter.get('/:id/movements', requirePermission('purchase:create'), async (req, res) => {
+  try {
+    const movements = await inventoryService.getMovements(Number(req.params.id));
+    res.json(movements);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update stock' });
+    res.status(500).json({ error: 'Failed to fetch movements' });
   }
 });

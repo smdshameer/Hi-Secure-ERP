@@ -41,6 +41,8 @@ import QuotationDetail from './pages/QuotationDetail';
 import DeliveryChallanDetail from './pages/DeliveryChallanDetail';
 import PurchaseOrderDetail from './pages/PurchaseOrderDetail';
 import Search from './pages/Search';
+import Approvals from './pages/Approvals';
+import ProductDetail from './pages/ProductDetail';
 
 export default function App() {
   return (
@@ -67,6 +69,7 @@ export default function App() {
           <Route path="/crm/new" element={<CRMForm backPath="/crm" />} />
           <Route path="/crm/:id/edit" element={<CRMForm backPath="/crm" />} />
           <Route path="/parts" element={<Products />} />
+          <Route path="/parts/:id" element={<ProductDetail />} />
           <Route path="/parts/new" element={<PartsForm backPath="/parts" />} />
           <Route path="/parts/:id/edit" element={<PartsForm backPath="/parts" />} />
           <Route path="/suppliers" element={<Suppliers />} />
@@ -96,6 +99,7 @@ export default function App() {
           <Route path="/users/:id/edit" element={<UsersForm backPath="/users" />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/approvals" element={<Approvals />} />
           <Route path="/payroll" element={<Payroll />} />
           <Route path="/payroll/runs" element={<PayrollForm backPath="/payroll" />} />
           <Route path="/accounting" element={<Accounting />} />

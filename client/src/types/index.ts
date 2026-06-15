@@ -132,6 +132,7 @@ export interface Product {
   taxRate: number;
   supplierId?: number;
   supplierName?: string;
+  stocks?: any[];
 }
 
 // ─── Supplier ─────────────────────────────────────────────────

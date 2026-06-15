@@ -4,6 +4,7 @@ import { sendEmail } from '../services/emailService';
 import { sendWhatsApp } from '../services/whatsappService';
 import { sendTelegram } from '../services/telegramService';
 import os from 'os';
+import { AiService } from '../services/AiService';
 
 export const settingsRouter = Router();
 
@@ -168,18 +169,46 @@ settingsRouter.get('/backup', async (_req, res) => {
   try {
     console.log('[Backup] Starting full data export...');
 
-    const [customers, suppliers, parts, invoices, repairs, quotations, challans, purchaseOrders, dbSettings] =
-      await Promise.all([
-        prisma.customer.findMany(),
-        prisma.supplier.findMany(),
-        prisma.parts.findMany(),
-        prisma.salesInvoice.findMany({ include: { items: true } }),
-        prisma.repair.findMany(),
-        prisma.quotation.findMany({ include: { items: true } }),
-        prisma.deliveryChallan.findMany({ include: { items: true } }),
-        prisma.purchaseOrder.findMany({ include: { items: true } }),
-        prisma.setting.findMany(),
-      ]);
+    const [
+      customers, suppliers, parts, invoices, repairs, quotations, challans, purchaseOrders, dbSettings,
+      brands, technicians, locations, partStocks, stockMovements, accounts, journalEntries, users,
+      roles, permissions, rolePermissions, userRoles, attachments, salesReturns, purchaseReturns,
+      posSessions, posTransactions, approvalWorkflows, approvalHistories, repairEvents, companies,
+      payments, challanReturns
+    ] = await Promise.all([
+      prisma.customer.findMany(),
+      prisma.supplier.findMany(),
+      prisma.parts.findMany(),
+      prisma.salesInvoice.findMany({ include: { items: true } }),
+      prisma.repair.findMany({ include: { parts: true } }),
+      prisma.quotation.findMany({ include: { items: true } }),
+      prisma.deliveryChallan.findMany({ include: { items: true } }),
+      prisma.purchaseOrder.findMany({ include: { items: true } }),
+      prisma.setting.findMany(),
+      prisma.brand.findMany(),
+      prisma.technician.findMany(),
+      prisma.location.findMany(),
+      prisma.partStock.findMany(),
+      prisma.stockMovement.findMany(),
+      prisma.account.findMany(),
+      prisma.journalEntry.findMany({ include: { lines: true } }),
+      prisma.user.findMany(),
+      prisma.role.findMany(),
+      prisma.permission.findMany(),
+      prisma.rolePermission.findMany(),
+      prisma.userRole.findMany(),
+      prisma.attachment.findMany(),
+      prisma.salesReturn.findMany({ include: { items: true } }),
+      prisma.purchaseReturn.findMany({ include: { items: true } }),
+      prisma.posSession.findMany(),
+      prisma.posTransaction.findMany(),
+      prisma.approvalWorkflow.findMany({ include: { steps: true } }),
+      prisma.approvalHistory.findMany(),
+      prisma.repairEvent.findMany(),
+      prisma.company.findMany(),
+      prisma.payment.findMany(),
+      prisma.deliveryChallanReturns.findMany()
+    ]);
 
     // Convert Prisma Decimal objects to plain numbers before JSON serialization
     const backup = toPlain({
@@ -195,6 +224,29 @@ settingsRouter.get('/backup', async (_req, res) => {
         challans,
         purchaseOrders,
         settings: dbSettings,
+        brands,
+        technicians,
+        locations,
+        partStocks,
+        stockMovements,
+        accounts,
+        journalEntries,
+        users,
+        roles,
+        permissions,
+        rolePermissions,
+        userRoles,
+        attachments,
+        salesReturns,
+        purchaseReturns,
+        posSessions,
+        posTransactions,
+        approvalWorkflows,
+        approvalHistories,
+        repairEvents,
+        companies,
+        payments,
+        challanReturns
       },
     });
 
@@ -271,6 +323,167 @@ settingsRouter.post('/import', async (req, res) => {
       total += data.settings.length;
     }
 
+    // ── Brands ───────────────────────────────────────────────────
+    const brandIdMap: Record<number, number> = {};
+    if (Array.isArray(data.brands) && data.brands.length > 0) {
+      let count = 0;
+      for (const b of data.brands) {
+        try {
+          const existing = await prisma.brand.findUnique({ where: { name: b.name } });
+          if (existing) {
+            brandIdMap[b.brand_id] = existing.brand_id;
+          } else {
+            const created = await prisma.brand.create({ data: { name: b.name } });
+            brandIdMap[b.brand_id] = created.brand_id;
+            count++;
+          }
+        } catch (e: any) {
+          warn.push(`⚠️ Brand "${b.name}" failed: ${e.message}`);
+        }
+      }
+      log.push(`✅ Brands: ${count} imported`);
+      total += count;
+    }
+
+    // ── Technicians ──────────────────────────────────────────────
+    const technicianIdMap: Record<number, number> = {};
+    if (Array.isArray(data.technicians) && data.technicians.length > 0) {
+      let count = 0;
+      for (const t of data.technicians) {
+        try {
+          const existing = await prisma.technician.findFirst({ where: { name: t.name } });
+          if (existing) {
+            technicianIdMap[t.technician_id] = existing.technician_id;
+          } else {
+            const { technician_id, created_at, repairs, ...rest } = t;
+            const created = await prisma.technician.create({ data: rest });
+            technicianIdMap[t.technician_id] = created.technician_id;
+            count++;
+          }
+        } catch (e: any) {
+          warn.push(`⚠️ Technician "${t.name}" failed: ${e.message}`);
+        }
+      }
+      log.push(`✅ Technicians: ${count} imported`);
+      total += count;
+    }
+
+    // ── Locations ────────────────────────────────────────────────
+    const locationIdMap: Record<number, number> = {};
+    if (Array.isArray(data.locations) && data.locations.length > 0) {
+      let count = 0;
+      for (const l of data.locations) {
+        try {
+          const existing = await prisma.location.findUnique({ where: { location_code: l.location_code } });
+          if (existing) {
+            locationIdMap[l.location_id] = existing.location_id;
+          } else {
+            const { location_id, created_at, updated_at, fromChallans, toChallans, stocks, stockMovements, ...rest } = l;
+            const created = await prisma.location.create({ data: rest });
+            locationIdMap[l.location_id] = created.location_id;
+            count++;
+          }
+        } catch (e: any) {
+          warn.push(`⚠️ Location "${l.name}" failed: ${e.message}`);
+        }
+      }
+      log.push(`✅ Locations: ${count} imported`);
+      total += count;
+    }
+
+    // ── Users ────────────────────────────────────────────────────
+    const userIdMap: Record<number, number> = {};
+    if (Array.isArray(data.users) && data.users.length > 0) {
+      let count = 0;
+      for (const u of data.users) {
+        try {
+          const existing = await prisma.user.findUnique({ where: { username: u.username } });
+          if (existing) {
+            userIdMap[u.user_id] = existing.user_id;
+          } else {
+            const { user_id, created_at, updated_at, approvals, approvedDeliveryChallans, createdDeliveryChallans, createdPurchaseOrders, quotations, createdSalesInvoices, roles, ...rest } = u;
+            const created = await prisma.user.create({
+              data: {
+                ...rest,
+                last_login: rest.last_login ? new Date(rest.last_login) : null
+              }
+            });
+            userIdMap[u.user_id] = created.user_id;
+            count++;
+          }
+        } catch (e: any) {
+          warn.push(`⚠️ User "${u.username}" failed: ${e.message}`);
+        }
+      }
+      log.push(`✅ Users: ${count} imported`);
+      total += count;
+    }
+
+    // ── Roles & Permissions ──────────────────────────────────────
+    const roleIdMap: Record<number, number> = {};
+    if (Array.isArray(data.roles) && data.roles.length > 0) {
+      for (const r of data.roles) {
+        try {
+          const existing = await prisma.role.findUnique({ where: { name: r.name } });
+          if (existing) {
+            roleIdMap[r.role_id] = existing.role_id;
+          } else {
+            const { role_id, created_at, updated_at, approvalSteps, permissions, users, ...rest } = r;
+            const created = await prisma.role.create({ data: rest });
+            roleIdMap[r.role_id] = created.role_id;
+          }
+        } catch {}
+      }
+    }
+
+    const permissionIdMap: Record<number, number> = {};
+    if (Array.isArray(data.permissions) && data.permissions.length > 0) {
+      for (const p of data.permissions) {
+        try {
+          const existing = await prisma.permission.findUnique({ where: { name: p.name } });
+          if (existing) {
+            permissionIdMap[p.permission_id] = existing.permission_id;
+          } else {
+            const { permission_id, created_at, updated_at, roles, ...rest } = p;
+            const created = await prisma.permission.create({ data: rest });
+            permissionIdMap[p.permission_id] = created.permission_id;
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.rolePermissions)) {
+      for (const rp of data.rolePermissions) {
+        try {
+          const newRoleId = roleIdMap[rp.role_id];
+          const newPermissionId = permissionIdMap[rp.permission_id];
+          if (newRoleId && newPermissionId) {
+            await prisma.rolePermission.upsert({
+              where: { role_id_permission_id: { role_id: newRoleId, permission_id: newPermissionId } },
+              create: { role_id: newRoleId, permission_id: newPermissionId },
+              update: {}
+            });
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.userRoles)) {
+      for (const ur of data.userRoles) {
+        try {
+          const newUserId = userIdMap[ur.user_id];
+          const newRoleId = roleIdMap[ur.role_id];
+          if (newUserId && newRoleId) {
+            await prisma.userRole.upsert({
+              where: { user_id_role_id: { user_id: newUserId, role_id: newRoleId } },
+              create: { user_id: newUserId, role_id: newRoleId },
+              update: {}
+            });
+          }
+        } catch {}
+      }
+    }
+
     // ── 2. Customers ──────────────────────────────────────────────
     const customerIdMap: Record<number, number> = {};
     if (Array.isArray(data.customers) && data.customers.length > 0) {
@@ -334,7 +547,8 @@ settingsRouter.post('/import', async (req, res) => {
           } else {
             const { part_id, created_at, updated_at, brand_id, brand, repairParts, salesInvoiceItems,
               purchaseOrderItems, quotationItems, deliveryChallanItems, repairPartsForDelivery, ...rest } = p;
-            const created = await prisma.parts.create({ data: rest });
+            const newBrandId = brand_id ? brandIdMap[brand_id] : null;
+            const created = await prisma.parts.create({ data: { ...rest, brand_id: newBrandId } });
             partIdMap[p.part_id] = created.part_id;
             count++;
           }
@@ -346,7 +560,92 @@ settingsRouter.post('/import', async (req, res) => {
       total += count;
     }
 
+    // ── Part Stocks & Stock Movements ────────────────────────────
+    if (Array.isArray(data.partStocks)) {
+      for (const ps of data.partStocks) {
+        try {
+          const newPartId = partIdMap[ps.part_id];
+          const newLocationId = locationIdMap[ps.location_id] || 1;
+          if (newPartId) {
+            await prisma.partStock.upsert({
+              where: { part_id_location_id: { part_id: newPartId, location_id: newLocationId } },
+              create: { part_id: newPartId, location_id: newLocationId, quantity: ps.quantity },
+              update: { quantity: ps.quantity }
+            });
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.stockMovements)) {
+      for (const sm of data.stockMovements) {
+        try {
+          const newPartId = partIdMap[sm.partId];
+          const newLocationId = sm.locationId ? locationIdMap[sm.locationId] : null;
+          if (newPartId) {
+            const { id, partId, locationId, createdAt, ...rest } = sm;
+            await prisma.stockMovement.create({
+              data: {
+                ...rest,
+                partId: newPartId,
+                locationId: newLocationId,
+                createdAt: createdAt ? new Date(createdAt) : new Date()
+              }
+            });
+          }
+        } catch {}
+      }
+    }
+
+    // ── Accounts & Journal Entries ───────────────────────────────
+    const accountIdMap: Record<number, number> = {};
+    if (Array.isArray(data.accounts)) {
+      for (const a of data.accounts) {
+        try {
+          const existing = await prisma.account.findUnique({ where: { code: a.code } });
+          if (existing) {
+            accountIdMap[a.account_id] = existing.account_id;
+          } else {
+            const { account_id, created_at, updated_at, journalLines, ...rest } = a;
+            const created = await prisma.account.create({ data: rest });
+            accountIdMap[a.account_id] = created.account_id;
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.journalEntries)) {
+      for (const je of data.journalEntries) {
+        try {
+          const { entry_id, created_at, updated_at, lines, ...rest } = je;
+          const createdJe = await prisma.journalEntry.create({
+            data: {
+              ...rest,
+              entry_date: rest.entry_date ? new Date(rest.entry_date) : new Date()
+            }
+          });
+          if (Array.isArray(lines)) {
+            for (const line of lines) {
+              const newAccountId = accountIdMap[line.account_id];
+              if (newAccountId) {
+                const { line_id, entry_id: _e, account_id, account, entry, ...lineRest } = line;
+                await prisma.journalEntryLine.create({
+                  data: {
+                    ...lineRest,
+                    entry_id: createdJe.entry_id,
+                    account_id: newAccountId,
+                    amount: Number(lineRest.amount)
+                  }
+                });
+              }
+            }
+          }
+        } catch {}
+      }
+    }
+
     // ── 5. Sales Invoices ─────────────────────────────────────────
+    const invoiceIdMap: Record<number, number> = {};
     if (Array.isArray(data.invoices) && data.invoices.length > 0) {
       let count = 0;
       for (const inv of data.invoices) {
@@ -354,17 +653,24 @@ settingsRouter.post('/import', async (req, res) => {
           const existing = inv.invoice_number
             ? await prisma.salesInvoice.findUnique({ where: { invoice_number: inv.invoice_number } })
             : null;
-          if (existing) { warn.push(`⚠️ Invoice "${inv.invoice_number}" already exists — skipped`); continue; }
+          if (existing) {
+            invoiceIdMap[inv.invoice_id] = existing.invoice_id;
+            warn.push(`⚠️ Invoice "${inv.invoice_number}" already exists — skipped`);
+            continue;
+          }
           const newCustomerId = inv.customer_id ? customerIdMap[inv.customer_id] : undefined;
+          const newCreatedBy = inv.created_by ? userIdMap[inv.created_by] : null;
           const { invoice_id, created_at, updated_at, created_by, customer_id, items, customer, createdBy, ...invRest } = inv;
           const newInv = await prisma.salesInvoice.create({
             data: {
               ...invRest,
               customer_id: newCustomerId || undefined,
+              created_by: newCreatedBy,
               invoice_date: invRest.invoice_date ? new Date(invRest.invoice_date) : new Date(),
               due_date: invRest.due_date ? new Date(invRest.due_date) : undefined,
             },
           });
+          invoiceIdMap[inv.invoice_id] = newInv.invoice_id;
           if (Array.isArray(items)) {
             for (const item of items) {
               const newPartId = item.part_id ? partIdMap[item.part_id] : undefined;
@@ -387,6 +693,7 @@ settingsRouter.post('/import', async (req, res) => {
     }
 
     // ── 6. Repairs ────────────────────────────────────────────────
+    const repairIdMap: Record<number, number> = {};
     if (Array.isArray(data.repairs) && data.repairs.length > 0) {
       let count = 0;
       for (const r of data.repairs) {
@@ -394,15 +701,23 @@ settingsRouter.post('/import', async (req, res) => {
           const existing = r.ticket_number
             ? await prisma.repair.findUnique({ where: { ticket_number: r.ticket_number } })
             : null;
-          if (existing) { warn.push(`⚠️ Repair "${r.ticket_number}" already exists — skipped`); continue; }
+          if (existing) {
+            repairIdMap[r.repair_id] = existing.repair_id;
+            warn.push(`⚠️ Repair "${r.ticket_number}" already exists — skipped`);
+            continue;
+          }
           const newCustomerId = r.customer_id ? customerIdMap[r.customer_id] : undefined;
           if (!newCustomerId) { warn.push(`⚠️ Repair "${r.ticket_number}" — customer not found, skipped`); continue; }
+          const newBrandId = r.brand_id ? brandIdMap[r.brand_id] : null;
+          const newTechnicianId = r.assigned_technician_id ? technicianIdMap[r.assigned_technician_id] : null;
           const { repair_id, created_at, updated_at, customer_id, brand_id, assigned_technician_id,
-            parts, payments, customer, assigned_technician, brand, ...rest } = r;
-          await prisma.repair.create({
+            parts, payments, customer, assigned_technician, brand, repairEvents, ...rest } = r;
+          const createdRepair = await prisma.repair.create({
             data: {
               ...rest,
               customer_id: newCustomerId,
+              brand_id: newBrandId,
+              assigned_technician_id: newTechnicianId,
               received_date: rest.received_date ? new Date(rest.received_date) : new Date(),
               completion_date: rest.completion_date ? new Date(rest.completion_date) : undefined,
               diagnosed_date: rest.diagnosed_date ? new Date(rest.diagnosed_date) : undefined,
@@ -411,6 +726,25 @@ settingsRouter.post('/import', async (req, res) => {
               warranty_expiry: rest.warranty_expiry ? new Date(rest.warranty_expiry) : undefined,
             },
           });
+          repairIdMap[r.repair_id] = createdRepair.repair_id;
+
+          // Repair parts
+          if (Array.isArray(parts)) {
+            for (const rp of parts) {
+              const newPartId = rp.part_id ? partIdMap[rp.part_id] : null;
+              if (newPartId) {
+                const { repair_part_id, repair_id: _rid, part_id, part, repair, ...rpRest } = rp;
+                await prisma.repairParts.create({
+                  data: {
+                    ...rpRest,
+                    repair_id: createdRepair.repair_id,
+                    part_id: newPartId,
+                    price_charged: Number(rpRest.price_charged)
+                  }
+                });
+              }
+            }
+          }
           count++;
         } catch (e: any) {
           warn.push(`⚠️ Repair "${r.ticket_number}" failed: ${e.message}`);
@@ -420,7 +754,29 @@ settingsRouter.post('/import', async (req, res) => {
       total += count;
     }
 
+    // ── Repair Events ────────────────────────────────────────────
+    if (Array.isArray(data.repairEvents)) {
+      for (const re of data.repairEvents) {
+        try {
+          const newRepairId = repairIdMap[re.repair_id];
+          const newUserId = re.user_id ? userIdMap[re.user_id] : null;
+          if (newRepairId) {
+            const { event_id, repair_id, user_id, timestamp, ...rest } = re;
+            await prisma.repairEvent.create({
+              data: {
+                ...rest,
+                repair_id: newRepairId,
+                user_id: newUserId,
+                timestamp: timestamp ? new Date(timestamp) : new Date()
+              }
+            });
+          }
+        } catch {}
+      }
+    }
+
     // ── 7. Quotations ─────────────────────────────────────────────
+    const quoteIdMap: Record<number, number> = {};
     if (Array.isArray(data.quotations) && data.quotations.length > 0) {
       let count = 0;
       for (const q of data.quotations) {
@@ -428,18 +784,27 @@ settingsRouter.post('/import', async (req, res) => {
           const existing = q.quote_number
             ? await prisma.quotation.findUnique({ where: { quote_number: q.quote_number } })
             : null;
-          if (existing) { warn.push(`⚠️ Quotation "${q.quote_number}" already exists — skipped`); continue; }
+          if (existing) {
+            quoteIdMap[q.quote_id] = existing.quote_id;
+            warn.push(`⚠️ Quotation "${q.quote_number}" already exists — skipped`);
+            continue;
+          }
           const newCustomerId = q.customer_id ? customerIdMap[q.customer_id] : undefined;
           if (!newCustomerId) { warn.push(`⚠️ Quotation "${q.quote_number}" — customer not found, skipped`); continue; }
-          const { quote_id, created_at, updated_at, created_by, customer_id, items, customer, createdBy, ...rest } = q;
+          const newCreatedBy = q.created_by ? userIdMap[q.created_by] : null;
+          const newInvoiceId = q.converted_to_invoice_id ? invoiceIdMap[q.converted_to_invoice_id] : null;
+          const { quote_id, created_at, updated_at, created_by, customer_id, converted_to_invoice_id, items, customer, createdBy, ...rest } = q;
           const newQ = await prisma.quotation.create({
             data: {
               ...rest,
               customer_id: newCustomerId,
+              created_by: newCreatedBy,
+              converted_to_invoice_id: newInvoiceId,
               quote_date: rest.quote_date ? new Date(rest.quote_date) : new Date(),
               valid_until: rest.valid_until ? new Date(rest.valid_until) : new Date(),
             },
           });
+          quoteIdMap[q.quote_id] = newQ.quote_id;
           if (Array.isArray(items)) {
             for (const item of items) {
               const newPartId = item.part_id ? partIdMap[item.part_id] : undefined;
@@ -462,6 +827,7 @@ settingsRouter.post('/import', async (req, res) => {
     }
 
     // ── 8. Purchase Orders ────────────────────────────────────────
+    const poIdMap: Record<number, number> = {};
     if (Array.isArray(data.purchaseOrders) && data.purchaseOrders.length > 0) {
       let count = 0;
       for (const po of data.purchaseOrders) {
@@ -469,18 +835,25 @@ settingsRouter.post('/import', async (req, res) => {
           const existing = po.po_number
             ? await prisma.purchaseOrder.findUnique({ where: { po_number: po.po_number } })
             : null;
-          if (existing) { warn.push(`⚠️ PO "${po.po_number}" already exists — skipped`); continue; }
+          if (existing) {
+            poIdMap[po.po_id] = existing.po_id;
+            warn.push(`⚠️ PO "${po.po_number}" already exists — skipped`);
+            continue;
+          }
           const newSupplierId = po.supplier_id ? supplierIdMap[po.supplier_id] : undefined;
           if (!newSupplierId) { warn.push(`⚠️ PO "${po.po_number}" — supplier not found, skipped`); continue; }
-          const { po_id, created_at, updated_at, created_by, supplier_id, items, supplier, createdBy, ...rest } = po;
+          const newCreatedBy = po.created_by ? userIdMap[po.created_by] : null;
+          const { po_id, created_at, updated_at, created_by, supplier_id, items, supplier, createdBy, purchaseReturns, ...rest } = po;
           const newPO = await prisma.purchaseOrder.create({
             data: {
               ...rest,
               supplier_id: newSupplierId,
+              created_by: newCreatedBy,
               order_date: rest.order_date ? new Date(rest.order_date) : new Date(),
               expected_delivery: rest.expected_delivery ? new Date(rest.expected_delivery) : undefined,
             },
           });
+          poIdMap[po.po_id] = newPO.po_id;
           if (Array.isArray(items)) {
             for (const item of items) {
               const newPartId = item.part_id ? partIdMap[item.part_id] : undefined;
@@ -508,6 +881,7 @@ settingsRouter.post('/import', async (req, res) => {
     }
 
     // ── 9. Delivery Challans ──────────────────────────────────────
+    const challanIdMap: Record<number, number> = {};
     if (Array.isArray(data.challans) && data.challans.length > 0) {
       let count = 0;
       for (const ch of data.challans) {
@@ -515,20 +889,33 @@ settingsRouter.post('/import', async (req, res) => {
           const existing = ch.challan_number
             ? await prisma.deliveryChallan.findUnique({ where: { challan_number: ch.challan_number } })
             : null;
-          if (existing) { warn.push(`⚠️ Challan "${ch.challan_number}" already exists — skipped`); continue; }
+          if (existing) {
+            challanIdMap[ch.delivery_challan_id] = existing.delivery_challan_id;
+            warn.push(`⚠️ Challan "${ch.challan_number}" already exists — skipped`);
+            continue;
+          }
           const { delivery_challan_id, created_at, updated_at, created_by, approved_by,
             customer_id, supplier_id, from_location_id, to_location_id,
             items, returns, customer, supplier, createdBy, approvedBy, fromLocation, toLocation, ...rest } = ch;
+          const newCreatedBy = created_by ? userIdMap[created_by] : null;
+          const newApprovedBy = approved_by ? userIdMap[approved_by] : null;
+          const newFromLocationId = from_location_id ? locationIdMap[from_location_id] : null;
+          const newToLocationId = to_location_id ? locationIdMap[to_location_id] : null;
           const newCh = await prisma.deliveryChallan.create({
             data: {
               ...rest,
               customer_id: customer_id ? customerIdMap[customer_id] : undefined,
               supplier_id: supplier_id ? supplierIdMap[supplier_id] : undefined,
+              created_by: newCreatedBy,
+              approved_by: newApprovedBy,
+              from_location_id: newFromLocationId,
+              to_location_id: newToLocationId,
               challan_date: rest.challan_date ? new Date(rest.challan_date) : new Date(),
               expected_delivery_date: rest.expected_delivery_date ? new Date(rest.expected_delivery_date) : undefined,
               approved_at: rest.approved_at ? new Date(rest.approved_at) : undefined,
             },
           });
+          challanIdMap[ch.delivery_challan_id] = newCh.delivery_challan_id;
           if (Array.isArray(items)) {
             for (const item of items) {
               const newPartId = item.part_id ? partIdMap[item.part_id] : undefined;
@@ -555,6 +942,201 @@ settingsRouter.post('/import', async (req, res) => {
       total += count;
     }
 
+    // ── Sales & Purchase Returns ─────────────────────────────────
+    if (Array.isArray(data.salesReturns)) {
+      for (const sr of data.salesReturns) {
+        try {
+          const existing = await prisma.salesReturn.findUnique({ where: { return_number: sr.return_number } });
+          if (existing) continue;
+
+          const newInvoiceId = invoiceIdMap[sr.invoice_id];
+          const newCreatedBy = sr.created_by ? userIdMap[sr.created_by] : 1;
+          if (!newInvoiceId) continue;
+
+          const { return_id, invoice_id, items, invoice, ...rest } = sr;
+          const newSr = await prisma.salesReturn.create({
+            data: {
+              ...rest,
+              invoice_id: newInvoiceId,
+              created_by: newCreatedBy || 1,
+              return_date: rest.return_date ? new Date(rest.return_date) : new Date(),
+              total_amount: Number(rest.total_amount),
+              tax_amount: Number(rest.tax_amount),
+              grand_total: Number(rest.grand_total)
+            }
+          });
+
+          if (Array.isArray(items)) {
+            for (const item of items) {
+              const newPartId = partIdMap[item.part_id];
+              if (!newPartId) continue;
+              const { item_id, return_id: _r, part_id, part, salesReturn, ...itemRest } = item;
+              await prisma.salesReturnItem.create({
+                data: {
+                  ...itemRest,
+                  return_id: newSr.return_id,
+                  part_id: newPartId,
+                  unit_price: Number(itemRest.unit_price),
+                  tax_rate: Number(itemRest.tax_rate),
+                  tax_amount: Number(itemRest.tax_amount),
+                  total_amount: Number(itemRest.total_amount)
+                }
+              });
+            }
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.purchaseReturns)) {
+      for (const pr of data.purchaseReturns) {
+        try {
+          const existing = await prisma.purchaseReturn.findUnique({ where: { return_number: pr.return_number } });
+          if (existing) continue;
+
+          const newPoId = poIdMap[pr.po_id];
+          const newCreatedBy = pr.created_by ? userIdMap[pr.created_by] : 1;
+          if (!newPoId) continue;
+
+          const { return_id, po_id, items, purchaseOrder, ...rest } = pr;
+          const newPr = await prisma.purchaseReturn.create({
+            data: {
+              ...rest,
+              po_id: newPoId,
+              created_by: newCreatedBy || 1,
+              return_date: rest.return_date ? new Date(rest.return_date) : new Date(),
+              total_amount: Number(rest.total_amount)
+            }
+          });
+
+          if (Array.isArray(items)) {
+            for (const item of items) {
+              const newPartId = partIdMap[item.part_id];
+              if (!newPartId) continue;
+              const { item_id, return_id: _r, part_id, part, purchaseReturn, ...itemRest } = item;
+              await prisma.purchaseReturnItem.create({
+                data: {
+                  ...itemRest,
+                  return_id: newPr.return_id,
+                  part_id: newPartId,
+                  unit_price: Number(itemRest.unit_price),
+                  total_amount: Number(itemRest.total_amount)
+                }
+              });
+            }
+          }
+        } catch {}
+      }
+    }
+
+    // ── POS Sessions & Transactions ──────────────────────────────
+    const sessionMap: Record<number, number> = {};
+    if (Array.isArray(data.posSessions)) {
+      for (const s of data.posSessions) {
+        try {
+          const { session_id, created_at, closed_at, session_date, ...rest } = s;
+          const created = await prisma.posSession.create({
+            data: {
+              ...rest,
+              session_date: session_date ? new Date(session_date) : new Date(),
+              closed_at: closed_at ? new Date(closed_at) : null,
+              opening_cash: Number(rest.opening_cash),
+              closing_cash: Number(rest.closing_cash),
+              total_sales: Number(rest.total_sales),
+              total_refunds: Number(rest.total_refunds),
+              cash_payments: Number(rest.cash_payments),
+              upi_payments: Number(rest.upi_payments),
+              card_payments: Number(rest.card_payments)
+            }
+          });
+          sessionMap[session_id] = created.session_id;
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(data.posTransactions)) {
+      for (const t of data.posTransactions) {
+        try {
+          const newSessionId = sessionMap[t.session_id];
+          if (!newSessionId) continue;
+
+          const newCustomerId = t.customer_id ? customerIdMap[t.customer_id] : null;
+          const { transaction_id, created_at, session_id, customer_id, ...rest } = t;
+          await prisma.posTransaction.create({
+            data: {
+              ...rest,
+              session_id: newSessionId,
+              customer_id: newCustomerId,
+              subtotal: Number(rest.subtotal),
+              tax_amount: Number(rest.tax_amount),
+              discount: Number(rest.discount),
+              total: Number(rest.total),
+              cash_received: Number(rest.cash_received),
+              change_given: Number(rest.change_given)
+            }
+          });
+        } catch {}
+      }
+    }
+
+    // ── Attachments ──────────────────────────────────────────────
+    if (Array.isArray(data.attachments)) {
+      for (const a of data.attachments) {
+        try {
+          const newUserId = a.uploaded_by ? userIdMap[a.uploaded_by] : null;
+          let newEntityId = a.entity_id;
+          const typeLower = a.entity_type.toLowerCase();
+          if (typeLower === 'invoice' || typeLower === 'sales') {
+            newEntityId = invoiceIdMap[a.entity_id] || a.entity_id;
+          } else if (typeLower === 'repair') {
+            newEntityId = repairIdMap[a.entity_id] || a.entity_id;
+          } else if (typeLower === 'purchase') {
+            newEntityId = poIdMap[a.entity_id] || a.entity_id;
+          }
+
+          const { attachment_id, created_at, uploaded_at, ...rest } = a;
+          await prisma.attachment.create({
+            data: {
+              ...rest,
+              entity_id: newEntityId,
+              uploaded_by: newUserId
+            }
+          });
+        } catch {}
+      }
+    }
+
+    // ── Companies ────────────────────────────────────────────────
+    if (Array.isArray(data.companies)) {
+      for (const comp of data.companies) {
+        try {
+          const existing = await prisma.company.findUnique({ where: { code: comp.code } });
+          if (!existing) {
+            const { company_id, created_at, updated_at, ...rest } = comp;
+            await prisma.company.create({ data: rest });
+          }
+        } catch {}
+      }
+    }
+
+    // ── Payments ─────────────────────────────────────────────────
+    if (Array.isArray(data.payments)) {
+      for (const pay of data.payments) {
+        try {
+          const newRepairId = pay.repair_id ? repairIdMap[pay.repair_id] : null;
+          const { payment_id, created_at, repair, repair_id, ...rest } = pay;
+          await prisma.payment.create({
+            data: {
+              ...rest,
+              repair_id: newRepairId,
+              amount: Number(rest.amount),
+              payment_date: rest.payment_date ? new Date(rest.payment_date) : new Date()
+            }
+          });
+        } catch {}
+      }
+    }
+
     res.json({
       success: true,
       total_imported: total,
@@ -566,6 +1148,17 @@ settingsRouter.post('/import', async (req, res) => {
   } catch (err: any) {
     console.error('[Import] Failed:', err);
     res.status(500).json({ error: err.message || 'Import failed', log, warnings: warn });
+  }
+});
+
+// ── POST test AI NIM Connection ────────────────────────────────────
+settingsRouter.post('/test-ai', async (req, res) => {
+  try {
+    const { apiKey, modelId } = req.body;
+    await AiService.testNvidiaConnection(apiKey, modelId);
+    res.json({ success: true, message: 'NVIDIA NIM Connection successful!' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to authenticate with NVIDIA NIM API.' });
   }
 });
 
