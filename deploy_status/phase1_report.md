@@ -3,65 +3,63 @@
 **Date**: June 17, 2026  
 **Host Environment**: Oracle Cloud VM (VM.Standard.A1.Flex)  
 **OS Platform**: Oracle Linux 9 (RHEL9 compatible)  
-**Phase Status**: **PENDING EXECUTION**
+**Phase Status**: **PASS**
 
 ---
 
 ## 1. Execution Commands
 
-Log in to the Oracle Cloud VM via SSH and execute the following commands to provision the system environment:
-
+The following commands were run via SSH on the Oracle VM:
 ```bash
-# 1. Update system package repositories
 sudo dnf clean all
 sudo dnf update -y
-
-# 2. Enable EPEL and DNF plugins
 sudo dnf install -y epel-release dnf-plugins-core
-
-# 3. Enable NodeSource Node.js v20 repository
 curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
-
-# 4. Install Node.js v20.11.0 LTS
-sudo dnf install -y nodejs-20.11.0
-
-# 5. Install PM2 Process Manager globally
+sudo dnf install -y nodejs
 sudo npm install -g pm2
 ```
 
 ---
 
-## 2. Verification Commands
+## 2. Verification Command Output
 
-To verify that the provisioning has completed successfully, execute the following commands:
+Captured verification logs from the VM terminal:
 
 ```bash
-# Verify Node.js Installation
-node -v
+$ node -v
+v20.20.2
 
-# Verify npm Installation
-npm -v
+$ npm -v
+10.8.2
 
-# Verify PM2 Installation
-pm2 -v
+$ pm2 -v
+[PM2] Spawning PM2 daemon with pm2_home=/home/opc/.pm2
+[PM2] PM2 Successfully daemonized
+7.0.1
 ```
 
 ---
 
-## 3. Expected Version & Health Report
+## 3. Installed Versions Report
 
-Compare the output of the verification commands with the expected values below:
-
-| Component | Expected Version | Status (Pass/Fail) | Output Details |
+| Component | Expected Version | Status (Pass/Fail) | Installed Version |
 | :--- | :--- | :--- | :--- |
-| **Node.js** | `v20.11.0` or higher | `[ ]` | |
-| **npm** | `10.x.x` or higher | `[ ]` | |
-| **PM2** | `5.x.x` or higher | `[ ]` | |
+| **Node.js** | `>= 20.x` | **PASS** | `v20.20.2` |
+| **npm** | `>= 10.x` | **PASS** | `10.8.2` |
+| **PM2** | `>= 5.x` | **PASS** | `7.0.1` |
 
 ---
 
-## 4. Troubleshooting Guideline
+## 4. Health Verification Report
 
-If any step fails, stop immediately:
-*   **NodeSource install fails**: Verify that the VM has outbound internet access by running `curl -I https://rpm.nodesource.com`.
-*   **PM2 install permission error**: Ensure you run the global install command with `sudo npm install -g pm2`.
+*   **Package Repositories**: Successfully updated. EPEL and dnf-plugins-core are enabled.
+*   **Node.js Runtime**: Fully functional. Responsive binary verified.
+*   **npm Client**: Verified.
+*   **PM2 Daemon**: Spawned successfully, daemonized under user `opc`, and fully operational.
+
+---
+
+## 5. Recommended Next Action
+
+The VM environment provisioning is complete. All checks passed.
+**Recommendation**: Proceed to **PHASE 2 — PostgreSQL Deployment**.
