@@ -21,71 +21,89 @@ customersRouter.get('/', async (req, res) => {
   }
 });
 
-// Fetch a real-time CAPTCHA image from the official GST portal via headless Chrome
+// ─── Scratch directory for IPC files between Node and Python ───────────────
+const SCRATCH_DIR = path.join(process.cwd(), '_gst_scratch');
+try { if (!fs.existsSync(SCRATCH_DIR)) fs.mkdirSync(SCRATCH_DIR, { recursive: true }); } catch {}
+
+// ─── Fetch a real-time CAPTCHA image directly from the official GST portal ──
+// The GST portal exposes /services/captcha as a plain image endpoint that
+// returns a fresh PNG captcha on every request. We proxy it through the
+// backend so the client does not hit CORS issues.
 customersRouter.get('/captcha', async (req, res) => {
   try {
     const gstin = String(req.query.gstin || '').toUpperCase().trim();
     if (gstin.length !== 15) {
-      return res.status(400).json({ success: false, error: 'Valid 15-digit gstin query parameter required' });
+      return res.status(400).json({ success: false, error: 'Valid 15-digit GSTIN required' });
     }
 
-    const activeGstin = String(gstin).toUpperCase().trim();
-    const uniqueSessionId = `${activeGstin}_${Date.now()}`;
-    
-    const scriptPath = path.join(__dirname, 'get_gst_captcha.py');
-    const child = spawn('python', ['-u', scriptPath, activeGstin, uniqueSessionId]);
+    const uniqueSessionId = `${gstin}_${Date.now()}`;
 
+    // ── Step 1: Fetch captcha image directly from GST portal (no Selenium) ──
+    const rnd = Math.random();
+    const captchaUrl = `https://services.gst.gov.in/services/captcha?rnd=${rnd}`;
+    let captchaB64 = '';
+
+    try {
+      const gstRes = await (fetch as any)(captchaUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': 'https://services.gst.gov.in/services/searchtp',
+          'Accept': 'image/png,image/*',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (gstRes.ok && gstRes.headers.get('content-type')?.includes('image')) {
+        const buf = Buffer.from(await gstRes.arrayBuffer());
+        captchaB64 = `data:image/png;base64,${buf.toString('base64')}`;
+        console.log(`[GST Captcha] Fetched real captcha image (${buf.length} bytes) for session ${uniqueSessionId}`);
+      } else {
+        console.warn(`[GST Captcha] Unexpected response from portal: ${gstRes.status} ${gstRes.headers.get('content-type')}`);
+      }
+    } catch (fetchErr: any) {
+      console.error('[GST Captcha] Direct fetch failed:', fetchErr.message);
+    }
+
+    if (!captchaB64) {
+      return res.status(503).json({ success: false, error: 'GST portal is temporarily unreachable. Please try again in a few seconds.' });
+    }
+
+    // ── Step 2: Spawn Selenium Python script in background to handle the full flow ──
+    // The script waits for the captcha code to be written to an IPC file by the
+    // /gstin/:gstin endpoint, then submits the form and scrapes the result.
+    const scriptPath = path.join(__dirname, 'get_gst_captcha.py');
+    const env = { ...process.env, GST_SCRATCH_DIR: SCRATCH_DIR };
+    const child = spawn('python', ['-u', scriptPath, gstin, uniqueSessionId], { env });
     activeProcesses.set(uniqueSessionId, child);
 
-    let stdoutData = '';
-    let captchaImg = '';
-    let responseSent = false;
-
-    child.stdout.on('data', (chunk: any) => {
-      const chunkStr = chunk.toString();
-      console.log(`[PYTHON STDOUT chunk size: ${chunkStr.length}]`);
-      stdoutData += chunkStr;
-      
-      if (!responseSent && stdoutData.includes('__CAPTCHA_START__') && stdoutData.includes('__CAPTCHA_END__')) {
-        const startIdx = stdoutData.indexOf('__CAPTCHA_START__') + '__CAPTCHA_START__'.length;
-        const endIdx = stdoutData.indexOf('__CAPTCHA_END__');
-        captchaImg = stdoutData.substring(startIdx, endIdx).trim();
-        responseSent = true;
-        return res.json({ success: true, image: captchaImg, sessionId: uniqueSessionId });
-      }
-    });
-
     child.stderr.on('data', (chunk: any) => {
-      console.error(`[PYTHON STDERR]:`, chunk.toString());
+      console.error(`[GST Python STDERR ${uniqueSessionId}]:`, chunk.toString().trim());
     });
 
-    child.on('error', (_err: any) => {
-      if (!responseSent) {
-        responseSent = true;
-        res.status(500).json({ error: 'Failed to start CAPTCHA scraper' });
-      }
+    // Collect stdout for the verification step
+    let pythonStdout = '';
+    child.stdout.on('data', (chunk: any) => {
+      const s = chunk.toString();
+      pythonStdout += s;
     });
 
-    child.on('exit', (_code) => {
-      if (!responseSent) {
-        responseSent = true;
-        res.status(500).json({ error: 'CAPTCHA scraper exited unexpectedly' });
-      }
-    });
-
-    // Safeguard: kill process after 70 seconds if still alive
+    // Kill the process after 90 seconds if still alive (user took too long)
     setTimeout(() => {
       if (activeProcesses.has(uniqueSessionId)) {
-        try { activeProcesses.get(uniqueSessionId)?.kill(); } catch (err) {}
+        try { activeProcesses.get(uniqueSessionId)?.kill(); } catch {}
         activeProcesses.delete(uniqueSessionId);
       }
-    }, 70000);
+    }, 90000);
+
+    // Return the real captcha image immediately — the Python process keeps running
+    return res.json({ success: true, image: captchaB64, sessionId: uniqueSessionId });
 
   } catch (err: any) {
-    console.error('Failed to get GST captcha:', err);
+    console.error('[GST Captcha] Unexpected error:', err);
     res.status(500).json({ success: false, error: 'Failed to generate captcha' });
   }
 });
+
 
 customersRouter.get('/gstin/:gstin', async (req, res) => {
   try {
@@ -101,14 +119,13 @@ customersRouter.get('/gstin/:gstin', async (req, res) => {
       const child = activeProcesses.get(String(session_id));
 
       if (child) {
-        // Write to IPC file for the python script to pick up
-        const scratchDir = 'C:\\Users\\Admin\\.gemini\\antigravity\\brain\\7a31d73d-28ad-417f-b2e7-8f4672dfc889\\scratch';
-        const ipcFile = path.join(scratchDir, `captcha_${session_id}.txt`);
+        // Write captcha code to the IPC file so the Python script picks it up
+        const ipcFile = path.join(SCRATCH_DIR, `captcha_${session_id}.txt`);
         
         try {
           fs.writeFileSync(ipcFile, String(captcha).trim());
         } catch (err) {
-          console.error('Failed to write CAPTCHA file:', err);
+          console.error('Failed to write CAPTCHA IPC file:', err);
         }
 
         let stdoutData = '';

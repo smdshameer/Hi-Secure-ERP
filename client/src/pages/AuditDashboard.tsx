@@ -107,14 +107,16 @@ export default function AuditDashboard() {
 
   const statusColor = (s: string) =>
     s === 'healthy' || s === 'PASS' ? 'text-emerald-400' :
-    s === 'warning' || s === 'WARN' || s === 'degraded' ? 'text-amber-400' :
+    s === 'warning' || s === 'WARN' ? 'text-amber-400' :
     s === 'critical' || s === 'FAIL' || s === 'unhealthy' ? 'text-red-400' :
+    s === 'disabled' || s === 'inactive' || s === 'inactive_memory_fallback' ? 'text-gray-400' :
     'text-gray-400';
 
   const statusBg = (s: string) =>
     s === 'healthy' || s === 'PASS' ? 'bg-emerald-500/10 border-emerald-500/30' :
-    s === 'warning' || s === 'WARN' || s === 'degraded' ? 'bg-amber-500/10 border-amber-500/30' :
+    s === 'warning' || s === 'WARN' ? 'bg-amber-500/10 border-amber-500/30' :
     s === 'critical' || s === 'FAIL' || s === 'unhealthy' ? 'bg-red-500/10 border-red-500/30' :
+    s === 'disabled' || s === 'inactive' || s === 'inactive_memory_fallback' ? 'bg-gray-500/10 border-gray-500/30' :
     'bg-gray-500/10 border-gray-500/30';
 
   const formatUptime = (s: number) => {
@@ -186,7 +188,7 @@ export default function AuditDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Uptime', value: formatUptime(monitoring.uptime_seconds), status: 'healthy', icon: IconServer },
-                { label: 'Telegram', value: monitoring.telegram.status, status: monitoring.telegram.status === 'healthy' ? 'healthy' : monitoring.telegram.status === 'disabled' ? 'warning' : 'critical', icon: IconBrandTelegram },
+                { label: 'Telegram', value: monitoring.telegram.status, status: monitoring.telegram.status === 'healthy' ? 'healthy' : monitoring.telegram.status === 'disabled' ? 'disabled' : monitoring.telegram.status === 'degraded' ? 'warning' : 'critical', icon: IconBrandTelegram },
                 { label: 'Queue', value: `${monitoring.queue.active} active`, status: monitoring.queue.status, icon: IconListDetails },
                 { label: 'Backup Age', value: monitoring.backup.age_hours !== null ? `${monitoring.backup.age_hours}h` : 'None', status: monitoring.backup.status, icon: IconCloudUpload },
               ].map((m, i) => (

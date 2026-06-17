@@ -437,15 +437,6 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
 
   // Fetch a new captcha image and session cookie from the backend
   const fetchGstCaptcha = async (gstinVal?: string | React.MouseEvent) => {
-    const DEMO_CAPTCHA = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nNDAnIHZpZXdCb3g9JzAgMCAxMjAgNDAnPjxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbGw9JyNmM2Y0ZjYnLz48dGV4dCB4PSc1MCUnIHk9JzU1JScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1mYW1pbHk9J21vbm9zcGFjZScgZm9udC1zaXplPScyMCcgZm9udC13ZWlnaHQ9J2JvbGQnIGZpbGw9JyMxZTNhOGEnIGxldHRlci1zcGFjaW5nPSc0Jz41NzU3NTc8L3RleHQ+PC9zdmc+';
-    
-    // Instantly set mock captcha as default so we never show a broken image frame
-    setCaptchaImg(DEMO_CAPTCHA);
-    setCaptchaSessionId('DEMO_SESSION');
-    setShowCaptchaPrompt(true);
-    setCaptchaError('');
-    setCaptchaValue('');
-
     let targetGstin = '';
     if (gstinVal && typeof gstinVal === 'string') {
       targetGstin = gstinVal;
@@ -453,6 +444,13 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
       targetGstin = form.gstin;
     }
     targetGstin = (targetGstin || '').toUpperCase().trim();
+
+    // Show the modal immediately with loading state
+    setCaptchaImg('');
+    setCaptchaSessionId('');
+    setShowCaptchaPrompt(true);
+    setCaptchaError('');
+    setCaptchaValue('');
 
     if (targetGstin.length !== 15) {
       setCaptchaError('A valid 15-digit GSTIN is required to fetch the captcha.');
@@ -465,14 +463,15 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
       if (res.data && res.data.success) {
         setCaptchaImg(res.data.image);
         setCaptchaSessionId(res.data.sessionId);
+        setCaptchaError('');
       } else {
-        const errorMsg = res.data?.error || 'Failed to fetch captcha from official portal';
-        setCaptchaError(`${errorMsg}. Using offline mock captcha.`);
+        const errorMsg = res.data?.error || 'Failed to fetch captcha from the GST portal';
+        setCaptchaError(errorMsg);
       }
     } catch (err: any) {
-      console.warn('Backend captcha load failed, using mock:', err);
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to fetch captcha from official portal';
-      setCaptchaError(`${errorMsg}. Using offline mock captcha.`);
+      console.warn('GST captcha fetch failed:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Could not reach the GST portal. Check your internet connection.';
+      setCaptchaError(errorMsg);
     } finally {
       setCaptchaLoading(false);
     }
