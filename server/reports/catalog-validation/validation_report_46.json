@@ -1,0 +1,196 @@
+{
+  "sessionId": 46,
+  "fileName": "ELISTA_LED_Price_List.pdf",
+  "validationStatus": "REVIEW_REQUIRED",
+  "supplierTemplate": "UNKNOWN",
+  "validationDataset": "UNKNOWN_DATASET",
+  "accuracyMetrics": {
+    "brandAccuracy": 0,
+    "modelAccuracy": 100,
+    "priceAccuracy": 100,
+    "categoryAccuracy": 44.44444444444444
+  },
+  "confidenceScores": {
+    "ocrConfidence": 1,
+    "parserConfidence": 0.9,
+    "overallConfidence": 0.95
+  },
+  "performanceMetrics": {
+    "ocrTimeMs": 120,
+    "parsingTimeMs": 8484,
+    "validationTimeMs": 56,
+    "duplicateDetectionTimeMs": 120,
+    "totalProcessingTimeMs": 8768
+  },
+  "failureAnalytics": {
+    "NO_MODEL_FOUND": 0,
+    "NO_PRICE_FOUND": 0,
+    "UNKNOWN_BRAND": 9,
+    "CATEGORY_UNMATCHED": 5,
+    "OCR_LOW_CONFIDENCE": 0,
+    "AI_PARSE_FAILURE": 0
+  },
+  "validProducts": [
+    {
+      "temporary_item_id": "TMP-000001",
+      "brand": null,
+      "model": "32\"HDLED(1YEAR)",
+      "part_number": "32\"HDLED(1YEAR)",
+      "name": "32\" Hd Led (1 Year)",
+      "description": null,
+      "cost_price": 8140,
+      "selling_price": 16990,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000002",
+      "brand": null,
+      "model": "32”HDSMT(1YEAR)",
+      "part_number": "32”HDSMT(1YEAR)",
+      "name": "32” Hd Smt (1 Year)",
+      "description": null,
+      "cost_price": 9350,
+      "selling_price": 17990,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000003",
+      "brand": null,
+      "model": "32”HDSMTVR(1YEAR)",
+      "part_number": "32”HDSMTVR(1YEAR)",
+      "name": "32” Hd Smt Vr (1 Year)",
+      "description": null,
+      "cost_price": 10780,
+      "selling_price": 20990,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000004",
+      "brand": null,
+      "model": "40”HDSMT",
+      "part_number": "40”HDSMT",
+      "name": "40” Hd Smt",
+      "description": null,
+      "cost_price": 15500,
+      "selling_price": 28990,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000005",
+      "brand": null,
+      "model": "43\"FHDSMT",
+      "part_number": "43\"FHDSMT",
+      "name": "43\" Fhd Smt",
+      "description": null,
+      "cost_price": 18150,
+      "selling_price": 36990,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000006",
+      "brand": "Unknown",
+      "model": "43”UHDSMT(WEBOS)",
+      "part_number": "43”UHDSMT(WEBOS)",
+      "name": "43” Uhd Smt (webos)",
+      "description": null,
+      "cost_price": 24200,
+      "selling_price": 48990,
+      "tax_rate": 0,
+      "category": "Tv",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000007",
+      "brand": "Unknown",
+      "model": "50”UHDSMT(WEBOS)",
+      "part_number": "50”UHDSMT(WEBOS)",
+      "name": "50” Uhd Smt (webos)",
+      "description": null,
+      "cost_price": 32780,
+      "selling_price": 59990,
+      "tax_rate": 0,
+      "category": "Tv",
+      "confidence": "HIGH",
+      "warnings": [
+        "Selling price (59990) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000008",
+      "brand": "Unknown",
+      "model": "55”UHDSMT(WEBOS)",
+      "part_number": "55”UHDSMT(WEBOS)",
+      "name": "55” Uhd Smt (webos)",
+      "description": null,
+      "cost_price": 37950,
+      "selling_price": 69990,
+      "tax_rate": 0,
+      "category": "Tv",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (37950) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (69990) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000009",
+      "brand": "Unknown",
+      "model": "65”UHDSMT(WEBOS)",
+      "part_number": "65”UHDSMT(WEBOS)",
+      "name": "65” Uhd Smt (webos)",
+      "description": null,
+      "cost_price": 51150,
+      "selling_price": 79990,
+      "tax_rate": 0,
+      "category": "Tv",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (51150) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (79990) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    }
+  ],
+  "potentialDuplicates": [],
+  "rejectedProducts": [],
+  "warnings": [],
+  "runtimeEnvironment": {
+    "cpuModel": "Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz",
+    "totalRam": 8507801600,
+    "processMemoryUsage": 402780160,
+    "osVersion": "Windows_NT 10.0.19045",
+    "nodeVersion": "v25.1.0",
+    "pythonVersion": "Python 3.14.4"
+  },
+  "versionSnapshot": {
+    "applicationVersion": "2.0.0",
+    "parserVersion": "2A.5-HARDENED",
+    "ocrEngineVersion": "pdf-parse-1.1",
+    "gitCommit": "0746dc1",
+    "buildDate": "2026-06-16T18:34:07.135Z"
+  }
+}

@@ -30,6 +30,8 @@ export default function Reports() {
   const [data, setData]     = useState<ReportData>(emptyData);
   const [range, setRange]   = useState('30d');
   const [loading, setLoading] = useState(true);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportMsg, setExportMsg]         = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -38,6 +40,33 @@ export default function Reports() {
       .catch(() => setData(emptyData))
       .finally(() => setLoading(false));
   }, [range]);
+
+  const handleExportPDF = async () => {
+    setExportLoading(true);
+    setExportMsg(null);
+    try {
+      const res = await api.get('/reports/export/executive', {
+        params: { format: 'pdf' },
+        responseType: 'blob',
+        timeout: 60000,
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `executive_report_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setExportMsg({ type: 'success', text: 'PDF downloaded!' });
+    } catch {
+      setExportMsg({ type: 'error', text: 'Export failed. Please try again.' });
+    } finally {
+      setExportLoading(false);
+      setTimeout(() => setExportMsg(null), 4000);
+    }
+  };
 
   // Calculate maximums for chart scaling
   const maxRevenue = Math.max(
@@ -61,10 +90,20 @@ export default function Reports() {
         backLabel="Back"
         backPath="/"
         action={
-          <div className="flex gap-2">
-            <button className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-[13px] px-3 py-1.5 rounded-lg transition-colors">
-              <IconDownload size={15} /> Export PDF
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportPDF}
+              disabled={exportLoading}
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-[13px] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+              <IconDownload size={15} /> {exportLoading ? 'Exporting...' : 'Export PDF'}
             </button>
+            {exportMsg && (
+              <span className={`text-[11px] font-medium ${
+                exportMsg.type === 'success' ? 'text-green-300' : 'text-red-300'
+              }`}>
+                {exportMsg.type === 'success' ? '✓' : '✗'} {exportMsg.text}
+              </span>
+            )}
           </div>
         }
       />

@@ -60,6 +60,9 @@ quotationsRouter.post('/:id/convert', requirePermission('invoice:create'), async
     res.json({ success: true, invoiceId });
   } catch (err: any) {
     console.error('Convert quote error:', err);
+    if (err.message === 'Quotation already converted') {
+      return res.status(409).json({ error: 'Quotation already converted' });
+    }
     res.status(err.message.includes('already been converted') ? 400 : 500).json({ error: err.message || 'Failed to convert quotation to invoice' });
   }
 });

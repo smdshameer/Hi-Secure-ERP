@@ -3,8 +3,12 @@ import { prisma } from '../index';
 export class SupplierRepository {
   async findMany(where: any, orderBy: any = { name: 'asc' }, tx?: any) {
     const db = tx || prisma;
+    const finalWhere = { ...where };
+    if (finalWhere.is_deleted === undefined) {
+      finalWhere.is_deleted = false;
+    }
     return db.supplier.findMany({
-      where,
+      where: finalWhere,
       orderBy,
       include: {
         _count: { select: { purchaseOrders: true } }
@@ -14,8 +18,8 @@ export class SupplierRepository {
 
   async findById(supplierId: number, tx?: any) {
     const db = tx || prisma;
-    return db.supplier.findUnique({
-      where: { supplier_id: supplierId }
+    return db.supplier.findFirst({
+      where: { supplier_id: supplierId, is_deleted: false }
     });
   }
 
@@ -34,10 +38,18 @@ export class SupplierRepository {
     });
   }
 
-  async delete(supplierId: number, tx?: any) {
+  async delete(supplierId: number, userId?: number, tx?: any) {
     const db = tx || prisma;
-    return db.supplier.delete({
-      where: { supplier_id: supplierId }
+    const actualTx = typeof userId === 'object' && userId !== null ? userId : tx;
+    const actualUserId = typeof userId === 'number' ? userId : null;
+    
+    return (actualTx || prisma).supplier.update({
+      where: { supplier_id: supplierId },
+      data: {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deleted_by: actualUserId
+      }
     });
   }
 }

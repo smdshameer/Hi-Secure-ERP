@@ -2,15 +2,19 @@ import { prisma } from '../index';
 
 export class TechnicianRepository {
   async findMany(where: any = {}, orderBy: any = { name: 'asc' }) {
+    const finalWhere = { ...where };
+    if (finalWhere.is_deleted === undefined) {
+      finalWhere.is_deleted = false;
+    }
     return prisma.technician.findMany({
-      where,
+      where: finalWhere,
       orderBy
     });
   }
 
   async findById(techId: number) {
-    return prisma.technician.findUnique({
-      where: { technician_id: techId }
+    return prisma.technician.findFirst({
+      where: { technician_id: techId, is_deleted: false }
     });
   }
 
@@ -25,6 +29,17 @@ export class TechnicianRepository {
     return prisma.technician.update({
       where: { technician_id: techId },
       data
+    });
+  }
+
+  async delete(techId: number, userId?: number) {
+    return prisma.technician.update({
+      where: { technician_id: techId },
+      data: {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deleted_by: userId || null
+      }
     });
   }
 }

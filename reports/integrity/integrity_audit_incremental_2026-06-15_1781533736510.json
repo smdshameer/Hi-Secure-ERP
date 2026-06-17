@@ -1,0 +1,15 @@
+{
+  "audit_scope": "INCREMENTAL",
+  "run_date": "2026-06-15T14:28:56.510Z",
+  "status": "SUCCESS",
+  "duration_ms": 24,
+  "report_path": "C:\\Users\\Admin\\Desktop\\Calude Test\\erp-app\\reports\\integrity\\integrity_audit_incremental_2026-06-15_1781533736510.md",
+  "counts": {
+    "inventory_errors": 0,
+    "accounting_errors": 0,
+    "warnings": 0
+  },
+  "inventory_errors": [],
+  "accounting_errors": [],
+  "warnings": []
+}

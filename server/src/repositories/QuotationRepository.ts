@@ -23,8 +23,9 @@ export class QuotationRepository {
     });
   }
 
-  async create(data: any) {
-    return prisma.quotation.create({
+  async create(data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.quotation.create({
       data,
       select: { quote_id: true, quote_number: true, total_amount: true }
     });

@@ -24,7 +24,7 @@ export class TechnicianService {
     });
   }
 
-  async deleteTechnician(id: number) {
-    return this.techRepo.update(id, { is_active: false });
+  async deleteTechnician(id: number, userId?: number) {
+    return this.techRepo.delete(id, userId);
   }
 }

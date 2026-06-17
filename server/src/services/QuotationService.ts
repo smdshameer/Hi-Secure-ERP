@@ -1,5 +1,7 @@
 import { QuotationRepository } from '../repositories/QuotationRepository';
 import { InvoiceService } from './InvoiceService';
+import { prisma } from '../index';
+import { DocumentSeriesService } from './DocumentSeriesService';
 
 export class QuotationService {
   private quoteRepo = new QuotationRepository();
@@ -27,23 +29,27 @@ export class QuotationService {
 
   async createQuotation(data: any, userId?: number) {
     const { customer_id, quote_date, valid_until, terms, notes, items } = data;
-    return this.quoteRepo.create({
-      customer_id: Number(customer_id),
-      quote_date: quote_date ? new Date(quote_date) : new Date(),
-      valid_until: new Date(valid_until),
-      terms: terms || 'This quotation is valid for 30 days from the date of issue.',
-      notes: notes || null,
-      created_by: userId || null,
-      items: items?.length ? {
-        create: items.map((i: any) => ({
-          part_id: Number(i.part_id),
-          quantity: Number(i.quantity),
-          unit_price: Number(i.unit_price),
-          discount_percent: Number(i.discount_percent || 0),
-          tax_rate: Number(i.tax_rate || 0),
-          total: Number(i.total)
-        }))
-      } : undefined
+    return prisma.$transaction(async (tx) => {
+      const quoteNumber = data.quote_number || await DocumentSeriesService.generateNextNumber('Quotation', tx);
+      return this.quoteRepo.create({
+        customer_id: Number(customer_id),
+        quote_number: quoteNumber,
+        quote_date: quote_date ? new Date(quote_date) : new Date(),
+        valid_until: new Date(valid_until),
+        terms: terms || 'This quotation is valid for 30 days from the date of issue.',
+        notes: notes || null,
+        created_by: userId || null,
+        items: items?.length ? {
+          create: items.map((i: any) => ({
+            part_id: Number(i.part_id),
+            quantity: Number(i.quantity),
+            unit_price: Number(i.unit_price),
+            discount_percent: Number(i.discount_percent || 0),
+            tax_rate: Number(i.tax_rate || 0),
+            total: Number(i.total)
+          }))
+        } : undefined
+      }, tx);
     });
   }
 
@@ -109,54 +115,69 @@ export class QuotationService {
   }
 
   async convertQuotationToInvoice(id: number, userId?: number) {
-    const quotation = await this.quoteRepo.findById(id);
-    if (!quotation) {
-      throw new Error('Quotation not found');
-    }
+    return prisma.$transaction(async (tx) => {
+      // Lock the quotation row to prevent concurrent conversions
+      await tx.$executeRaw`SELECT 1 FROM quotations WHERE quote_id = ${id} FOR UPDATE`;
 
-    if (quotation.status === 'converted' || quotation.converted_to_invoice_id) {
-      throw new Error('Quotation has already been converted to an invoice');
-    }
+      const quotation = await tx.quotation.findUnique({
+        where: { quote_id: id },
+        include: {
+          customer: true,
+          items: { include: { part: true } }
+        }
+      });
 
-    const invoiceData = {
-      customer_id: quotation.customer_id,
-      invoice_date: new Date(),
-      due_date: new Date(Date.now() + 15 * 86400000), // 15 days default
-      place_of_supply: quotation.customer?.state || null,
-      tax_type: 'gst',
-      status: 'draft',
-      notes: `Converted from Quotation: ${quotation.quote_number}`,
-      items: quotation.items.map(i => {
-        const qty = Number(i.quantity);
-        const rate = Number(i.unit_price);
-        const discPercent = Number(i.discount_percent || 0);
-        const taxRate = Number(i.tax_rate || 0);
-        
-        const discountedRate = rate * (1 - discPercent / 100);
-        const taxable = qty * discountedRate;
-        const tax = taxable * (taxRate / 100);
-        const total = taxable + tax;
-        
-        return {
-          part_id: i.part_id,
-          quantity: qty,
-          unit_price: discountedRate,
-          tax_rate: taxRate,
-          tax_amount: tax,
-          total_amount: total
-        };
-      })
-    };
+      if (!quotation) {
+        throw new Error('Quotation not found');
+      }
 
-    // Use InvoiceService as required
-    const invoice = await this.invoiceService.createInvoice(invoiceData, userId);
+      if (quotation.status === 'converted' || quotation.converted_to_invoice_id) {
+        throw new Error('Quotation already converted');
+      }
 
-    // Update quotation status
-    await this.quoteRepo.updateStatus(id, {
-      status: 'converted',
-      converted_to_invoice_id: invoice.invoice_id
+      const invoiceData = {
+        customer_id: quotation.customer_id,
+        invoice_date: new Date(),
+        due_date: new Date(Date.now() + 15 * 86400000), // 15 days default
+        place_of_supply: quotation.customer?.state || null,
+        tax_type: 'gst',
+        status: 'draft',
+        notes: `Converted from Quotation: ${quotation.quote_number}`,
+        items: quotation.items.map(i => {
+          const qty = Number(i.quantity);
+          const rate = Number(i.unit_price);
+          const discPercent = Number(i.discount_percent || 0);
+          const taxRate = Number(i.tax_rate || 0);
+          
+          const discountedRate = rate * (1 - discPercent / 100);
+          const taxable = qty * discountedRate;
+          const tax = taxable * (taxRate / 100);
+          const total = taxable + tax;
+          
+          return {
+            part_id: i.part_id,
+            quantity: qty,
+            unit_price: discountedRate,
+            tax_rate: taxRate,
+            tax_amount: tax,
+            total_amount: total
+          };
+        })
+      };
+
+      // Use InvoiceService as required, passing the transaction client tx
+      const invoice = await this.invoiceService.createInvoice(invoiceData, userId, tx);
+
+      // Update quotation status
+      await tx.quotation.update({
+        where: { quote_id: id },
+        data: {
+          status: 'converted',
+          converted_to_invoice_id: invoice.invoice_id
+        }
+      });
+
+      return invoice.invoice_id;
     });
-
-    return invoice.invoice_id;
   }
 }

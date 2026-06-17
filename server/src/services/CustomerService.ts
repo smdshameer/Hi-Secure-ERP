@@ -46,8 +46,8 @@ export class CustomerService {
     return this.customerRepo.update(id, data);
   }
 
-  async deleteCustomer(id: number) {
-    return this.customerRepo.delete(id);
+  async deleteCustomer(id: number, userId?: number) {
+    return this.customerRepo.delete(id, userId);
   }
 
   async getCustomerDetailById(id: number) {

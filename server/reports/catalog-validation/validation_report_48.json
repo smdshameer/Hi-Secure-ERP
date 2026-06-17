@@ -1,0 +1,372 @@
+{
+  "sessionId": 48,
+  "fileName": "JUNE_EYE_PLUS_TV_PRICE_LIST_Customer.pdf",
+  "validationStatus": "REVIEW_REQUIRED",
+  "supplierTemplate": "UNKNOWN",
+  "validationDataset": "UNKNOWN_DATASET",
+  "accuracyMetrics": {
+    "brandAccuracy": 84.21052631578947,
+    "modelAccuracy": 94.73684210526315,
+    "priceAccuracy": 89.47368421052632,
+    "categoryAccuracy": 47.368421052631575
+  },
+  "confidenceScores": {
+    "ocrConfidence": 1,
+    "parserConfidence": 0.9,
+    "overallConfidence": 0.95
+  },
+  "performanceMetrics": {
+    "ocrTimeMs": 77,
+    "parsingTimeMs": 12131,
+    "validationTimeMs": 73,
+    "duplicateDetectionTimeMs": 120,
+    "totalProcessingTimeMs": 12300
+  },
+  "failureAnalytics": {
+    "NO_MODEL_FOUND": 1,
+    "NO_PRICE_FOUND": 2,
+    "UNKNOWN_BRAND": 3,
+    "CATEGORY_UNMATCHED": 10,
+    "OCR_LOW_CONFIDENCE": 2,
+    "AI_PARSE_FAILURE": 0
+  },
+  "validProducts": [
+    {
+      "temporary_item_id": "TMP-000001",
+      "brand": "Eyeplus",
+      "model": "EYE24P413GG",
+      "part_number": "EYE24P413GG",
+      "name": "24”",
+      "description": "Normal HDMI, VGA,USB, AV, ATV",
+      "cost_price": 6999,
+      "selling_price": 9999,
+      "tax_rate": 0,
+      "category": "Normal",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000002",
+      "brand": "Eyeplus",
+      "model": "EYE32W202GCS",
+      "part_number": "EYE32W202GCS",
+      "name": "32”",
+      "description": "Normal HDMI, VGA, USB, AV, ATV",
+      "cost_price": 8999,
+      "selling_price": 12999,
+      "tax_rate": 0,
+      "category": "Normal",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000003",
+      "brand": "Eyeplus",
+      "model": "EYE32W672GG",
+      "part_number": "EYE32W672GG",
+      "name": "32”",
+      "description": "SMART HDMI, VGA, USB, AV, ATV",
+      "cost_price": 11999,
+      "selling_price": 14999,
+      "tax_rate": 0,
+      "category": "Smart",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000004",
+      "brand": "Eyeplus",
+      "model": "EYE-32W627BT",
+      "part_number": "EYE-32W627BT",
+      "name": "32”",
+      "description": "SMART ANDROID 1GB/8GB/BLUETOOTH VOICE REMOTE, HDMI, USB, AV",
+      "cost_price": 13999,
+      "selling_price": 22999,
+      "tax_rate": 0,
+      "category": "Smart Android",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000006",
+      "brand": "Eye",
+      "model": "EYE-43X7002GG",
+      "part_number": "EYE-43X7002GG",
+      "name": "Smart Android Fhd",
+      "description": "2GB/16G HDMI, USB, AV, ATV",
+      "cost_price": 22999,
+      "selling_price": 22999,
+      "tax_rate": 0,
+      "category": "Smart Android",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000007",
+      "brand": "Eye",
+      "model": "EYE-43X70024K",
+      "part_number": "EYE-43X70024K",
+      "name": "Cloud Os 4k Btvr",
+      "description": "2GB/16GB/BLUETOOTH/VOICE REMOTE, HDMI, USB, AV, HDMIARC",
+      "cost_price": 32999,
+      "selling_price": 29999,
+      "tax_rate": 0,
+      "category": "Cloud Os",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (32999) is greater than the selling price (29999). Mismatch detected."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000008",
+      "brand": "Eye",
+      "model": "EYE-49X7002GG",
+      "part_number": "EYE-49X7002GG",
+      "name": "Smart Android 4k Btvr 2gb/8gb,ktc,4k Bluetooth",
+      "description": "HDMI,USB,AV,ATV, Voice Remote",
+      "cost_price": 39999,
+      "selling_price": 31999,
+      "tax_rate": 0,
+      "category": "Smart Android",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (39999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Cost price (39999) is greater than the selling price (31999). Mismatch detected."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000009",
+      "brand": "Eye",
+      "model": "EYE-55X9500G",
+      "part_number": "EYE-55X9500G",
+      "name": "Smart Android 4k Btvr 2gb/16gb,ktc ,4k Bluetooth",
+      "description": "HDMI,USB,AV,ATV, Voice Remote",
+      "cost_price": 59999,
+      "selling_price": 39999,
+      "tax_rate": 0,
+      "category": "Smart Android",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (59999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Cost price (59999) is greater than the selling price (39999). Mismatch detected."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000010",
+      "brand": "Eye",
+      "model": "EYE40W672GG",
+      "part_number": "EYE40W672GG",
+      "name": "Smart Hdmi, Vga, Usb, Av, Atv",
+      "description": "43”",
+      "cost_price": 16499,
+      "selling_price": 24999,
+      "tax_rate": 0,
+      "category": "Smart Hdmi",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000011",
+      "brand": "Eye",
+      "model": "EYE-32S672WOS",
+      "part_number": "EYE-32S672WOS",
+      "name": "32”",
+      "description": "WEB OS, 2GB RAM/8GB FLASH, THINQ-AI /DOLBY AUDIO, HDMI-ARC/OPTICAL OUT, HDMI/AV/USB/HEADPHONE/RF/LAN, MAGIC VOICE REMOTE",
+      "cost_price": 14999,
+      "selling_price": 24999,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000012",
+      "brand": "Eye",
+      "model": "EYE-43X702WOS",
+      "part_number": "EYE-43X702WOS",
+      "name": "43”",
+      "description": "WEB OS, FHD, 2GB RAM/8GB FLASH, THINQ-AI /DOLBY AUDIO, HDMI-ARC/OPTICAL OUT, HDMI/AV/USB/HEADPHONE/RF/LAN, MAGIC VOICE REMOTE",
+      "cost_price": 27999,
+      "selling_price": 42999,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000015",
+      "brand": null,
+      "model": "EYE-49X7004KLWS",
+      "part_number": "EYE-49X7004KLWS",
+      "name": "Eye-49x700 4klws Web Os 4k",
+      "description": "2GB RAM/8GB FLASH THINQ-AI /DOLBY AUDIO HDMI-ARC/OPTICAL OUT HDMI/AV/USB/HEADPHONE/RF/LAN MAGIC VOICE REMOTE",
+      "cost_price": 37999,
+      "selling_price": 65999,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (37999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (65999) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000016",
+      "brand": null,
+      "model": "EYE-55X954KLWSWEBOS4K",
+      "part_number": "EYE-55X954KLWSWEBOS4K",
+      "name": "Eye-55x95 4klws Web Os 4k",
+      "description": "2GB RAM/8GB FLASH THINQ-AI /DOLBY AUDIO HDMI-ARC/OPTICAL OUT HDMI/AV/USB/HEADPHONE/RF/LAN MAGIC VOICE REMOTE",
+      "cost_price": 49999,
+      "selling_price": 79999,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (49999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (79999) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000017",
+      "brand": "Eye",
+      "model": "EYE-65X90",
+      "part_number": "EYE-65X90",
+      "name": "Eye-65x90 4klws Web Os 4k",
+      "description": "2GB RAM/8GB FLASH, THINQ-AI /DOLBY AUDIO, HDMI-ARC/OPTICAL OUT, HDMI/AV/USB/HEADPHONE/RF/LAN, MAGIC VOICE REMOTE",
+      "cost_price": 69999,
+      "selling_price": 102999,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (69999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (102999) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000018",
+      "brand": "Eye",
+      "model": "EYE-75X85004LWSWEBOS4K",
+      "part_number": "EYE-75X85004LWSWEBOS4K",
+      "name": "Eye-75x85004 Lws Web Os 4k",
+      "description": "2GB RAM/8GB FLASH, THINQ-AI /DOLBY AUDIO, HDMI-ARC/OPTICAL OUT, HDMI/AV/USB/HEADPHONE/RF/LAN, MAGIC VOICE REMOTE",
+      "cost_price": 119999,
+      "selling_price": 185999,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (119999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (185999) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000019",
+      "brand": "Eye",
+      "model": "EYE-86X85D4KLWSWEBOS4K",
+      "part_number": "EYE-86X85D4KLWSWEBOS4K",
+      "name": "Eye-86x85d 4klws Web Os 4k",
+      "description": "2GB RAM/8GB FLASH, THINQ-AI /DOLBY AUDIO, HDMI-ARC/OPTICAL OUT, HDMI/AV/USB/HEADPHONE/RF/LAN, MAGIC VOICE REMOTE",
+      "cost_price": 174999,
+      "selling_price": 235999,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (174999) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point.",
+        "Selling price (235999) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    }
+  ],
+  "potentialDuplicates": [],
+  "rejectedProducts": [
+    {
+      "temporary_item_id": "TMP-000005",
+      "brand": "Eyeplus",
+      "model": "40”",
+      "part_number": "40”",
+      "name": "40”",
+      "description": null,
+      "cost_price": 0,
+      "selling_price": 0,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price is zero or negative: 0",
+        "Cost price (0) is exceptionally low (less than 10% of database average: 3395.68).",
+        "Selling price is zero or negative: 0",
+        "Selling price (0) is exceptionally low (less than 10% of database average: 5483.31).",
+        "Rejected due to missing required fields (Name, Model, or Price)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000013",
+      "brand": "Eye",
+      "model": "EYE-43X702WOS-FHD-",
+      "part_number": "EYE-43X702WOS-FHD-",
+      "name": "43”",
+      "description": "4K, WEB OS",
+      "cost_price": 0,
+      "selling_price": 0,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "LOW",
+      "warnings": [
+        "Rejected due to missing required fields (Name, Model, or Price)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000014",
+      "brand": null,
+      "model": null,
+      "part_number": null,
+      "name": "Fhd 4k",
+      "description": "2GB RAM/8GB FLASH THINQ-AI /DOLBY AUDIO HDMI-ARC/OPTICAL OUT HDMI/AV/USB/HEADPHONE/RF/LAN MAGIC VOICE REMOTE",
+      "cost_price": 32999,
+      "selling_price": 44999,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "LOW",
+      "warnings": [
+        "Rejected due to missing required fields (Name, Model, or Price)."
+      ],
+      "raw_source_text": ""
+    }
+  ],
+  "warnings": [],
+  "runtimeEnvironment": {
+    "cpuModel": "Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz",
+    "totalRam": 8507801600,
+    "processMemoryUsage": 398786560,
+    "osVersion": "Windows_NT 10.0.19045",
+    "nodeVersion": "v25.1.0",
+    "pythonVersion": "Python 3.14.4"
+  },
+  "versionSnapshot": {
+    "applicationVersion": "2.0.0",
+    "parserVersion": "2A.5-HARDENED",
+    "ocrEngineVersion": "pdf-parse-1.1",
+    "gitCommit": "0746dc1",
+    "buildDate": "2026-06-16T18:34:07.135Z"
+  }
+}

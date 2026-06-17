@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -26,6 +27,27 @@ model User {
   quotations               Quotation[]       @relation("QuotationCreatedBy")
   createdSalesInvoices     SalesInvoice[]    @relation("CreatedByUser")
   roles                    UserRole[]
+  aiUsageLogs              AiUsageLog[]
+  purchaseRequisitions     PurchaseRequisition[] @relation("RequisitionRequestedBy")
+  receivedGoodsReceipts    GoodsReceiptNote[]    @relation("GrnReceivedBy")
+  catalogImportSessions    CatalogImportSession[] @relation("CatalogImportUploader")
+  catalogPreviewItems      CatalogPreviewItem[]    @relation("CatalogItemReviewer")
+  catalogRollbacks         CatalogImportRollback[] @relation("CatalogImportRoller")
+
+  // New relations for Phase 3C
+  customer_id              Int?              @map("customer_id")
+  customer                 Customer?         @relation(fields: [customer_id], references: [customer_id])
+  leads                    Lead[]            @relation("LeadAssignee")
+
+  // Phase 5A Relations
+  technician               Technician?
+  offlineSyncQueues        OfflineSyncQueue[]
+  deviceSessions           MobileDeviceSession[]
+
+  // Phase 5B Password reset & JWT blacklist
+  reset_token              String?           @db.VarChar(255) @map("reset_token")
+  reset_token_expiry       DateTime?         @map("reset_token_expiry")
+  tokenBlacklists          TokenBlacklist[]
 
   @@map("users")
 }
@@ -54,10 +76,15 @@ model Supplier {
   state                    String?           @db.VarChar(100)
   pincode                  String?           @db.VarChar(10)
   is_active                Boolean           @default(true) @map("is_active")
+  is_deleted               Boolean           @default(false) @map("is_deleted")
+  deleted_at               DateTime?         @map("deleted_at")
+  deleted_by               Int?              @map("deleted_by")
   created_at               DateTime          @default(now()) @map("created_at")
   updated_at               DateTime          @updatedAt @map("updated_at")
   deliveryChallansSupplier DeliveryChallan[] @relation("ChallanSupplier")
   purchaseOrders           PurchaseOrder[]
+  governance               SupplierGovernance?
+  purchaseRequisitions     PurchaseRequisition[]
 
   @@map("suppliers")
 }
@@ -76,6 +103,9 @@ model Customer {
   customer_type    String            @default("retail") @map("customer_type") @db.VarChar(50)
   credit_limit     Decimal           @default(0) @map("credit_limit") @db.Decimal(12, 2)
   is_active        Boolean           @default(true) @map("is_active")
+  is_deleted       Boolean           @default(false) @map("is_deleted")
+  deleted_at       DateTime?         @map("deleted_at")
+  deleted_by       Int?              @map("deleted_by")
   created_at       DateTime          @default(now()) @map("created_at")
   updated_at       DateTime          @updatedAt @map("updated_at")
   contact_person   String?           @map("contact_person") @db.VarChar(255)
@@ -84,6 +114,12 @@ model Customer {
   quotations       Quotation[]
   repairs          Repair[]
   salesInvoices    SalesInvoice[]
+  serviceJobs      ServiceJob[]
+
+  // New relations for Phase 3C
+  users            User[]
+  opportunities    Opportunity[]
+  amcContracts     AmcContract[]
 
   @@map("customers")
 }
@@ -104,6 +140,18 @@ model Location {
   toChallans     DeliveryChallan[] @relation("ChallengeTo")
   stocks         PartStock[]
   stockMovements StockMovement[]
+  goodsReceipts  GoodsReceiptNote[]
+
+  // New relations for Phase 3A
+  warehouseLocations WarehouseLocation[]
+  stockReservations  StockReservation[]
+  transfersFrom      StockTransfer[]      @relation("TransferFrom")
+  transfersTo        StockTransfer[]      @relation("TransferTo")
+  cycleCounts        CycleCount[]
+  partsConsumed      ServicePartsConsumption[]
+
+  // New relations for Phase 3C
+  partsRequests      PartsRequest[]
 
   @@map("locations")
 }
@@ -113,9 +161,22 @@ model Technician {
   name           String   @db.VarChar(255)
   phone          String?  @db.VarChar(50)
   specialization String?  @db.VarChar(255)
-  is_active      Boolean  @default(true) @map("is_active")
-  created_at     DateTime @default(now()) @map("created_at")
+  is_active      Boolean   @default(true) @map("is_active")
+  is_deleted     Boolean   @default(false) @map("is_deleted")
+  deleted_at     DateTime? @map("deleted_at")
+  deleted_by     Int?      @map("deleted_by")
+  created_at     DateTime  @default(now()) @map("created_at")
   repairs        Repair[]
+  assignments    TechnicianAssignment[]
+  visits         ServiceVisit[]
+  resolutions    ServiceResolution[]
+
+  // New relations for Phase 3C
+  activityLogs   TechnicianActivityLog[]
+
+  // Phase 5A Relations
+  user_id        Int?     @unique @map("user_id")
+  user           User?    @relation(fields: [user_id], references: [user_id])
 
   @@map("technicians")
 }
@@ -146,7 +207,28 @@ model Parts {
   salesInvoiceItems      SalesInvoiceItems[]
   salesReturnItems       SalesReturnItem[]
   stockMovements         StockMovement[]
+  barcode                String?                  @unique @map("barcode") @db.VarChar(100)
+  model_number           String?                  @map("model_number") @db.VarChar(255)
 
+  requisitionItems       PurchaseRequisitionItem[]
+  grnItems               GoodsReceiptNoteItem[]
+  costHistories          PartCostHistory[]
+  inventorySnapshots     InventoryAdjustmentSnapshot[]
+
+  // New relations for Phase 3A
+  binStocks              BinStock[]
+  stockReservations      StockReservation[]
+  transferItems          StockTransferItem[]
+  cycleCountItems        CycleCountItem[]
+  warrantyClaims         WarrantyClaim[]
+  partsConsumed          ServicePartsConsumption[]
+
+  // New relations for Phase 3C
+  amcAssets              AmcAsset[]
+  partsRequests          PartsRequest[]
+
+  @@index([barcode])
+  @@index([model_number])
   @@map("parts")
 }
 
@@ -268,33 +350,42 @@ model PurchaseOrder {
   po_id             Int                  @id @default(autoincrement())
   po_number         String?              @unique @map("po_number") @db.VarChar(50)
   supplier_id       Int                  @map("supplier_id")
+  requisition_id    Int?                 @map("requisition_id")
   order_date        DateTime             @default(now()) @map("order_date")
   expected_delivery DateTime?            @map("expected_delivery")
   total_amount      Decimal              @default(0) @map("total_amount") @db.Decimal(12, 2)
-  status            String               @default("draft") @db.VarChar(20)
+  tax_amount        Decimal              @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  status            String               @default("DRAFT") @db.VarChar(30)
+  terms             String?              @db.VarChar(1000)
   notes             String?
   created_by        Int?                 @map("created_by")
   created_at        DateTime             @default(now()) @map("created_at")
   updated_at        DateTime             @updatedAt @map("updated_at")
   items             PurchaseOrderItems[]
+  goodsReceipts     GoodsReceiptNote[]
   createdBy         User?                @relation("CreatedByUser", fields: [created_by], references: [user_id])
   supplier          Supplier             @relation(fields: [supplier_id], references: [supplier_id])
   purchaseReturns   PurchaseReturn[]
+  requisition       PurchaseRequisition? @relation(fields: [requisition_id], references: [pr_id])
 
+  @@index([supplier_id])
+  @@index([status])
   @@map("purchase_orders")
 }
 
 model PurchaseOrderItems {
-  po_item_id      Int           @id @default(autoincrement())
-  po_id           Int           @map("po_id")
-  part_id         Int           @map("part_id")
-  quantity        Int
-  unit_price      Decimal       @map("unit_price") @db.Decimal(10, 2)
-  total_amount    Decimal       @map("total_amount") @db.Decimal(10, 2)
-  batch_number    String?       @map("batch_number")
-  expiration_date DateTime?     @map("expiration_date")
-  part            Parts         @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
-  purchaseOrder   PurchaseOrder @relation(fields: [po_id], references: [po_id], onDelete: Cascade)
+  po_item_id         Int           @id @default(autoincrement())
+  po_id              Int           @map("po_id")
+  part_id            Int           @map("part_id")
+  quantity           Int
+  received_quantity  Int           @default(0) @map("received_quantity")
+  unit_price         Decimal       @map("unit_price") @db.Decimal(10, 2)
+  total_amount       Decimal       @map("total_amount") @db.Decimal(10, 2)
+  batch_number       String?       @map("batch_number")
+  expiration_date    DateTime?     @map("expiration_date")
+  part               Parts         @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+  purchaseOrder      PurchaseOrder @relation(fields: [po_id], references: [po_id], onDelete: Cascade)
+  grnItems           GoodsReceiptNoteItem[]
 
   @@map("purchase_order_items")
 }
@@ -319,6 +410,9 @@ model Quotation {
   items                   QuotationItems[]
   createdBy               User?            @relation("QuotationCreatedBy", fields: [created_by], references: [user_id])
   customer                Customer         @relation(fields: [customer_id], references: [customer_id])
+
+  // New relations for Phase 3C
+  tracking                QuotationTracking[]
 
   @@map("quotations")
 }
@@ -451,6 +545,10 @@ model BankTransaction {
   reference        String?  @db.VarChar(100)
   status           String   @default("pending")
   transaction_type String   @map("transaction_type")
+
+  // Extensions for Phase 4A
+  reconciled_line_id Int?              @unique @map("reconciled_line_id")
+  journalLine        JournalEntryLine? @relation("BankReconciliation", fields: [reconciled_line_id], references: [line_id])
 
   @@map("bank_transactions")
 }
@@ -606,6 +704,10 @@ model JournalEntryLine {
   account    Account      @relation(fields: [account_id], references: [account_id])
   entry      JournalEntry @relation(fields: [entry_id], references: [entry_id], onDelete: Cascade)
 
+  // Extensions for Phase 4A
+  gstTransaction            GstTransaction?
+  reconciledBankTransaction BankTransaction? @relation("BankReconciliation")
+
   @@index([account_id])
   @@index([entry_id])
   @@map("journal_entry_lines")
@@ -656,11 +758,12 @@ model UserRole {
 }
 
 model PartStock {
-  part_id     Int      @map("part_id")
-  location_id Int      @map("location_id")
-  quantity    Int      @default(0)
-  location    Location @relation(fields: [location_id], references: [location_id], onDelete: Cascade)
-  part        Parts    @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+  part_id       Int      @map("part_id")
+  location_id   Int      @map("location_id")
+  quantity      Int      @default(0)
+  stock_version Int      @default(1) @map("stock_version")
+  location      Location @relation(fields: [location_id], references: [location_id], onDelete: Cascade)
+  part          Parts    @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
 
   @@id([part_id, location_id])
   @@map("part_stocks")
@@ -787,6 +890,7 @@ model Notification {
   priority        String   @default("medium") @db.VarChar(20)
   read_status     Boolean  @default(false) @map("read_status")
   created_at      DateTime @default(now())
+  reads           NotificationRead[]
 
   @@index([user_id, read_status])
   @@map("notifications")
@@ -813,6 +917,7 @@ model Attachment {
   mime_type     String   @db.VarChar(100)
   uploaded_by   Int      @map("uploaded_by")
   uploaded_at   DateTime @default(now())
+  versions      AttachmentVersion[]
 
   @@index([entity_type, entity_id])
   @@map("attachments")
@@ -829,3 +934,932 @@ enum RepairStatus {
 
   @@map("repair_status")
 }
+
+model IntegrityAuditRun {
+  id                Int      @id @default(autoincrement())
+  audit_scope       String   @map("audit_scope") @db.VarChar(50)
+  run_date          DateTime @default(now()) @map("run_date")
+  status            String   @db.VarChar(50)
+  inventory_errors  Json     @map("inventory_errors")
+  accounting_errors Json     @map("accounting_errors")
+  warnings          Json     @map("warnings")
+  duration_ms       Int      @map("duration_ms")
+  report_path       String   @map("report_path") @db.VarChar(512)
+  created_at        DateTime @default(now()) @map("created_at")
+
+  @@map("integrity_audit_runs")
+}
+
+model AiUsageLog {
+  id             Int      @id @default(autoincrement())
+  user_id        Int      @map("user_id")
+  role_id        Int      @map("role_id")
+  request_count  Int      @default(1) @map("request_count")
+  tokens_used    Int      @default(0) @map("tokens_used")
+  estimated_cost Decimal  @default(0) @map("estimated_cost") @db.Decimal(10, 4)
+  created_at     DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("ai_usage_logs")
+}
+
+model NotificationRead {
+  read_id         Int          @id @default(autoincrement())
+  notification_id Int          @map("notification_id")
+  user_id         Int          @map("user_id")
+  read_at         DateTime     @default(now()) @map("read_at")
+  notification    Notification @relation(fields: [notification_id], references: [notification_id], onDelete: Cascade)
+
+  @@unique([notification_id, user_id])
+  @@map("notification_reads")
+}
+
+model SystemHealthLog {
+  id               Int      @id @default(autoincrement())
+  database_status  String   @map("database_status") @db.VarChar(50)
+  database_latency Int      @map("database_latency")
+  redis_status     String   @map("redis_status") @db.VarChar(50)
+  smtp_status      String   @map("smtp_status") @db.VarChar(50)
+  gdrive_status    String   @map("gdrive_status") @db.VarChar(50)
+  telegram_status  String   @map("telegram_status") @db.VarChar(50)
+  ai_status        String   @map("ai_status") @db.VarChar(50)
+  disk_usage       String   @map("disk_usage") @db.VarChar(50)
+  backup_status    String   @map("backup_status") @db.VarChar(50)
+  details          Json?    @map("details")
+  created_at       DateTime @default(now()) @map("created_at")
+
+  @@map("system_health_logs")
+}
+
+model RestoreVerificationReport {
+  id                Int      @id @default(autoincrement())
+  backup_file       String   @map("backup_file") @db.VarChar(255)
+  verification_date DateTime @default(now()) @map("verification_date")
+  status            String   @db.VarChar(50)
+  checksum_valid    Boolean  @map("checksum_valid")
+  file_integrity    String   @map("file_integrity")
+  record_counts     Json     @map("record_counts")
+  errors            String?  @db.Text
+  created_at        DateTime @default(now()) @map("created_at")
+
+  @@map("restore_verification_reports")
+}
+
+model AttachmentVersion {
+  version_id     Int        @id @default(autoincrement())
+  attachment_id  Int        @map("attachment_id")
+  version_number Int        @map("version_number")
+  file_name      String     @map("file_name") @db.VarChar(255)
+  file_path      String     @map("file_path") @db.VarChar(512)
+  file_size      Int        @map("file_size")
+  mime_type      String?    @map("mime_type") @db.VarChar(100)
+  uploaded_by    Int?       @map("uploaded_by")
+  uploaded_at    DateTime   @default(now()) @map("uploaded_at")
+  change_notes   String?    @map("change_notes") @db.VarChar(512)
+  attachment     Attachment @relation(fields: [attachment_id], references: [attachment_id], onDelete: Cascade)
+
+  @@map("attachment_versions")
+}
+
+model BusinessEvent {
+  id          Int      @id @default(autoincrement())
+  event_type  String   @map("event_type") @db.VarChar(100)
+  entity_type String   @map("entity_type") @db.VarChar(100)
+  entity_id   Int      @map("entity_id")
+  user_id     Int?     @map("user_id")
+  description String   @db.VarChar(512)
+  created_at  DateTime @default(now()) @map("created_at")
+
+  @@map("business_events")
+}
+
+model CatalogImportSession {
+  session_id                  Int      @id @default(autoincrement())
+  supplier_id                 Int      @map("supplier_id")
+  uploaded_by                 Int      @map("uploaded_by")
+  file_name                   String   @map("file_name") @db.VarChar(255)
+  page_count                  Int      @map("page_count")
+  total_products              Int      @map("total_products")
+  valid_products              Int      @map("valid_products")
+  duplicate_products          Int      @map("duplicate_products")
+  rejected_products           Int      @map("rejected_products")
+  status                      String   @map("status") @db.VarChar(50) // PROCESSING, COMPLETED, FAILED
+  created_at                  DateTime @default(now()) @map("created_at")
+
+  // Hardening and Observability fields
+  file_hash                   String?  @unique @map("file_hash") @db.VarChar(64)
+  ocr_confidence              Decimal? @map("ocr_confidence") @db.Decimal(5, 4)
+  parser_confidence           Decimal? @map("parser_confidence") @db.Decimal(5, 4)
+  overall_confidence          Decimal? @map("overall_confidence") @db.Decimal(5, 4)
+  ocr_time_ms                 Int?     @map("ocr_time_ms")
+  parsing_time_ms             Int?     @map("parsing_time_ms")
+  validation_time_ms          Int?     @map("validation_time_ms")
+  duplicate_detection_time_ms Int?     @map("duplicate_detection_time_ms")
+  total_time_ms               Int?     @map("total_time_ms")
+  cached_session_id           Int?     @map("cached_session_id")
+  
+  validation_status           String?  @map("validation_status") @db.VarChar(50) // PENDING, PASSED, FAILED, REVIEW_REQUIRED
+  supplier_template           String?  @map("supplier_template") @db.VarChar(50) // HIKVISION, DAHUA, CP_PLUS, ZKTECO, ESSL, UNKNOWN
+  
+  brand_accuracy              Decimal? @map("brand_accuracy") @db.Decimal(5, 2)
+  model_accuracy              Decimal? @map("model_accuracy") @db.Decimal(5, 2)
+  price_accuracy              Decimal? @map("price_accuracy") @db.Decimal(5, 2)
+  category_accuracy           Decimal? @map("category_accuracy") @db.Decimal(5, 2)
+
+  parser_version              String?  @map("parser_version") @db.VarChar(50) // e.g. 2A.5-HARDENED
+  source_type                 String?  @map("source_type") @db.VarChar(20) // PDF, IMAGE, ZIP, UNKNOWN
+  report_path                 String?  @map("report_path") @db.VarChar(512)
+
+  // Accuracy Governance and Integrity fields
+  ocr_engine_version          String?  @map("ocr_engine_version") @db.VarChar(50)
+  validation_dataset          String?  @map("validation_dataset") @db.VarChar(100)
+  report_md_checksum          String?  @map("report_md_checksum") @db.VarChar(64)
+  report_json_checksum        String?  @map("report_json_checksum") @db.VarChar(64)
+  version                     Int      @default(1) @map("version")
+
+  preview_items               CatalogPreviewItem[]
+  rollback                    CatalogImportRollback?
+  price_changes               SupplierPriceChange[]
+  approval_history            ImportApprovalHistory[]
+  catalog_version_histories   CatalogVersionHistory[]
+  uploader                    User                  @relation("CatalogImportUploader", fields: [uploaded_by], references: [user_id])
+
+  @@map("catalog_import_sessions")
+}
+
+model CatalogPreviewItem {
+  id                   Int                  @id @default(autoincrement())
+  session_id           Int                  @map("session_id")
+  temporary_item_id    String               @map("temporary_item_id") @db.VarChar(50)
+  brand                String               @db.VarChar(255)
+  model                String               @db.VarChar(255)
+  part_number          String?              @db.VarChar(100)
+  name                 String               @db.VarChar(255)
+  description          String?              @db.Text
+  cost_price           Decimal              @map("cost_price") @db.Decimal(10, 2)
+  selling_price        Decimal              @map("selling_price") @db.Decimal(10, 2)
+  tax_rate             Decimal              @map("tax_rate") @db.Decimal(5, 2)
+  category             String?              @db.VarChar(255)
+  confidence           String               @db.VarChar(50)
+  status               String               @default("REVIEW_PENDING") @db.VarChar(50) // REVIEW_PENDING, APPROVED, REJECTED, MERGED
+  decision             String?              @db.VarChar(50) // KEEP_NEW, USE_EXISTING, MERGE
+  matched_part_id      Int?                 @map("matched_part_id")
+  is_duplicate         Boolean              @default(false) @map("is_duplicate")
+  duplicate_confidence Decimal?             @map("duplicate_confidence") @db.Decimal(5, 4)
+  warnings             Json?
+  raw_source_text      String?              @db.Text
+  created_at           DateTime             @default(now()) @map("created_at")
+  updated_at           DateTime             @updatedAt @map("updated_at")
+  version              Int                  @default(1) @map("version")
+
+  session              CatalogImportSession @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+  reviewed_by          Int?                 @map("reviewed_by")
+  reviewer             User?                @relation("CatalogItemReviewer", fields: [reviewed_by], references: [user_id])
+
+  @@map("catalog_preview_items")
+}
+
+model CatalogImportRollback {
+  id               Int                  @id @default(autoincrement())
+  session_id       Int                  @unique @map("session_id")
+  created_parts    Json                 @map("created_parts")
+  updated_parts    Json                 @map("updated_parts")
+  old_values       Json                 @map("old_values")
+  new_values       Json                 @map("new_values")
+  import_timestamp DateTime             @default(now()) @map("import_timestamp")
+  imported_by      Int                  @map("imported_by")
+  checksum         String               @map("checksum") @db.VarChar(64)
+  checksum_version Int                  @default(1) @map("checksum_version")
+
+  session          CatalogImportSession @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+  roller           User                 @relation("CatalogImportRoller", fields: [imported_by], references: [user_id])
+
+  @@map("catalog_import_rollbacks")
+}
+
+model SupplierPriceChange {
+  id                          Int                  @id @default(autoincrement())
+  session_id                  Int                  @map("session_id")
+  preview_item_id             Int                  @map("preview_item_id")
+  part_id                     Int                  @map("part_id")
+  old_cost_price              Decimal              @map("old_cost_price") @db.Decimal(10, 2)
+  new_cost_price              Decimal              @map("new_cost_price") @db.Decimal(10, 2)
+  old_selling_price           Decimal              @map("old_selling_price") @db.Decimal(10, 2)
+  new_selling_price           Decimal              @map("new_selling_price") @db.Decimal(10, 2)
+  change_percentage           Decimal              @map("change_percentage") @db.Decimal(5, 2)
+  approval_status             String               @default("PENDING") @db.VarChar(50)
+  approved_by                 Int?                 @map("approved_by")
+  approved_at                 DateTime?            @map("approved_at")
+  approval_fingerprint        String?              @map("approval_fingerprint") @db.VarChar(64)
+  approval_normal_threshold   Decimal?             @map("approval_normal_threshold") @db.Decimal(5, 2)
+  approval_moderate_threshold Decimal?             @map("approval_moderate_threshold") @db.Decimal(5, 2)
+  approval_revision           Int                  @default(0) @map("approval_revision")
+  approval_batch_id           String?              @map("approval_batch_id") @db.VarChar(64)
+  created_at                  DateTime             @default(now()) @map("created_at")
+
+  session                     CatalogImportSession @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+
+  @@map("supplier_price_changes")
+}
+
+model ImportApprovalHistory {
+  id                            Int                  @id @default(autoincrement())
+  session_id                    Int                  @map("session_id")
+  action                        String               @db.VarChar(100)
+  performed_by                  Int                  @map("performed_by")
+  comments                      String?              @db.Text
+  approved_price_changes_count  Int                  @default(0) @map("approved_price_changes_count")
+  high_risk_price_changes_count Int                  @default(0) @map("high_risk_price_changes_count")
+  approval_timestamp            DateTime             @default(now()) @map("approval_timestamp")
+  created_at                    DateTime             @default(now()) @map("created_at")
+
+  session                       CatalogImportSession @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+
+  @@map("import_approval_histories")
+}
+
+model SupplierGovernance {
+  supplier_id             Int       @id @map("supplier_id")
+  trust_level             String    @default("STANDARD") @map("trust_level") @db.VarChar(50)
+  governance_score        Int       @default(80) @map("governance_score")
+  total_catalogs          Int       @default(0) @map("total_catalogs")
+  successful_imports      Int       @default(0) @map("successful_imports")
+  failed_imports          Int       @default(0) @map("failed_imports")
+  rollback_count          Int       @default(0) @map("rollback_count")
+  rejected_items_count    Int       @default(0) @map("rejected_items_count")
+  duplicate_items_count   Int       @default(0) @map("duplicate_items_count")
+  high_risk_changes_count Int       @default(0) @map("high_risk_changes_count")
+  last_reviewed_at        DateTime? @map("last_reviewed_at")
+  // Phase 2C — Supplier Performance Metrics
+  delivery_delays_count   Int       @default(0) @map("delivery_delays_count")
+  price_stability_score   Decimal   @default(100) @map("price_stability_score") @db.Decimal(5, 2)
+  order_accuracy_score    Decimal   @default(100) @map("order_accuracy_score") @db.Decimal(5, 2)
+  defect_rate             Decimal   @default(0) @map("defect_rate") @db.Decimal(5, 2)
+  created_at              DateTime  @default(now()) @map("created_at")
+  updated_at              DateTime  @updatedAt @map("updated_at")
+
+  supplier                Supplier  @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
+
+  @@map("supplier_governances")
+}
+
+model CatalogVersionHistory {
+  id               Int                  @id @default(autoincrement())
+  supplier_id      Int                  @map("supplier_id")
+  session_id       Int                  @map("session_id")
+  catalog_version  Int                  @map("catalog_version")
+  effective_date   DateTime             @default(now()) @map("effective_date")
+  file_hash        String               @unique @map("file_hash") @db.VarChar(64)
+  superseded_by    Int?                 @map("superseded_by")
+  created_at       DateTime             @default(now()) @map("created_at")
+
+  session          CatalogImportSession @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+
+  @@map("catalog_version_histories")
+}
+
+// ============================================================
+// Phase 2C — Procurement Operations
+// ============================================================
+
+model PurchaseRequisition {
+  pr_id             Int                       @id @default(autoincrement())
+  pr_number         String                    @unique @map("pr_number") @db.VarChar(50)
+  request_date      DateTime                  @default(now()) @map("request_date")
+  required_by_date  DateTime?                 @map("required_by_date")
+  requested_by      Int                       @map("requested_by")
+  supplier_id       Int?                      @map("supplier_id")
+  priority          String                    @default("NORMAL") @map("priority") @db.VarChar(20)
+  status            String                    @default("DRAFT") @map("status") @db.VarChar(30)
+  remarks           String?
+  approved_by       Int?                      @map("approved_by")
+  approved_at       DateTime?                 @map("approved_at")
+  rejected_reason   String?                   @map("rejected_reason")
+  created_at        DateTime                  @default(now()) @map("created_at")
+  updated_at        DateTime                  @updatedAt @map("updated_at")
+
+  requestedBy       User                      @relation("RequisitionRequestedBy", fields: [requested_by], references: [user_id])
+  supplier          Supplier?                 @relation(fields: [supplier_id], references: [supplier_id])
+  items             PurchaseRequisitionItem[]
+  purchaseOrders    PurchaseOrder[]
+
+  @@index([status])
+  @@index([requested_by])
+  @@map("purchase_requisitions")
+}
+
+model PurchaseRequisitionItem {
+  pr_item_id       Int                  @id @default(autoincrement())
+  pr_id            Int                  @map("pr_id")
+  part_id          Int                  @map("part_id")
+  quantity         Int
+  estimated_price  Decimal?             @map("estimated_price") @db.Decimal(10, 2)
+  remarks          String?
+
+  requisition      PurchaseRequisition  @relation(fields: [pr_id], references: [pr_id], onDelete: Cascade)
+  part             Parts                @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@map("purchase_requisition_items")
+}
+
+model GoodsReceiptNote {
+  grn_id            Int                    @id @default(autoincrement())
+  grn_number        String                 @unique @map("grn_number") @db.VarChar(50)
+  po_id             Int                    @map("po_id")
+  location_id       Int?                   @map("location_id")
+  received_date     DateTime               @default(now()) @map("received_date")
+  received_by       Int                    @map("received_by")
+  status            String                 @default("DRAFT") @map("status") @db.VarChar(30)
+  supplier_invoice  String?                @map("supplier_invoice") @db.VarChar(100)
+  remarks           String?
+  posted_at         DateTime?              @map("posted_at")
+  created_at        DateTime               @default(now()) @map("created_at")
+  updated_at        DateTime               @updatedAt @map("updated_at")
+
+  purchaseOrder     PurchaseOrder          @relation(fields: [po_id], references: [po_id])
+  location          Location?              @relation(fields: [location_id], references: [location_id])
+  receivedBy        User                   @relation("GrnReceivedBy", fields: [received_by], references: [user_id])
+  items             GoodsReceiptNoteItem[]
+
+  @@index([po_id])
+  @@index([status])
+  @@map("goods_receipt_notes")
+}
+
+model GoodsReceiptNoteItem {
+  grn_item_id        Int              @id @default(autoincrement())
+  grn_id             Int              @map("grn_id")
+  po_item_id         Int?             @map("po_item_id")
+  part_id            Int              @map("part_id")
+  ordered_quantity   Int              @map("ordered_quantity")
+  received_quantity  Int              @map("received_quantity")
+  damaged_quantity   Int              @default(0) @map("damaged_quantity")
+  shortage_quantity  Int              @default(0) @map("shortage_quantity")
+  excess_quantity    Int              @default(0) @map("excess_quantity")
+  unit_price         Decimal          @map("unit_price") @db.Decimal(10, 2)
+  batch_number       String?          @map("batch_number")
+  expiration_date    DateTime?        @map("expiration_date")
+  remarks            String?
+
+  grn                GoodsReceiptNote    @relation(fields: [grn_id], references: [grn_id], onDelete: Cascade)
+  poItem             PurchaseOrderItems? @relation(fields: [po_item_id], references: [po_item_id])
+  part               Parts               @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@map("goods_receipt_note_items")
+}
+
+model PartCostHistory {
+  id               Int      @id @default(autoincrement())
+  part_id          Int      @map("part_id")
+  grn_id           Int?     @map("grn_id")
+  old_cost_price   Decimal  @map("old_cost_price") @db.Decimal(10, 2)
+  new_cost_price   Decimal  @map("new_cost_price") @db.Decimal(10, 2)
+  adjustment_type  String   @default("GRN_RECEIPT") @map("adjustment_type") @db.VarChar(50)
+  quantity_impact  Int      @map("quantity_impact")
+  recorded_by      Int?     @map("recorded_by")
+  recorded_at      DateTime @default(now()) @map("recorded_at")
+  notes            String?
+
+  part             Parts    @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@index([part_id])
+  @@map("part_cost_histories")
+}
+
+model InventoryAdjustmentSnapshot {
+  id                Int      @id @default(autoincrement())
+  part_id           Int      @map("part_id")
+  grn_id            Int?     @map("grn_id")
+  snapshot_type     String   @default("PRE_GRN") @map("snapshot_type") @db.VarChar(50)
+  stock_quantity    Int      @map("stock_quantity")
+  cost_price        Decimal  @map("cost_price") @db.Decimal(10, 2)
+  taken_at          DateTime @default(now()) @map("taken_at")
+  notes             String?
+
+  part              Parts    @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@index([part_id])
+  @@map("inventory_adjustment_snapshots")
+}
+
+model WarehouseLocation {
+  warehouse_location_id Int       @id @default(autoincrement())
+  location_id           Int       @map("location_id")
+  zone                  String?   @db.VarChar(50)
+  rack                  String?   @db.VarChar(50)
+  shelf                 String?   @db.VarChar(50)
+  bin                   String?   @db.VarChar(50)
+  name                  String    @db.VarChar(100)
+  is_active             Boolean   @default(true) @map("is_active")
+  created_at            DateTime  @default(now()) @map("created_at")
+  updated_at            DateTime  @updatedAt @map("updated_at")
+
+  location              Location  @relation(fields: [location_id], references: [location_id], onDelete: Cascade)
+  binStocks             BinStock[]
+
+  @@unique([location_id, name])
+  @@map("warehouse_locations")
+}
+
+model BinStock {
+  bin_stock_id          Int               @id @default(autoincrement())
+  warehouse_location_id Int               @map("warehouse_location_id")
+  part_id               Int               @map("part_id")
+  quantity              Int               @default(0)
+  created_at            DateTime          @default(now()) @map("created_at")
+  updated_at            DateTime          @updatedAt @map("updated_at")
+
+  warehouseLocation     WarehouseLocation @relation(fields: [warehouse_location_id], references: [warehouse_location_id], onDelete: Cascade)
+  part                  Parts             @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@unique([warehouse_location_id, part_id])
+  @@map("bin_stocks")
+}
+
+model StockReservation {
+  reservation_id Int      @id @default(autoincrement())
+  part_id        Int      @map("part_id")
+  location_id    Int      @map("location_id")
+  quantity       Int
+  reference_type String   @db.VarChar(50)  // SalesOrder, Repair, etc.
+  reference_id   Int
+  status         String   @default("ACTIVE") @db.VarChar(30)  // ACTIVE/RELEASED/FULFILLED
+  expires_at     DateTime?
+  created_at     DateTime @default(now()) @map("created_at")
+  updated_at     DateTime @updatedAt @map("updated_at")
+
+  location       Location @relation(fields: [location_id], references: [location_id], onDelete: Cascade)
+  part           Parts    @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@map("stock_reservations")
+}
+
+model StockTransfer {
+  transfer_id      Int                 @id @default(autoincrement())
+  transfer_number  String              @unique @db.VarChar(50)
+  from_location_id Int                 @map("from_location_id")
+  to_location_id   Int                 @map("to_location_id")
+  status           String              @default("DRAFT") @db.VarChar(30) // DRAFT/APPROVED/IN_TRANSIT/COMPLETING/COMPLETED/CANCELLED
+  requested_by     Int?                @map("requested_by")
+  approved_by      Int?                @map("approved_by")
+  notes            String?             @db.Text
+  created_at       DateTime            @default(now()) @map("created_at")
+  updated_at       DateTime            @updatedAt @map("updated_at")
+
+  fromLocation     Location            @relation("TransferFrom", fields: [from_location_id], references: [location_id])
+  toLocation       Location            @relation("TransferTo", fields: [to_location_id], references: [location_id])
+  items            StockTransferItem[]
+
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  item_id     Int           @id @default(autoincrement())
+  transfer_id Int           @map("transfer_id")
+  part_id     Int           @map("part_id")
+  quantity    Int
+
+  transfer    StockTransfer @relation(fields: [transfer_id], references: [transfer_id], onDelete: Cascade)
+  part        Parts         @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@map("stock_transfer_items")
+}
+
+model CycleCount {
+  count_id       Int              @id @default(autoincrement())
+  count_number   String           @unique @db.VarChar(50)
+  location_id    Int              @map("location_id")
+  status         String           @default("PLANNED") @db.VarChar(30) // PLANNED/IN_PROGRESS/PENDING_APPROVAL/COMPLETED
+  planned_date   DateTime         @map("planned_date")
+  completed_date DateTime?        @map("completed_date")
+  counted_by     Int?             @map("counted_by")
+  notes          String?          @db.Text
+  created_at     DateTime         @default(now()) @map("created_at")
+  updated_at     DateTime         @updatedAt @map("updated_at")
+
+  location       Location         @relation(fields: [location_id], references: [location_id])
+  items          CycleCountItem[]
+
+  @@map("cycle_counts")
+}
+
+model CycleCountItem {
+  item_id      Int        @id @default(autoincrement())
+  count_id     Int        @map("count_id")
+  part_id      Int        @map("part_id")
+  expected_qty Int        @map("expected_qty")
+  counted_qty  Int?       @map("counted_qty")
+  variance     Int?       @map("variance")
+  status       String     @default("PENDING") @db.VarChar(20) // PENDING/COUNTED
+
+  cycleCount   CycleCount @relation(fields: [count_id], references: [count_id], onDelete: Cascade)
+  part         Parts      @relation(fields: [part_id], references: [part_id], onDelete: Cascade)
+
+  @@map("cycle_count_items")
+}
+
+model ServiceJob {
+  job_id            Int                      @id @default(autoincrement())
+  job_number        String                   @unique @db.VarChar(50)
+  customer_id       Int                      @map("customer_id")
+  job_type          String                   @db.VarChar(30) // FIELD_SERVICE, WORKSHOP, AMC
+  status            String                   @default("OPEN") @db.VarChar(30) // OPEN, DIAGNOSING, ESTIMATED, ASSIGNED, IN_PROGRESS, PENDING_APPROVAL, RESOLVED, CLOSED
+  priority          String                   @default("NORMAL") @db.VarChar(20)
+  problem_description String                 @db.Text
+  estimated_cost    Decimal?                 @db.Decimal(10, 2)
+  actual_cost       Decimal                  @default(0) @db.Decimal(10, 2)
+  warranty_status   Boolean                  @default(false)
+  warranty_expiry   DateTime?
+  notes             String?                  @db.Text
+  created_at        DateTime                 @default(now()) @map("created_at")
+  updated_at        DateTime                 @updatedAt @map("updated_at")
+
+  customer          Customer                 @relation(fields: [customer_id], references: [customer_id])
+  items             ServiceJobItem[]
+  assignments       TechnicianAssignment[]
+  visits            ServiceVisit[]
+  resolutions       ServiceResolution[]
+  claims            WarrantyClaim[]
+  partsConsumed     ServicePartsConsumption[]
+
+  // New relations for Phase 3C
+  partsRequests     PartsRequest[]
+  amcVisitSchedules AmcVisitSchedule[]
+
+  @@map("service_jobs")
+}
+
+model ServiceJobItem {
+  item_id           Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  device_name       String       @db.VarChar(255)
+  serial_number     String?      @db.VarChar(255)
+  model_number      String?      @db.VarChar(255)
+  issue_description String       @db.Text
+  diagnosis         String?      @db.Text
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+
+  @@map("service_job_items")
+}
+
+model TechnicianAssignment {
+  assignment_id     Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  technician_id     Int          @map("technician_id")
+  assigned_at       DateTime     @default(now())
+  scheduled_date    DateTime
+  status            String       @default("PENDING") @db.VarChar(30) // PENDING, ACCEPTED, COMPLETED, REASSIGNED
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  technician        Technician   @relation(fields: [technician_id], references: [technician_id])
+
+  @@map("technician_assignments")
+}
+
+model ServiceVisit {
+  visit_id          Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  technician_id     Int          @map("technician_id")
+  visit_date        DateTime
+  status            String       @default("PLANNED") @db.VarChar(30) // PLANNED, EXECUTED, CANCELLED
+  findings          String?      @db.Text
+  signature_url     String?      @db.VarChar(512)
+  created_at        DateTime     @default(now())
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  technician        Technician   @relation(fields: [technician_id], references: [technician_id])
+
+  // New relations for Phase 3C
+  activityLogs      TechnicianActivityLog[]
+  attachments       VisitAttachment[]
+
+  @@map("service_visits")
+}
+
+model ServiceResolution {
+  resolution_id     Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  resolved_by       Int          @map("resolved_by")
+  resolved_at       DateTime     @default(now())
+  first_visit_resolved Boolean   @default(true)
+  resolution_notes  String       @db.Text
+  customer_rating   Int?         // 1-5 rating
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  technician        Technician   @relation(fields: [resolved_by], references: [technician_id])
+
+  @@map("service_resolutions")
+}
+
+model WarrantyClaim {
+  claim_id          Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  part_id           Int          @map("part_id")
+  claim_number      String       @unique @db.VarChar(50)
+  claim_date        DateTime     @default(now())
+  status            String       @default("PENDING") @db.VarChar(30) // PENDING, APPROVED, REJECTED
+  approved_qty      Int          @default(0)
+  reason            String?      @db.Text
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  part              Parts        @relation(fields: [part_id], references: [part_id])
+
+  @@map("warranty_claims")
+}
+
+model ServicePartsConsumption {
+  consumption_id    Int          @id @default(autoincrement())
+  job_id            Int          @map("job_id")
+  part_id           Int          @map("part_id")
+  location_id       Int          @map("location_id") // Warehouse/Location
+  quantity          Int
+  cost_price        Decimal      @db.Decimal(10, 2)
+  selling_price     Decimal      @db.Decimal(10, 2)
+  consumed_at       DateTime     @default(now())
+
+  job               ServiceJob   @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  part              Parts        @relation(fields: [part_id], references: [part_id])
+  location          Location     @relation(fields: [location_id], references: [location_id])
+
+  @@map("service_parts_consumption")
+}
+
+// ─── PHASE 3C NEW MODELS ─────────────────────────────────────────────────────
+
+model Lead {
+  lead_id        Int            @id @default(autoincrement())
+  lead_number    String         @unique @db.VarChar(50)
+  first_name     String         @db.VarChar(100)
+  last_name      String?        @db.VarChar(100)
+  company_name   String?        @db.VarChar(255)
+  email          String         @db.VarChar(255)
+  phone          String         @db.VarChar(50)
+  status         String         @default("NEW") @db.VarChar(20) // NEW, CONTACTED, QUALIFIED, LOST, CONVERTED
+  assigned_to    Int?           @map("assigned_to")
+  source         String?        @db.VarChar(100)
+  notes          String?        @db.Text
+  created_at     DateTime       @default(now()) @map("created_at")
+  updated_at     DateTime       @updatedAt @map("updated_at")
+
+  assignedUser   User?          @relation("LeadAssignee", fields: [assigned_to], references: [user_id])
+  activities     LeadActivity[]
+  opportunities  Opportunity[]
+  followUps      FollowUp[]
+
+  @@map("leads")
+}
+
+model LeadActivity {
+  activity_id   Int      @id @default(autoincrement())
+  lead_id       Int      @map("lead_id")
+  activity_type String   @db.VarChar(50) @map("activity_type") // CALL, EMAIL, MEETING, NOTE
+  notes         String   @db.Text
+  created_by    Int      @map("created_by")
+  created_at    DateTime @default(now()) @map("created_at")
+
+  lead          Lead     @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map("lead_activities")
+}
+
+model Opportunity {
+  opportunity_id     Int        @id @default(autoincrement())
+  opportunity_number String     @unique @db.VarChar(50) @map("opportunity_number")
+  lead_id            Int?       @map("lead_id")
+  customer_id        Int?       @map("customer_id")
+  name               String     @db.VarChar(255)
+  stage              String     @default("PROSPECTING") @db.VarChar(50) // PROSPECTING, QUALIFICATION, PROPOSAL, WON, LOST
+  probability        Int        @default(10)
+  estimated_revenue  Decimal    @db.Decimal(12, 2) @map("estimated_revenue")
+  close_date         DateTime   @map("close_date")
+  assigned_to        Int?       @map("assigned_to")
+  created_at         DateTime   @default(now()) @map("created_at")
+  updated_at         DateTime   @updatedAt @map("updated_at")
+
+  lead               Lead?      @relation(fields: [lead_id], references: [lead_id])
+  customer           Customer?  @relation(fields: [customer_id], references: [customer_id])
+  followUps          FollowUp[]
+
+  @@map("opportunities")
+}
+
+model FollowUp {
+  followup_id    Int          @id @default(autoincrement())
+  lead_id        Int?         @map("lead_id")
+  opportunity_id Int?         @map("opportunity_id")
+  scheduled_at   DateTime     @map("scheduled_at")
+  completed_at   DateTime?    @map("completed_at")
+  status         String       @default("SCHEDULED") @db.VarChar(20) // SCHEDULED, COMPLETED, CANCELLED
+  notes          String?      @db.Text
+  assigned_to    Int          @map("assigned_to")
+  created_at     DateTime     @default(now()) @map("created_at")
+
+  lead           Lead?        @relation(fields: [lead_id], references: [lead_id])
+  opportunity    Opportunity? @relation(fields: [opportunity_id], references: [opportunity_id])
+
+  @@map("follow_ups")
+}
+
+model QuotationTracking {
+  tracking_id  Int       @id @default(autoincrement())
+  quote_id     Int       @map("quote_id")
+  status       String    @db.VarChar(20) // SENT, VIEWED, ACCEPTED, REJECTED, EXPIRED
+  sent_at      DateTime  @default(now()) @map("sent_at")
+  responded_at DateTime? @map("responded_at")
+  feedback     String?   @db.Text
+  created_at   DateTime  @default(now()) @map("created_at")
+
+  quotation    Quotation @relation(fields: [quote_id], references: [quote_id], onDelete: Cascade)
+
+  @@map("quotation_tracking")
+}
+
+model AmcContract {
+  contract_id       Int                @id @default(autoincrement())
+  contract_number   String             @unique @db.VarChar(50) @map("contract_number")
+  customer_id       Int                @map("customer_id")
+  start_date        DateTime           @map("start_date")
+  end_date          DateTime           @map("end_date")
+  billing_frequency String             @db.VarChar(20) @map("billing_frequency") // ANNUAL, QUARTERLY
+  status            String             @default("ACTIVE") @db.VarChar(20) // ACTIVE, EXPIRED, PENDING_RENEWAL
+  annual_value      Decimal            @db.Decimal(12, 2) @map("annual_value")
+  created_at        DateTime           @default(now()) @map("created_at")
+  updated_at        DateTime           @updatedAt @map("updated_at")
+
+  customer          Customer           @relation(fields: [customer_id], references: [customer_id])
+  assets            AmcAsset[]
+  schedules         AmcVisitSchedule[]
+
+  @@map("amc_contracts")
+}
+
+model AmcAsset {
+  asset_id              Int                @id @default(autoincrement())
+  contract_id           Int                @map("contract_id")
+  part_id               Int                @map("part_id")
+  device_name           String             @db.VarChar(100) @map("device_name")
+  serial_number         String?            @db.VarChar(50) @map("serial_number")
+  last_service_date     DateTime?          @map("last_service_date")
+  next_service_date     DateTime?          @map("next_service_date")
+  service_interval_days Int                @default(90) @map("service_interval_days")
+  created_at            DateTime           @default(now()) @map("created_at")
+
+  contract              AmcContract        @relation(fields: [contract_id], references: [contract_id], onDelete: Cascade)
+  part                  Parts              @relation(fields: [part_id], references: [part_id])
+  schedules             AmcVisitSchedule[]
+
+  @@map("amc_assets")
+}
+
+model AmcVisitSchedule {
+  schedule_id    Int         @id @default(autoincrement())
+  contract_id    Int         @map("contract_id")
+  asset_id       Int?        @map("asset_id")
+  planned_date   DateTime    @map("planned_date")
+  actual_date    DateTime?   @map("actual_date")
+  status         String      @default("PLANNED") @db.VarChar(20) // PLANNED, COMPLETED, MISSED, CANCELLED
+  service_job_id Int?        @map("service_job_id")
+
+  contract       AmcContract @relation(fields: [contract_id], references: [contract_id], onDelete: Cascade)
+  asset          AmcAsset?   @relation(fields: [asset_id], references: [asset_id])
+  serviceJob     ServiceJob? @relation(fields: [service_job_id], references: [job_id])
+
+  @@map("amc_visit_schedules")
+}
+
+model TechnicianActivityLog {
+  log_id        Int          @id @default(autoincrement())
+  visit_id      Int          @map("visit_id")
+  technician_id Int          @map("technician_id")
+  activity_type String       @db.VarChar(50) @map("activity_type") // CHECK_IN, CHECK_OUT
+  latitude      Decimal      @db.Decimal(9, 6)
+  longitude     Decimal      @db.Decimal(9, 6)
+  timestamp     DateTime     @default(now()) @map("timestamp")
+
+  visit         ServiceVisit @relation(fields: [visit_id], references: [visit_id], onDelete: Cascade)
+  technician    Technician   @relation(fields: [technician_id], references: [technician_id])
+
+  @@map("technician_activity_logs")
+}
+
+model VisitAttachment {
+  attachment_id Int          @id @default(autoincrement())
+  visit_id      Int          @map("visit_id")
+  file_url      String       @db.VarChar(255) @map("file_url")
+  file_name     String       @db.VarChar(100) @map("file_name")
+  latitude      Decimal?     @db.Decimal(9, 6)
+  longitude     Decimal?     @db.Decimal(9, 6)
+  captured_at   DateTime     @default(now()) @map("captured_at")
+
+  visit         ServiceVisit @relation(fields: [visit_id], references: [visit_id], onDelete: Cascade)
+
+  @@map("visit_attachments")
+}
+
+model PartsRequest {
+  request_id   Int        @id @default(autoincrement())
+  job_id       Int        @map("job_id")
+  part_id      Int        @map("part_id")
+  location_id  Int        @map("location_id")
+  quantity     Int
+  requested_by Int        @map("requested_by")
+  status       String     @default("PENDING") @db.VarChar(20) // PENDING, APPROVED, REJECTED, FULFILLED
+  created_at   DateTime   @default(now()) @map("created_at")
+  updated_at   DateTime   @updatedAt @map("updated_at")
+
+  job          ServiceJob @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  part         Parts      @relation(fields: [part_id], references: [part_id])
+  location     Location   @relation(fields: [location_id], references: [location_id])
+
+  @@map("parts_requests")
+}
+
+// ─── PHASE 4A NEW MODELS ─────────────────────────────────────────────────────
+
+model FiscalPeriod {
+  period_id  Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  start_date DateTime @map("start_date")
+  end_date   DateTime @map("end_date")
+  is_locked  Boolean  @default(false) @map("is_locked")
+  created_at DateTime @default(now()) @map("created_at")
+
+  @@map("fiscal_periods")
+}
+
+model GstTransaction {
+  gst_transaction_id Int      @id @default(autoincrement())
+  line_id            Int      @unique @map("line_id")
+  hsn_sac_code       String?  @db.VarChar(20) @map("hsn_sac_code")
+  taxable_value      Decimal  @db.Decimal(12, 2) @map("taxable_value")
+  cgst_rate          Decimal  @db.Decimal(5, 2) @map("cgst_rate")
+  cgst_amount        Decimal  @db.Decimal(12, 2) @map("cgst_amount")
+  sgst_rate          Decimal  @db.Decimal(5, 2) @map("sgst_rate")
+  sgst_amount        Decimal  @db.Decimal(12, 2) @map("sgst_amount")
+  igst_rate          Decimal  @db.Decimal(5, 2) @map("igst_rate")
+  igst_amount        Decimal  @db.Decimal(12, 2) @map("igst_amount")
+  gstin              String?  @db.VarChar(15) @map("gstin")
+  transaction_type   String   @db.VarChar(20) @map("transaction_type") // INPUT, OUTPUT
+
+  line               JournalEntryLine @relation(fields: [line_id], references: [line_id], onDelete: Cascade)
+
+  @@map("gst_transactions")
+}
+
+// ─── PHASE 5A NEW MODELS ─────────────────────────────────────────────────────
+
+model OfflineSyncQueue {
+  sync_id       Int      @id @default(autoincrement())
+  user_id       Int      @map("user_id")
+  device_id     String   @db.VarChar(100) @map("device_id")
+  entity_type   String   @db.VarChar(50) @map("entity_type")
+  operation     String   @db.VarChar(10) @map("operation")
+  payload       Json     @map("payload")
+  status        String   @default("PENDING") @db.VarChar(20)
+  error_message String?  @db.Text @map("error_message")
+  retry_count   Int      @default(0) @map("retry_count")
+  created_at    DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("offline_sync_queues")
+}
+
+model MobileDeviceSession {
+  session_id   Int       @id @default(autoincrement())
+  user_id      Int       @map("user_id")
+  device_id    String    @db.VarChar(100) @map("device_id")
+  push_token   String?   @db.VarChar(512) @map("push_token")
+  last_sync_at DateTime? @map("last_sync_at")
+  created_at   DateTime  @default(now()) @map("created_at")
+
+  user         User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("mobile_device_sessions")
+}
+
+model WhatsAppLog {
+  log_id          Int      @id @default(autoincrement())
+  recipient_phone String   @db.VarChar(50) @map("recipient_phone")
+  message_type    String   @db.VarChar(50) @map("message_type")
+  payload         Json     @map("payload")
+  status          String   @default("SENT") @db.VarChar(20)
+  error_message   String?  @db.Text @map("error_message")
+  created_at      DateTime @default(now()) @map("created_at")
+
+  @@map("whatsapp_logs")
+}
+
+model TokenBlacklist {
+  blacklist_id  Int      @id @default(autoincrement())
+  token_jti     String   @unique @db.VarChar(255) @map("token_jti")
+  user_id       Int      @map("user_id")
+  expires_at    DateTime @map("expires_at")
+  created_at    DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("token_blacklist")
+}
+

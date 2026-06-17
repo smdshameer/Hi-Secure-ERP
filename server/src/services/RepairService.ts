@@ -100,6 +100,15 @@ export class RepairService {
         await this.postRepairLedgerAndInventory(repair.repair_id, tx);
       }
 
+      const { BusinessEventService } = require('./BusinessEventService');
+      await BusinessEventService.logEvent({
+        event_type: 'Repair Created',
+        entity_type: 'Repair',
+        entity_id: repair.repair_id,
+        user_id: userId || null,
+        description: `Repair ticket ${repair.ticket_number || repair.repair_id} created for product ${repair.product_type} (Status: ${repair.repair_status})`
+      });
+
       return repair;
     });
   }
@@ -155,6 +164,17 @@ export class RepairService {
         await this.postRepairLedgerAndInventory(repair.repair_id, tx);
       }
 
+      const { BusinessEventService } = require('./BusinessEventService');
+      if (data.repair_status && data.repair_status !== existing.repair_status) {
+        await BusinessEventService.logEvent({
+          event_type: repair.repair_status === 'completed' ? 'Repair Completed' : 'Repair Updated',
+          entity_type: 'Repair',
+          entity_id: repair.repair_id,
+          user_id: userId || null,
+          description: `Repair ticket ID ${repair.repair_id} transitioned status from ${existing.repair_status} to ${repair.repair_status}`
+        });
+      }
+
       return repair;
     });
   }
@@ -188,6 +208,15 @@ export class RepairService {
       if (status === 'completed') {
         await this.postRepairLedgerAndInventory(id, tx);
       }
+
+      const { BusinessEventService } = require('./BusinessEventService');
+      await BusinessEventService.logEvent({
+        event_type: status === 'completed' ? 'Repair Completed' : 'Repair Updated',
+        entity_type: 'Repair',
+        entity_id: id,
+        user_id: userId || null,
+        description: `Repair ticket ID ${id} status updated to ${status}.`
+      });
 
       return repair;
     });
@@ -251,15 +280,17 @@ export class RepairService {
             throw new Error(`Insufficient stock for part "${part.name}" on Repair Ticket #${repair.ticket_number}. Available: ${currentStock}, requested: ${requestedQty}`);
           }
           
-          await tx.partStock.update({
+          const updateResult = await tx.partStock.updateMany({
             where: {
-              part_id_location_id: {
-                part_id: item.part_id,
-                location_id: 1
-              }
+              part_id: item.part_id,
+              location_id: 1,
+              quantity: { gte: requestedQty }
             },
             data: { quantity: { decrement: requestedQty } }
           });
+          if (updateResult.count === 0) {
+            throw new Error(`Insufficient stock for part "${part.name}" on Repair Ticket #${repair.ticket_number}. Available: ${currentStock}, requested: ${requestedQty}`);
+          }
 
           await tx.stockMovement.create({
             data: {

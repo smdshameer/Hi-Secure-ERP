@@ -1,6 +1,7 @@
 import { PurchaseRepository } from '../repositories/PurchaseRepository';
 import { PartsRepository } from '../repositories/PartsRepository';
 import { prisma } from '../index';
+import { GstService } from './GstService';
 
 export class PurchaseService {
   private purchaseRepo = new PurchaseRepository();
@@ -66,6 +67,15 @@ export class PurchaseService {
       if (po.status === 'received') {
         await this.postPurchaseLedgerAndInventory(po.po_id, tx);
       }
+
+      const { BusinessEventService } = require('./BusinessEventService');
+      await BusinessEventService.logEvent({
+        event_type: po.status === 'received' ? 'Purchase Received' : 'PO Created',
+        entity_type: 'PurchaseOrder',
+        entity_id: po.po_id,
+        user_id: userId || null,
+        description: `Purchase Order ${po.po_number || po.po_id} created with total Rs. ${Number(po.total_amount).toFixed(2)} (Status: ${po.status})`
+      });
 
       return po;
     });
@@ -147,6 +157,18 @@ export class PurchaseService {
         await this.postPurchaseLedgerAndInventory(id, tx);
       }
 
+      const { BusinessEventService } = require('./BusinessEventService');
+      let eventType = 'PO Updated';
+      if (newStatus === 'approved') eventType = 'PO Approved';
+      else if (newStatus === 'received') eventType = 'Purchase Received';
+
+      await BusinessEventService.logEvent({
+        event_type: eventType,
+        entity_type: 'PurchaseOrder',
+        entity_id: id,
+        description: `Purchase Order ID ${id} transitioned to status: ${newStatus}`
+      });
+
       return updatedPo;
     });
   }
@@ -164,7 +186,7 @@ export class PurchaseService {
   private async postPurchaseLedgerAndInventory(poId: number, tx: any) {
     const po = await tx.purchaseOrder.findUnique({
       where: { po_id: poId },
-      include: { items: true }
+      include: { items: true, supplier: true }
     });
     if (!po) return;
 
@@ -204,36 +226,104 @@ export class PurchaseService {
         }
       }
 
-      const totalAmount = Number(po.total_amount || 0);
-      const inventoryAccount = await tx.account.findUnique({ where: { code: '103000' } });
-      const apAccount = await tx.account.findUnique({ where: { code: '201000' } });
+      // Fetch accounts or seed them as fallback
+      let inventoryAccount = await tx.account.findFirst({
+        where: { OR: [{ code: '1004' }, { name: 'Inventory Asset' }] }
+      });
+      let gstInputAccount = await tx.account.findFirst({
+        where: { OR: [{ code: '1005' }, { name: 'GST Input Credit' }] }
+      });
+      let apAccount = await tx.account.findFirst({
+        where: { OR: [{ code: '2001' }, { name: 'Accounts Payable' }] }
+      });
 
-      if (inventoryAccount && apAccount && totalAmount > 0) {
-        const je = await tx.journalEntry.create({
-          data: {
-            entry_date: po.order_date,
-            description: `PO received - Order #${po.po_number || poId}`,
-            reference_type: 'PurchaseOrder',
-            reference_id: poId
-          }
-        });
+      if (!inventoryAccount) {
+        inventoryAccount = await tx.account.create({ data: { code: '1004', name: 'Inventory Asset', type: 'ASSET', is_active: true } });
+      }
+      if (!gstInputAccount) {
+        gstInputAccount = await tx.account.create({ data: { code: '1005', name: 'GST Input Credit', type: 'ASSET', is_active: true } });
+      }
+      if (!apAccount) {
+        apAccount = await tx.account.create({ data: { code: '2001', name: 'Accounts Payable', type: 'LIABILITY', is_active: true } });
+      }
 
-        await tx.journalEntryLine.createMany({
-          data: [
-            {
+      const supplierGstin = po.supplier?.gstin || '';
+      let isSameState = true;
+      const company = await tx.company.findFirst({ where: { is_active: true } });
+      if (company?.gstin && supplierGstin) {
+        const compPrefix = company.gstin.trim().substring(0, 2);
+        const supplierPrefix = supplierGstin.trim().substring(0, 2);
+        if (compPrefix && supplierPrefix && compPrefix !== supplierPrefix) {
+          isSameState = false;
+        }
+      }
+
+      const je = await tx.journalEntry.create({
+        data: {
+          entry_date: po.order_date,
+          description: `PO received - Order #${po.po_number || poId}`,
+          reference_type: 'PurchaseOrder',
+          reference_id: poId
+        }
+      });
+
+      if (po.items && po.items.length > 0) {
+        for (const item of po.items) {
+          const part = await tx.parts.findUnique({ where: { part_id: item.part_id } });
+          const taxRate = Number(part?.tax_rate ?? 0);
+          const hsn = part?.hsn_code || '';
+          const itemTaxableValue = Number(item.unit_price) * item.quantity;
+          const gstResult = GstService.calculateGst(itemTaxableValue, taxRate, isSameState);
+          const itemGst = gstResult.cgst_amount + gstResult.sgst_amount + gstResult.igst_amount;
+          const itemTotal = itemTaxableValue + itemGst;
+
+          // Debit Inventory Asset
+          await tx.journalEntryLine.create({
+            data: {
               entry_id: je.entry_id,
               account_id: inventoryAccount.account_id,
-              amount: totalAmount,
+              amount: itemTaxableValue,
               entry_type: 'debit'
-            },
-            {
+            }
+          });
+
+          // Debit GST Input Credit (if tax exists)
+          if (itemGst > 0) {
+            const gstLine = await tx.journalEntryLine.create({
+              data: {
+                entry_id: je.entry_id,
+                account_id: gstInputAccount.account_id,
+                amount: itemGst,
+                entry_type: 'debit'
+              }
+            });
+
+            // Record GstTransaction
+            await GstService.recordGstTransaction(tx, {
+              line_id: gstLine.line_id,
+              hsn_sac_code: hsn,
+              taxable_value: itemTaxableValue,
+              cgst_rate: gstResult.cgst_rate,
+              cgst_amount: gstResult.cgst_amount,
+              sgst_rate: gstResult.sgst_rate,
+              sgst_amount: gstResult.sgst_amount,
+              igst_rate: gstResult.igst_rate,
+              igst_amount: gstResult.igst_amount,
+              gstin: supplierGstin,
+              transaction_type: 'INPUT'
+            });
+          }
+
+          // Credit Accounts Payable
+          await tx.journalEntryLine.create({
+            data: {
               entry_id: je.entry_id,
               account_id: apAccount.account_id,
-              amount: totalAmount,
+              amount: itemTotal,
               entry_type: 'credit'
             }
-          ]
-        });
+          });
+        }
       }
     }
   }
@@ -243,36 +333,111 @@ export class PurchaseService {
     const movements = await tx.stockMovement.findMany({
       where: { referenceType: 'PurchaseOrder', referenceId: poId }
     });
+
+    // Group by partId and locationId to calculate net quantity
+    const netMovements: { [key: string]: { partId: number, locationId: number, netQty: number } } = {};
     for (const move of movements) {
       const locId = move.locationId || 1;
+      const key = `${move.partId}_${locId}`;
+      if (!netMovements[key]) {
+        netMovements[key] = { partId: move.partId, locationId: locId, netQty: 0 };
+      }
+      netMovements[key].netQty += Number(move.quantity);
+    }
+
+    for (const key of Object.keys(netMovements)) {
+      const { partId, locationId, netQty } = netMovements[key];
+      if (netQty === 0) continue;
+
+      const reverseQty = -netQty;
+
       const partStock = await tx.partStock.findUnique({
         where: {
           part_id_location_id: {
-            part_id: move.partId,
-            location_id: locId
+            part_id: partId,
+            location_id: locationId
           }
         }
       });
+
       if (partStock) {
-        const currentStock = Number(partStock.quantity || 0);
-        const newQty = Math.max(0, currentStock - Math.abs(move.quantity));
+        const currentQty = Number(partStock.quantity || 0);
+        const newQty = Math.max(0, currentQty + reverseQty);
         await tx.partStock.update({
           where: {
             part_id_location_id: {
-              part_id: move.partId,
-              location_id: locId
+              part_id: partId,
+              location_id: locationId
             }
           },
           data: { quantity: newQty }
         });
       }
+
+      await tx.stockMovement.create({
+        data: {
+          partId: partId,
+          locationId: locationId,
+          movementType: 'REVERSAL',
+          quantity: reverseQty,
+          referenceType: 'PurchaseOrder',
+          referenceId: poId
+        }
+      });
     }
-    await tx.stockMovement.deleteMany({
-      where: { referenceType: 'PurchaseOrder', referenceId: poId }
+
+    // 2. Post Reversing Journal Entries instead of deleting
+    const existingJEs = await tx.journalEntry.findMany({
+      where: { reference_type: 'PurchaseOrder', reference_id: poId },
+      include: { lines: { include: { gstTransaction: true } } }
     });
 
-    await tx.journalEntry.deleteMany({
-      where: { reference_type: 'PurchaseOrder', reference_id: poId }
-    });
+    for (const je of existingJEs) {
+      if (je.description?.startsWith('Reversal of ')) continue;
+
+      const revDescription = `Reversal of Journal Entry #${je.entry_id} - ${je.description || ''}`;
+      const alreadyReversed = await tx.journalEntry.findFirst({
+        where: { description: revDescription }
+      });
+      if (alreadyReversed) continue;
+
+      const newJe = await tx.journalEntry.create({
+        data: {
+          entry_date: new Date(),
+          description: revDescription,
+          reference_type: 'PurchaseOrder',
+          reference_id: poId
+        }
+      });
+
+      for (const line of je.lines) {
+        const revLine = await tx.journalEntryLine.create({
+          data: {
+            entry_id: newJe.entry_id,
+            account_id: line.account_id,
+            amount: line.amount,
+            entry_type: line.entry_type === 'debit' ? 'credit' : 'debit'
+          }
+        });
+
+        if (line.gstTransaction) {
+          await tx.gstTransaction.create({
+            data: {
+              line_id: revLine.line_id,
+              hsn_sac_code: line.gstTransaction.hsn_sac_code,
+              taxable_value: line.gstTransaction.taxable_value,
+              cgst_rate: line.gstTransaction.cgst_rate,
+              cgst_amount: line.gstTransaction.cgst_amount,
+              sgst_rate: line.gstTransaction.sgst_rate,
+              sgst_amount: line.gstTransaction.sgst_amount,
+              igst_rate: line.gstTransaction.igst_rate,
+              igst_amount: line.gstTransaction.igst_amount,
+              gstin: line.gstTransaction.gstin,
+              transaction_type: line.gstTransaction.transaction_type
+            }
+          });
+        }
+      }
+    }
   }
 }

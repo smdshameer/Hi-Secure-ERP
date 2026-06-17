@@ -1,0 +1,46 @@
+{
+  "snapshot": {
+    "timestamp": "2026-06-16T14:17:13.262Z",
+    "validationMode": "CI",
+    "certificationStatus": "VALIDATION_FAILED",
+    "readiness": "NOT_READY",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "HEALTHY",
+    "rationale": "CI artifact verification test. Rationale must be non-empty."
+  },
+  "verdict": {
+    "certified": false,
+    "status": "FAILED",
+    "readiness": "NOT_READY",
+    "certificationStatus": "VALIDATION_FAILED",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "HEALTHY",
+    "failures": [],
+    "recommendations": [],
+    "certificationDecisionRationale": "CI artifact verification test. Rationale must be non-empty.",
+    "averages": {
+      "brandAccuracy": 0,
+      "modelAccuracy": 0,
+      "priceAccuracy": 0,
+      "categoryAccuracy": 0,
+      "ocrConfidence": 0,
+      "overallConfidence": 0
+    },
+    "variances": {
+      "brandAccuracy": 0,
+      "modelAccuracy": 0,
+      "priceAccuracy": 0,
+      "categoryAccuracy": 0
+    }
+  },
+  "vendorResults": [],
+  "stabilityMetrics": {
+    "aiParseFailure": 0,
+    "ocrTimeout": 0,
+    "pdfCorrupted": 0,
+    "unsupportedFormat": 0
+  },
+  "governanceVersion": "2A.6",
+  "authorizedBy": "CERTIFICATION_SERVICE_v2A6_CI",
+  "artifactChecksum": "47f1e29c4a66693910b9f8764cc0fb78dca3d19f71e44db5c4d95a767398abf6"
+}

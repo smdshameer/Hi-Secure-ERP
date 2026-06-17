@@ -4,14 +4,20 @@ import { authMiddleware, requireRole } from '../middleware/auth';
 
 export const healthRouter = Router();
 
-// Public Health Check Endpoint (useful for Load Balancers & Uptime monitors)
-healthRouter.get('/health', async (_req, res) => {
+healthRouter.get('/', async (_req, res) => {
   try {
     const health = await SystemHealthService.getFullHealth();
-    if (health.services.database.status === 'unhealthy') {
-      return res.status(503).json({ status: 'unhealthy', database: 'disconnected' });
-    }
-    res.json({ status: 'healthy', timestamp: health.timestamp });
+    const isDbHealthy = health.services.database.status === 'healthy';
+    const overallStatus = isDbHealthy ? 'healthy' : 'unhealthy';
+    const statusCode = isDbHealthy ? 200 : 503;
+
+    res.status(statusCode).json({
+      status: overallStatus,
+      timestamp: health.timestamp,
+      database: health.services.database,
+      telegram: health.services.telegram,
+      queue: health.services.queue
+    });
   } catch (err: any) {
     res.status(503).json({ status: 'unhealthy', error: err.message });
   }

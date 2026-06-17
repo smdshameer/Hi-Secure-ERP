@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
   { label: 'Accounting',       path: '/accounting',        icon: 'ti-book-2' },
   { label: 'Banking',          path: '/banking',           icon: 'ti-building-bank' },
   { label: 'Companies',        path: '/companies',         icon: 'ti-building' },
+  { label: 'System Audit',     path: '/admin/audit',       icon: 'ti-shield-lock' },
 ];
 
 export default function Sidebar() {

@@ -42,7 +42,7 @@ export class SupplierService {
     return this.supplierRepo.update(id, data);
   }
 
-  async deleteSupplier(id: number) {
-    return this.supplierRepo.delete(id);
+  async deleteSupplier(id: number, userId?: number) {
+    return this.supplierRepo.delete(id, userId);
   }
 }

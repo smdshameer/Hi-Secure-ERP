@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
-export type JobType = 'EMAIL_SEND' | 'GST_VALIDATION' | 'PDF_GENERATION' | 'REPORT_EXPORT' | 'NOTIFICATION';
+export type JobType = 'EMAIL_SEND' | 'GST_VALIDATION' | 'PDF_GENERATION' | 'REPORT_EXPORT' | 'NOTIFICATION' | 'CATALOG_IMPORT';
 
 export interface JobPayload {
   type: JobType;
@@ -94,6 +94,16 @@ class JobQueueService {
       active: this.inMemoryQueue.length,
       failed: 0
     };
+  }
+
+  async shutdown() {
+    console.log('[JobQueue] Shutting down job queue...');
+    if (this.bullQueue) {
+      await this.bullQueue.close();
+    }
+    if (this.redisClient) {
+      await this.redisClient.quit();
+    }
   }
 }
 

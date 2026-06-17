@@ -268,9 +268,9 @@ customersRouter.put('/:id', requirePermission('invoice:create'), async (req, res
   }
 });
 
-customersRouter.delete('/:id', requirePermission('invoice:create'), async (req, res) => {
+customersRouter.delete('/:id', requirePermission('invoice:create'), async (req: any, res) => {
   try {
-    await customerService.deleteCustomer(Number(req.params.id));
+    await customerService.deleteCustomer(Number(req.params.id), req.userId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete customer' });

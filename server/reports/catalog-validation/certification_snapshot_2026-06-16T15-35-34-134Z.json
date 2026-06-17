@@ -1,0 +1,240 @@
+{
+  "snapshot": {
+    "timestamp": "2026-06-16T15:35:34.134Z",
+    "validationMode": "REAL_WORLD",
+    "certificationStatus": "VALIDATION_FAILED",
+    "readiness": "NOT_READY",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "UNAVAILABLE",
+    "rationale": "All internal dependencies healthy. NVIDIA NIM UNAVAILABLE: 0/3 probes succeeded — [UNKNOWN_EXTERNAL_ERROR] HTTP 405. 5 governance check(s) failed. Certification denied."
+  },
+  "verdict": {
+    "certified": false,
+    "status": "FAILED",
+    "readiness": "NOT_READY",
+    "certificationStatus": "VALIDATION_FAILED",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "UNAVAILABLE",
+    "failures": [
+      "HIKVISION: Price accuracy (84.04%) < 95%",
+      "DAHUA: Price accuracy (84.04%) < 95%",
+      "CP_PLUS: Price accuracy (84.04%) < 95%",
+      "ZKTECO: Price accuracy (84.04%) < 95%",
+      "ESSL: Price accuracy (84.04%) < 95%"
+    ],
+    "recommendations": [
+      "Fix extraction issues, missing fields, or template config before re-running certification."
+    ],
+    "certificationDecisionRationale": "All internal dependencies healthy. NVIDIA NIM UNAVAILABLE: 0/3 probes succeeded — [UNKNOWN_EXTERNAL_ERROR] HTTP 405. 5 governance check(s) failed. Certification denied.",
+    "dependencyHealth": {
+      "postgresql": {
+        "name": "PostgreSQL",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 2,
+        "successfulProbes": 2,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 125
+      },
+      "prisma": {
+        "name": "Prisma ORM",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 2,
+        "successfulProbes": 2,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 125
+      },
+      "ocrMicroservice": {
+        "name": "OCR Microservice (PaddleOCR)",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 3,
+        "successfulProbes": 3,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 23
+      },
+      "catalogParser": {
+        "name": "Catalog Parser",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 3,
+        "successfulProbes": 3,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 23
+      },
+      "validationEngine": {
+        "name": "Validation Engine",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 1,
+        "successfulProbes": 1,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 0
+      },
+      "nvidiaNim": {
+        "name": "NVIDIA NIM",
+        "class": "EXTERNAL",
+        "status": "UNAVAILABLE",
+        "available": false,
+        "probeAttempts": 3,
+        "successfulProbes": 0,
+        "failedProbes": 3,
+        "successRatePercent": 0,
+        "averageResponseTimeMs": 0,
+        "lastError": "[UNKNOWN_EXTERNAL_ERROR] HTTP 405"
+      },
+      "probeTimestamp": "2026-06-16T15:35:33.902Z"
+    },
+    "averages": {
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    "variances": {
+      "brandAccuracy": 0,
+      "modelAccuracy": 0,
+      "priceAccuracy": 0,
+      "categoryAccuracy": 0
+    }
+  },
+  "vendorResults": [
+    {
+      "vendor": "HIKVISION",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "DAHUA",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "CP_PLUS",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "ZKTECO",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "ESSL",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    }
+  ],
+  "stabilityMetrics": {
+    "aiParseFailure": 0,
+    "ocrTimeout": 0,
+    "pdfCorrupted": 0,
+    "unsupportedFormat": 0
+  },
+  "dependencyHealthReport": {
+    "postgresql": {
+      "name": "PostgreSQL",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 125
+    },
+    "prisma": {
+      "name": "Prisma ORM",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 125
+    },
+    "ocrMicroservice": {
+      "name": "OCR Microservice (PaddleOCR)",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 23
+    },
+    "catalogParser": {
+      "name": "Catalog Parser",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 23
+    },
+    "validationEngine": {
+      "name": "Validation Engine",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 1,
+      "successfulProbes": 1,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 0
+    },
+    "nvidiaNim": {
+      "name": "NVIDIA NIM",
+      "class": "EXTERNAL",
+      "status": "UNAVAILABLE",
+      "available": false,
+      "probeAttempts": 3,
+      "successfulProbes": 0,
+      "failedProbes": 3,
+      "successRatePercent": 0,
+      "averageResponseTimeMs": 0,
+      "lastError": "[UNKNOWN_EXTERNAL_ERROR] HTTP 405"
+    },
+    "probeTimestamp": "2026-06-16T15:35:33.902Z"
+  },
+  "governanceVersion": "2A.6",
+  "authorizedBy": "CERTIFICATION_SERVICE_v2A6_REAL_WORLD",
+  "artifactChecksum": "3a8b2dc58d39018569f377ca7e690af7b2431dfc81489f27e4f475a7d95acc72"
+}

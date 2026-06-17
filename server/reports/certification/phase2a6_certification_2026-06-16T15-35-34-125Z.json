@@ -1,0 +1,163 @@
+{
+  "certificationMode": "REAL_WORLD",
+  "certificationDate": "2026-06-16T15:35:34.125Z",
+  "governanceVersion": "2A.6",
+  "internalSystemStatus": "HEALTHY",
+  "externalDependencyStatus": "UNAVAILABLE",
+  "certificationStatus": "VALIDATION_FAILED",
+  "certificationDecisionRationale": "All internal dependencies healthy. NVIDIA NIM UNAVAILABLE: 0/3 probes succeeded — [UNKNOWN_EXTERNAL_ERROR] HTTP 405. 5 governance check(s) failed. Certification denied.",
+  "vendorResults": [
+    {
+      "vendor": "HIKVISION",
+      "datasetName": "HIKVISION_MAY_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": false
+    },
+    {
+      "vendor": "DAHUA",
+      "datasetName": "DAHUA_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": false
+    },
+    {
+      "vendor": "CP_PLUS",
+      "datasetName": "CP_PLUS_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": false
+    },
+    {
+      "vendor": "ZKTECO",
+      "datasetName": "ZKTECO_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": false
+    },
+    {
+      "vendor": "ESSL",
+      "datasetName": "ESSL_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": false
+    }
+  ],
+  "crossVendorAverages": {
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 84.04,
+    "categoryAccuracy": 100,
+    "ocrConfidence": 1,
+    "overallConfidence": 0.95
+  },
+  "crossVendorVariances": {
+    "brandAccuracy": 0,
+    "modelAccuracy": 0,
+    "priceAccuracy": 0,
+    "categoryAccuracy": 0
+  },
+  "stabilityMetrics": {
+    "aiParseFailure": 0,
+    "ocrTimeout": 0,
+    "pdfCorrupted": 0,
+    "unsupportedFormat": 0
+  },
+  "dependencyHealth": {
+    "postgresql": {
+      "name": "PostgreSQL",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 125
+    },
+    "prisma": {
+      "name": "Prisma ORM",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 125
+    },
+    "ocrMicroservice": {
+      "name": "OCR Microservice (PaddleOCR)",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 23
+    },
+    "catalogParser": {
+      "name": "Catalog Parser",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 23
+    },
+    "validationEngine": {
+      "name": "Validation Engine",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 1,
+      "successfulProbes": 1,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 0
+    },
+    "nvidiaNim": {
+      "name": "NVIDIA NIM",
+      "class": "EXTERNAL",
+      "status": "UNAVAILABLE",
+      "available": false,
+      "probeAttempts": 3,
+      "successfulProbes": 0,
+      "failedProbes": 3,
+      "successRatePercent": 0,
+      "averageResponseTimeMs": 0,
+      "lastError": "[UNKNOWN_EXTERNAL_ERROR] HTTP 405"
+    },
+    "probeTimestamp": "2026-06-16T15:35:33.902Z"
+  },
+  "verdict": {
+    "certified": false,
+    "status": "FAILED",
+    "readiness": "NOT_READY",
+    "certificationStatus": "VALIDATION_FAILED"
+  },
+  "authorizedBy": "REAL_WORLD_VALIDATION_RUNNER_v2A6"
+}

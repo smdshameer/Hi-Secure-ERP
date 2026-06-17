@@ -5,7 +5,13 @@ import { requirePermission } from '../middleware/auth';
 export const usersRouter = Router();
 const userService = new UserService();
 
-usersRouter.use(requirePermission('users:manage'));
+usersRouter.use((req, res, next) => {
+  if (req.method === 'GET') {
+    return requirePermission('users:view')(req, res, next);
+  } else {
+    return requirePermission('users:manage')(req, res, next);
+  }
+});
 
 usersRouter.get('/', async (_req, res) => {
   try {

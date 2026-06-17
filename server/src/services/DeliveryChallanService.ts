@@ -84,7 +84,17 @@ export class DeliveryChallanService {
   }
 
   async updateChallanStatus(id: number, status: string) {
-    return this.challanRepo.updateStatus(id, status);
+    const updated = await this.challanRepo.updateStatus(id, status);
+
+    const { BusinessEventService } = require('./BusinessEventService');
+    await BusinessEventService.logEvent({
+      event_type: status === 'approved' ? 'Transfer Completed' : 'Challan Updated',
+      entity_type: 'DeliveryChallan',
+      entity_id: id,
+      description: `Delivery Challan ID ${id} status transitioned to: ${status}`
+    });
+
+    return updated;
   }
 
   async deleteChallan(id: number) {

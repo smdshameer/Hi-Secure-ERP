@@ -98,30 +98,79 @@ export class PosService {
         }
       });
       
+      // Location Resolution Strategy:
+      // 1. POS Session Location
+      // 2. Branch Location
+      // 3. Company Default Location
+      // Fallback of location_id = 1
+      let resolvedLocationId = 1;
+      if (checkoutData.locationId) {
+        resolvedLocationId = Number(checkoutData.locationId);
+      } else if (checkoutData.location_id) {
+        resolvedLocationId = Number(checkoutData.location_id);
+      } else {
+        const currentSession = await tx.posSession.findFirst({
+          where: { closed: false },
+          orderBy: { created_at: 'desc' }
+        });
+        if (currentSession && (currentSession as any).location_id) {
+          resolvedLocationId = Number((currentSession as any).location_id);
+        } else {
+          const companySetting = await tx.setting.findUnique({ where: { key: 'company' } });
+          const branchSetting = await tx.setting.findUnique({ where: { key: 'branch' } });
+          if (branchSetting && (branchSetting.value as any)?.default_location_id) {
+            resolvedLocationId = Number((branchSetting.value as any).default_location_id);
+          } else if (companySetting && (companySetting.value as any)?.default_location_id) {
+            resolvedLocationId = Number((companySetting.value as any).default_location_id);
+          }
+        }
+      }
+      if (!resolvedLocationId || isNaN(resolvedLocationId)) {
+        resolvedLocationId = 1;
+      }
+
       // Verify and update inventory stock levels atomically
       for (const item of items) {
+        const productId = Number(item.productId);
+        const requestedQty = Number(item.quantity);
+
         const part = await tx.parts.findUnique({
-          where: { part_id: Number(item.productId) },
-          select: { part_id: true, name: true, stock_quantity: true },
+          where: { part_id: productId },
+          select: { name: true },
         });
         if (!part) {
-          throw new Error(`Product ID ${item.productId} not found`);
+          throw new Error(`Product ID ${productId} not found`);
         }
-        const currentStock = Number(part.stock_quantity ?? 0);
-        const requestedQty = Number(item.quantity);
-        if (currentStock < requestedQty) {
+
+        const partStock = await tx.partStock.findUnique({
+          where: {
+            part_id_location_id: {
+              part_id: productId,
+              location_id: resolvedLocationId
+            }
+          }
+        });
+        const currentStock = partStock ? Number(partStock.quantity) : 0;
+
+        const updateResult = await tx.partStock.updateMany({
+          where: {
+            part_id: productId,
+            location_id: resolvedLocationId,
+            quantity: { gte: requestedQty }
+          },
+          data: { quantity: { decrement: requestedQty } }
+        });
+
+        if (updateResult.count === 0) {
           throw new Error(
             `Insufficient stock for "${part.name}": available ${currentStock}, requested ${requestedQty}`
           );
         }
-        await tx.parts.update({
-          where: { part_id: Number(item.productId) },
-          data: { stock_quantity: { decrement: requestedQty } },
-        });
 
         await tx.stockMovement.create({
           data: {
-            partId: Number(item.productId),
+            partId: productId,
+            locationId: resolvedLocationId,
             movementType: 'SALE',
             quantity: -requestedQty,
             referenceType: 'SalesInvoice',

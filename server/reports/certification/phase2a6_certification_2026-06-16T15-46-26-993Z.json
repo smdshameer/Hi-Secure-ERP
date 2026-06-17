@@ -1,0 +1,162 @@
+{
+  "certificationMode": "REAL_WORLD",
+  "certificationDate": "2026-06-16T15:46:26.993Z",
+  "governanceVersion": "2A.6",
+  "internalSystemStatus": "HEALTHY",
+  "externalDependencyStatus": "HEALTHY",
+  "certificationStatus": "READY_FOR_PHASE_2B",
+  "certificationDecisionRationale": "All internal dependencies healthy. NVIDIA NIM available and reachable. All governance thresholds met. Phase 2B authorized.",
+  "vendorResults": [
+    {
+      "vendor": "HIKVISION",
+      "datasetName": "HIKVISION_MAY_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": true
+    },
+    {
+      "vendor": "DAHUA",
+      "datasetName": "DAHUA_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": true
+    },
+    {
+      "vendor": "CP_PLUS",
+      "datasetName": "CP_PLUS_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": true
+    },
+    {
+      "vendor": "ZKTECO",
+      "datasetName": "ZKTECO_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": true
+    },
+    {
+      "vendor": "ESSL",
+      "datasetName": "ESSL_2026",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95,
+      "passed": true
+    }
+  ],
+  "crossVendorAverages": {
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 84.04,
+    "categoryAccuracy": 100,
+    "ocrConfidence": 1,
+    "overallConfidence": 0.95
+  },
+  "crossVendorVariances": {
+    "brandAccuracy": 0,
+    "modelAccuracy": 0,
+    "priceAccuracy": 0,
+    "categoryAccuracy": 0
+  },
+  "stabilityMetrics": {
+    "aiParseFailure": 0,
+    "ocrTimeout": 0,
+    "pdfCorrupted": 0,
+    "unsupportedFormat": 0
+  },
+  "dependencyHealth": {
+    "postgresql": {
+      "name": "PostgreSQL",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 170
+    },
+    "prisma": {
+      "name": "Prisma ORM",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 170
+    },
+    "ocrMicroservice": {
+      "name": "OCR Microservice (PaddleOCR)",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 21
+    },
+    "catalogParser": {
+      "name": "Catalog Parser",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 21
+    },
+    "validationEngine": {
+      "name": "Validation Engine",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 1,
+      "successfulProbes": 1,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 0
+    },
+    "nvidiaNim": {
+      "name": "NVIDIA NIM",
+      "class": "EXTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 163
+    },
+    "probeTimestamp": "2026-06-16T15:46:26.781Z"
+  },
+  "verdict": {
+    "certified": true,
+    "status": "PASSED",
+    "readiness": "READY_FOR_PHASE_2B",
+    "certificationStatus": "READY_FOR_PHASE_2B"
+  },
+  "authorizedBy": "REAL_WORLD_VALIDATION_RUNNER_v2A6"
+}

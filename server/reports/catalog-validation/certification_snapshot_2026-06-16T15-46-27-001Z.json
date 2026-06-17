@@ -1,0 +1,230 @@
+{
+  "snapshot": {
+    "timestamp": "2026-06-16T15:46:27.001Z",
+    "validationMode": "REAL_WORLD",
+    "certificationStatus": "READY_FOR_PHASE_2B",
+    "readiness": "READY_FOR_PHASE_2B",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "HEALTHY",
+    "rationale": "All internal dependencies healthy. NVIDIA NIM available and reachable. All governance thresholds met. Phase 2B authorized."
+  },
+  "verdict": {
+    "certified": true,
+    "status": "PASSED",
+    "readiness": "READY_FOR_PHASE_2B",
+    "certificationStatus": "READY_FOR_PHASE_2B",
+    "internalSystemStatus": "HEALTHY",
+    "externalDependencyStatus": "HEALTHY",
+    "failures": [],
+    "recommendations": [],
+    "certificationDecisionRationale": "All internal dependencies healthy. NVIDIA NIM available and reachable. All governance thresholds met. Phase 2B authorized.",
+    "dependencyHealth": {
+      "postgresql": {
+        "name": "PostgreSQL",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 2,
+        "successfulProbes": 2,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 170
+      },
+      "prisma": {
+        "name": "Prisma ORM",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 2,
+        "successfulProbes": 2,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 170
+      },
+      "ocrMicroservice": {
+        "name": "OCR Microservice (PaddleOCR)",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 3,
+        "successfulProbes": 3,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 21
+      },
+      "catalogParser": {
+        "name": "Catalog Parser",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 3,
+        "successfulProbes": 3,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 21
+      },
+      "validationEngine": {
+        "name": "Validation Engine",
+        "class": "INTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 1,
+        "successfulProbes": 1,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 0
+      },
+      "nvidiaNim": {
+        "name": "NVIDIA NIM",
+        "class": "EXTERNAL",
+        "status": "HEALTHY",
+        "available": true,
+        "probeAttempts": 3,
+        "successfulProbes": 3,
+        "failedProbes": 0,
+        "successRatePercent": 100,
+        "averageResponseTimeMs": 163
+      },
+      "probeTimestamp": "2026-06-16T15:46:26.781Z"
+    },
+    "averages": {
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    "variances": {
+      "brandAccuracy": 0,
+      "modelAccuracy": 0,
+      "priceAccuracy": 0,
+      "categoryAccuracy": 0
+    }
+  },
+  "vendorResults": [
+    {
+      "vendor": "HIKVISION",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "DAHUA",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "CP_PLUS",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "ZKTECO",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    },
+    {
+      "vendor": "ESSL",
+      "brandAccuracy": 100,
+      "modelAccuracy": 100,
+      "priceAccuracy": 84.04,
+      "categoryAccuracy": 100,
+      "ocrConfidence": 1,
+      "overallConfidence": 0.95
+    }
+  ],
+  "stabilityMetrics": {
+    "aiParseFailure": 0,
+    "ocrTimeout": 0,
+    "pdfCorrupted": 0,
+    "unsupportedFormat": 0
+  },
+  "dependencyHealthReport": {
+    "postgresql": {
+      "name": "PostgreSQL",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 170
+    },
+    "prisma": {
+      "name": "Prisma ORM",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 2,
+      "successfulProbes": 2,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 170
+    },
+    "ocrMicroservice": {
+      "name": "OCR Microservice (PaddleOCR)",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 21
+    },
+    "catalogParser": {
+      "name": "Catalog Parser",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 21
+    },
+    "validationEngine": {
+      "name": "Validation Engine",
+      "class": "INTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 1,
+      "successfulProbes": 1,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 0
+    },
+    "nvidiaNim": {
+      "name": "NVIDIA NIM",
+      "class": "EXTERNAL",
+      "status": "HEALTHY",
+      "available": true,
+      "probeAttempts": 3,
+      "successfulProbes": 3,
+      "failedProbes": 0,
+      "successRatePercent": 100,
+      "averageResponseTimeMs": 163
+    },
+    "probeTimestamp": "2026-06-16T15:46:26.781Z"
+  },
+  "governanceVersion": "2A.6",
+  "authorizedBy": "CERTIFICATION_SERVICE_v2A6_REAL_WORLD",
+  "artifactChecksum": "c393fccea5b7081995fa7468b5a15245dd8bba92885f1dccb184a93a384601a9"
+}

@@ -1,8 +1,30 @@
 import { Router } from 'express';
 import { prisma } from '../index';
+import { KPIService } from '../services/KPIService';
+import { AlertService } from '../services/AlertService';
+import { BusinessEventService } from '../services/BusinessEventService';
+import { performance } from 'perf_hooks';
 
 export const dashboardRouter = Router();
 
+// Helper to measure performance and dispatch warnings if threshold exceeded
+async function measurePerformance<T>(name: string, limitMs: number, fn: () => Promise<T>): Promise<T> {
+  const start = performance.now();
+  const res = await fn();
+  const duration = performance.now() - start;
+  if (duration > limitMs) {
+    console.warn(`[Performance Warning] ${name} execution time: ${duration.toFixed(2)}ms (Limit: ${limitMs}ms)`);
+    await BusinessEventService.logEvent({
+      event_type: 'PERFORMANCE_WARNING',
+      entity_type: 'SystemPerformance',
+      entity_id: 0,
+      description: `Performance Target Exceeded for ${name}: ${duration.toFixed(2)}ms (Threshold: ${limitMs}ms)`
+    }).catch(err => console.error('Failed to log performance warning:', err.message));
+  }
+  return res;
+}
+
+// Original GET /api/dashboard for backward compatibility
 dashboardRouter.get('/', async (_req, res) => {
   try {
     const startOfMonth = new Date();
@@ -113,5 +135,161 @@ dashboardRouter.get('/', async (_req, res) => {
   } catch (err) {
     console.error('Dashboard error:', err);
     res.status(500).json({ error: 'Failed to load dashboard' });
+  }
+});
+
+// GET /api/dashboard/executive
+dashboardRouter.get('/executive', async (_req, res) => {
+  try {
+    const data = await measurePerformance('ExecutiveDashboard', 500, async () => {
+      // 1. Daily Sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const dailySalesRes = await prisma.salesInvoice.aggregate({
+        where: {
+          invoice_date: { gte: todayStart },
+          status: { in: ['issued', 'paid', 'partially_paid'] }
+        },
+        _sum: { grand_total: true }
+      });
+      const dailySales = Number(dailySalesRes._sum.grand_total || 0);
+
+      // 2. Monthly Sales
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthlySalesRes = await prisma.salesInvoice.aggregate({
+        where: {
+          invoice_date: { gte: monthStart },
+          status: { in: ['issued', 'paid', 'partially_paid'] }
+        },
+        _sum: { grand_total: true }
+      });
+      const monthlySales = Number(monthlySalesRes._sum.grand_total || 0);
+
+      // 3. Purchase Trends (6 months)
+      const purchaseTrends: any[] = await prisma.$queryRaw`
+        SELECT TO_CHAR(created_at, 'YYYY-MM') as month_str, SUM(total_amount)::numeric as total
+        FROM purchase_orders 
+        WHERE status = 'approved' AND created_at >= CURRENT_DATE - INTERVAL '6 months'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+        ORDER BY month_str ASC
+      `;
+
+      // 4. Inventory Value
+      const partStocks = await prisma.partStock.findMany({ include: { part: true } });
+      const inventoryValue = partStocks.reduce((sum, ps) => sum + Number(ps.quantity) * Number(ps.part.cost_price || 0), 0);
+
+      // 5. Outstanding Receivables (issued or partial invoices)
+      const receivablesRes = await prisma.salesInvoice.aggregate({
+        where: { status: { in: ['issued', 'partially_paid'] } },
+        _sum: { grand_total: true }
+      });
+      const outstandingReceivables = Number(receivablesRes._sum.grand_total || 0);
+
+      // 6. Outstanding Payables (approved POs total)
+      const payablesRes = await prisma.purchaseOrder.aggregate({
+        where: { status: 'approved' },
+        _sum: { total_amount: true }
+      });
+      const outstandingPayables = Number(payablesRes._sum.total_amount || 0);
+
+      // 7. Service Performance (Completion Rate)
+      const totalJobs = await prisma.serviceJob.count();
+      const resolvedJobs = await prisma.serviceJob.count({
+        where: { status: { in: ['RESOLVED', 'CLOSED'] } }
+      });
+      const servicePerformance = totalJobs > 0 ? (resolvedJobs / totalJobs) * 100 : 100;
+
+      // 8. AMC Performance (Completion Rate of AMC visits)
+      const amcVisits = await prisma.serviceVisit.count({
+        where: { job: { job_type: 'AMC' } }
+      });
+      const completedAmcVisits = await prisma.serviceVisit.count({
+        where: {
+          job: { job_type: 'AMC' },
+          status: 'EXECUTED'
+        }
+      });
+      const amcPerformance = amcVisits > 0 ? (completedAmcVisits / amcVisits) * 100 : 100;
+
+      // 9. Technician Productivity (Average Completed Jobs per tech)
+      const totalTechs = await prisma.technician.count({ where: { is_active: true } });
+      const totalCompletedJobs = await prisma.technicianAssignment.count({
+        where: { status: 'COMPLETED' }
+      });
+      const technicianProductivity = totalTechs > 0 ? (totalCompletedJobs / totalTechs) : 0;
+
+      return {
+        dailySales,
+        monthlySales,
+        purchaseTrends: purchaseTrends.map(p => ({
+          month: p.month_str,
+          total: Number(p.total)
+        })),
+        inventoryValue,
+        outstandingReceivables,
+        outstandingPayables,
+        servicePerformance: Number(servicePerformance.toFixed(1)),
+        amcPerformance: Number(amcPerformance.toFixed(1)),
+        technicianProductivity: Number(technicianProductivity.toFixed(2))
+      };
+    });
+
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/dashboard/kpis
+dashboardRouter.get('/kpis', async (_req, res) => {
+  try {
+    const data = await measurePerformance('KpiDashboard', 500, async () => {
+      const [
+        revenue,
+        grossProfit,
+        inventoryTurnover,
+        supplierPerformance,
+        techPerformance,
+        amcRenewalRate,
+        collectionEfficiency
+      ] = await Promise.all([
+        KPIService.getRevenue(),
+        KPIService.getGrossProfit(),
+        KPIService.getInventoryTurnover(),
+        KPIService.getSupplierPerformance(),
+        KPIService.getTechnicianPerformance(),
+        KPIService.getAmcRenewalRate(),
+        KPIService.getCollectionEfficiency()
+      ]);
+
+      return {
+        revenue,
+        grossProfit,
+        inventoryTurnover,
+        supplierPerformance,
+        technicianPerformance: techPerformance,
+        amcRenewalRate,
+        collectionEfficiency
+      };
+    });
+
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/dashboard/alerts
+dashboardRouter.get('/alerts', async (_req, res) => {
+  try {
+    const data = await measurePerformance('AlertDashboard', 300, async () => {
+      return AlertService.getAllAlerts();
+    });
+
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });

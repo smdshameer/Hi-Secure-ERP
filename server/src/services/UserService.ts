@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '../index';
 import { UserRepository } from '../repositories/UserRepository';
+import { CacheService } from './CacheService';
 
 export class UserService {
   private userRepo = new UserRepository();
@@ -45,7 +46,7 @@ export class UserService {
       updateData.password_hash = await bcrypt.hash(data.password, 12);
     }
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
         where: { user_id: id },
         data: updateData
@@ -65,15 +66,23 @@ export class UserService {
       }
       return updatedUser;
     });
+
+    // Immediately invalidate stale permission cache so role changes apply at next request
+    await CacheService.del(`user:permissions:${id}`);
+    return result;
   }
 
   async deleteUser(id: number) {
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       return tx.user.update({
         where: { user_id: id },
         data: { is_active: false }
       });
     });
+
+    // Immediately invalidate stale permission cache so deactivation applies at next request
+    await CacheService.del(`user:permissions:${id}`);
+    return result;
   }
 
   async getUserByUsername(username: string) {

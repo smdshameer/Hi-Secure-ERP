@@ -4,9 +4,22 @@ import { Router } from 'express';
 import multer from 'multer';
 import { prisma } from '../index';
 import { AttachmentService } from '../services/AttachmentService';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest, requirePermission } from '../middleware/auth';
+import { antivirusService } from '../services/AntivirusService';
 
 export const attachmentsRouter = Router();
+
+attachmentsRouter.use((req, res, next) => {
+  if (req.method === 'GET') {
+    return requirePermission('attachments:view')(req, res, next);
+  } else if (req.method === 'POST') {
+    return requirePermission('attachments:create')(req, res, next);
+  } else if (req.method === 'DELETE') {
+    return requirePermission('attachments:delete')(req, res, next);
+  } else {
+    next();
+  }
+});
 
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -52,6 +65,13 @@ attachmentsRouter.post('/upload', upload.single('file'), async (req: AuthRequest
   try {
     if (!file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Antivirus check
+    const scanResult = await antivirusService.scanFile(file.path);
+    if (!scanResult.safe) {
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      return res.status(400).json({ error: 'VIRUS_DETECTED', details: scanResult.virusName || scanResult.error });
     }
 
     const { entity_type, entity_id } = req.body;
@@ -261,6 +281,67 @@ attachmentsRouter.delete('/:id', async (req: AuthRequest, res) => {
     await AttachmentService.deleteAttachment(id);
 
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/attachments/version/:versionId/download
+attachmentsRouter.get('/version/:versionId/download', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized: Missing user ID' });
+    }
+
+    const versionId = Number(req.params.versionId);
+    const version = await prisma.attachmentVersion.findUnique({
+      where: { version_id: versionId },
+      include: { attachment: true }
+    });
+
+    if (!version) {
+      return res.status(404).json({ error: 'Attachment version not found' });
+    }
+
+    // Path Traversal check
+    if (version.file_path.includes('..') || !path.resolve(uploadDir, version.file_path).startsWith(uploadDir)) {
+      return res.status(400).json({ error: 'Invalid file path: path traversal detected' });
+    }
+
+    // RBAC validation based on parent attachment entity_type
+    const userRoles = await prisma.userRole.findMany({
+      where: { user_id: userId },
+      include: { role: { include: { permissions: { include: { permission: true } } } } }
+    });
+    const userPermissions = new Set(userRoles.flatMap(ur => ur.role.permissions.map(rp => rp.permission.name)));
+
+    let allowed = false;
+    const typeLower = version.attachment.entity_type.toLowerCase();
+    if (userPermissions.has('users:manage')) {
+      allowed = true;
+    } else if ((typeLower === 'invoice' || typeLower === 'sales') && userPermissions.has('invoice:view')) {
+      allowed = true;
+    } else if (typeLower === 'repair' && userPermissions.has('repairs:create')) {
+      allowed = true;
+    } else if (typeLower === 'purchase' && (userPermissions.has('purchase:create') || userPermissions.has('purchase:receive'))) {
+      allowed = true;
+    } else if (!['invoice', 'sales', 'repair', 'purchase'].includes(typeLower)) {
+      allowed = true;
+    }
+
+    if (!allowed) {
+      return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+    }
+
+    const fullPath = path.join(uploadDir, version.file_path);
+    if (!fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'Physical file not found on disk' });
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(version.file_name)}"`);
+    res.setHeader('Content-Type', version.mime_type || 'application/octet-stream');
+    fs.createReadStream(fullPath).pipe(res);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

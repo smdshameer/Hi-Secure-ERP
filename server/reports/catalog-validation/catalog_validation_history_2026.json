@@ -1,0 +1,79 @@
+[
+  {
+    "dataset": "HIKVISION_MAY_2026",
+    "date": "2026-06-16T13:29:22.666Z",
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 84.04255319148936,
+    "categoryAccuracy": 100,
+    "processingTime": 42941,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:40:18.100Z",
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 94.11764705882352,
+    "categoryAccuracy": 100,
+    "processingTime": 8302,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:45:24.676Z",
+    "brandAccuracy": 0,
+    "modelAccuracy": 100,
+    "priceAccuracy": 100,
+    "categoryAccuracy": 44.44444444444444,
+    "processingTime": 8768,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:46:34.933Z",
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 100,
+    "categoryAccuracy": 30.434782608695656,
+    "processingTime": 13884,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:49:06.000Z",
+    "brandAccuracy": 84.21052631578947,
+    "modelAccuracy": 94.73684210526315,
+    "priceAccuracy": 89.47368421052632,
+    "categoryAccuracy": 47.368421052631575,
+    "processingTime": 12300,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:51:58.594Z",
+    "brandAccuracy": 100,
+    "modelAccuracy": 60.86956521739131,
+    "priceAccuracy": 100,
+    "categoryAccuracy": 39.130434782608695,
+    "processingTime": 42861,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  },
+  {
+    "dataset": "UNKNOWN_DATASET",
+    "date": "2026-06-16T18:55:57.507Z",
+    "brandAccuracy": 100,
+    "modelAccuracy": 79.16666666666666,
+    "priceAccuracy": 62.5,
+    "categoryAccuracy": 87.5,
+    "processingTime": 120677,
+    "ocrVersion": "pdf-parse-1.1",
+    "parserVersion": "2A.5-HARDENED"
+  }
+]

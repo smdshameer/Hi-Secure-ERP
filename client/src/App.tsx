@@ -43,6 +43,8 @@ import PurchaseOrderDetail from './pages/PurchaseOrderDetail';
 import Search from './pages/Search';
 import Approvals from './pages/Approvals';
 import ProductDetail from './pages/ProductDetail';
+import Login from './pages/Login';
+import AuditDashboard from './pages/AuditDashboard';
 
 export default function App() {
   return (
@@ -50,6 +52,7 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/search" element={<Search />} />
           <Route path="/repairs" element={<Repairs />} />
           <Route path="/repairs/new" element={<RepairsForm backPath="/repairs" />} />
@@ -107,6 +110,7 @@ export default function App() {
           <Route path="/companies" element={<Companies />} />
           <Route path="/companies/new" element={<CompaniesForm backPath="/companies" />} />
           <Route path="/companies/:id/edit" element={<CompaniesForm backPath="/companies" />} />
+          <Route path="/admin/audit" element={<AuditDashboard />} />
           <Route path="*" element={
             <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-400">
               <p className="text-6xl font-bold text-gray-200">404</p>

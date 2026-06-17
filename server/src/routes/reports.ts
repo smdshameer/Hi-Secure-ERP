@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../index';
+import { requirePermission } from '../middleware/auth';
+import { ReportingService } from '../services/ReportingService';
+import { BusinessEventService } from '../services/BusinessEventService';
+import { performance } from 'perf_hooks';
 
 export const reportsRouter = Router();
+
+reportsRouter.use(requirePermission('reports:view'));
 
 function serializeRows(rows: any[]): any[] {
   return rows.map(row => {
@@ -153,4 +159,47 @@ reportsRouter.get('/summary', async (_req, res) => {
     ]);
     return res.json({ customers, repairs, totalRevenue: Number(invoices._sum.grand_total || 0), totalParts: Number(parts._sum.stock_quantity || 0), inventoryValue: Number(parts._sum.selling_price || 0) });
   } catch (err) { return res.status(500).json({ error: 'Failed to fetch summary' }); }
+});
+
+// GET /api/reports/export/:type
+reportsRouter.get('/export/:type', async (req, res) => {
+  const type = req.params.type as 'executive' | 'operational' | 'financial' | 'service';
+  const format = req.query.format as 'pdf' | 'excel';
+
+  if (!['executive', 'operational', 'financial', 'service'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid report type' });
+  }
+  if (!['pdf', 'excel'].includes(format)) {
+    return res.status(400).json({ error: 'Invalid export format' });
+  }
+
+  try {
+    const start = performance.now();
+    let buffer: Buffer;
+
+    if (format === 'pdf') {
+      buffer = await ReportingService.generatePDFReport(type);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${type}_report.pdf"`);
+    } else {
+      buffer = await ReportingService.generateExcelReport(type);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${type}_report.xlsx"`);
+    }
+
+    const duration = performance.now() - start;
+    if (type === 'financial' && duration > 2000) {
+      console.warn(`[Performance Warning] Financial Report generation took ${duration.toFixed(2)}ms (Limit: 2000ms)`);
+      await BusinessEventService.logEvent({
+        event_type: 'PERFORMANCE_WARNING',
+        entity_type: 'SystemPerformance',
+        entity_id: 0,
+        description: `Performance Target Exceeded for Financial Report: ${duration.toFixed(2)}ms (Threshold: 2000ms)`
+      }).catch(err => console.error('Failed to log performance warning:', err.message));
+    }
+
+    res.send(buffer);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });

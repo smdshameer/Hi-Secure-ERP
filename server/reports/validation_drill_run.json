@@ -1,0 +1,154 @@
+{
+  "timestamp": "2026-06-15T13:16:29.315Z",
+  "loadTest": {
+    "users_50": {
+      "avgResponseTimeMs": 6.88,
+      "heapChangeMb": 3.82,
+      "userCpuMs": 266,
+      "status": "passed"
+    },
+    "users_100": {
+      "avgResponseTimeMs": 1.26,
+      "heapChangeMb": 5.84,
+      "userCpuMs": 281,
+      "status": "passed"
+    },
+    "users_250": {
+      "avgResponseTimeMs": 0.96,
+      "heapChangeMb": 13.5,
+      "userCpuMs": 875,
+      "status": "passed"
+    }
+  },
+  "financialYear": {
+    "accountsClosed": 28,
+    "documentSeriesRollover": [],
+    "debitsSum": 0,
+    "creditsSum": 0,
+    "isBalanced": true,
+    "status": "passed"
+  },
+  "backupRestore": {
+    "backupFile": "C:\\Users\\Admin\\Desktop\\Calude Test\\erp-app\\server\\backups\\hisecure_erp_daily_2026-06-15_1781529390056.json",
+    "validationPassed": true,
+    "restorePassed": false,
+    "dataEquivalence": true,
+    "status": "failed"
+  },
+  "printValidation": {
+    "documents": {
+      "Invoices": [
+        {
+          "expectedPages": 1,
+          "calculatedPages": 1,
+          "itemsCount": 3,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 5,
+          "calculatedPages": 5,
+          "itemsCount": 65,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 20,
+          "calculatedPages": 20,
+          "itemsCount": 260,
+          "pageBreakPassed": true
+        }
+      ],
+      "Quotations": [
+        {
+          "expectedPages": 1,
+          "calculatedPages": 1,
+          "itemsCount": 3,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 5,
+          "calculatedPages": 5,
+          "itemsCount": 65,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 20,
+          "calculatedPages": 20,
+          "itemsCount": 260,
+          "pageBreakPassed": true
+        }
+      ],
+      "PurchaseOrders": [
+        {
+          "expectedPages": 1,
+          "calculatedPages": 1,
+          "itemsCount": 3,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 5,
+          "calculatedPages": 5,
+          "itemsCount": 65,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 20,
+          "calculatedPages": 20,
+          "itemsCount": 260,
+          "pageBreakPassed": true
+        }
+      ],
+      "RepairReceipts": [
+        {
+          "expectedPages": 1,
+          "calculatedPages": 1,
+          "itemsCount": 3,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 5,
+          "calculatedPages": 5,
+          "itemsCount": 65,
+          "pageBreakPassed": true
+        },
+        {
+          "expectedPages": 20,
+          "calculatedPages": 20,
+          "itemsCount": 260,
+          "pageBreakPassed": true
+        }
+      ]
+    },
+    "status": "passed"
+  },
+  "uatMatrix": {
+    "checks": [
+      {
+        "role": "admin",
+        "verifiedInDb": true,
+        "status": "passed"
+      },
+      {
+        "role": "accountant",
+        "verifiedInDb": true,
+        "status": "passed"
+      },
+      {
+        "role": "sales",
+        "verifiedInDb": true,
+        "status": "passed"
+      },
+      {
+        "role": "inventory_manager",
+        "verifiedInDb": true,
+        "status": "passed"
+      },
+      {
+        "role": "technician",
+        "verifiedInDb": true,
+        "status": "passed"
+      }
+    ],
+    "status": "passed"
+  },
+  "status": "PASSED"
+}

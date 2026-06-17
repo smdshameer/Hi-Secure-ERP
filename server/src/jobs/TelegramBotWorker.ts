@@ -6,94 +6,227 @@ import fs from 'fs';
 class TelegramBotWorker {
   private offset = 0;
   private isRunning = false;
+  
+  // Public status variables for health monitoring
+  public status: 'healthy' | 'degraded' | 'disabled' = 'disabled';
+  public lastSuccessfulPoll: string | null = null;
+  public lastError: string | null = null;
+
+  // Track previous status and last logged state to avoid spam logs
+  private lastLoggedState: string | null = null;
+  private failureCount = 0;
 
   constructor() {
-    setTimeout(() => this.start(), 1000);
+    // Start asynchronously after 1000ms, ensuring index.ts initialization finishes
+    if (process.env.STANDALONE_SCRIPT !== 'true') {
+      setTimeout(() => this.start(), 1000);
+    }
+  }
+
+  private setStatus(
+    newStatus: 'healthy' | 'degraded' | 'disabled',
+    errorType: 'timeout' | 'invalid_token' | 'other' | null,
+    errorMsg: string | null
+  ) {
+    const prevStatus = this.status;
+    this.status = newStatus;
+    this.lastError = errorMsg;
+
+    let logState = '';
+    if (newStatus === 'disabled') {
+      logState = 'TELEGRAM_DISABLED';
+    } else if (newStatus === 'degraded') {
+      if (errorType === 'timeout') {
+        logState = 'TELEGRAM_POLL_TIMEOUT';
+      } else if (errorType === 'invalid_token') {
+        logState = 'TELEGRAM_INVALID_TOKEN';
+      } else {
+        logState = 'TELEGRAM_DEGRADED';
+      }
+    } else if (newStatus === 'healthy') {
+      if (prevStatus === 'degraded' || prevStatus === 'disabled') {
+        logState = 'TELEGRAM_RECOVERED';
+      }
+    }
+
+    if (logState && logState !== this.lastLoggedState) {
+      console.log(`[TelegramBotWorker] ${logState}${errorMsg ? `: ${errorMsg}` : ''}`);
+      this.lastLoggedState = logState;
+    }
   }
 
   async start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    console.log('[TelegramBotWorker] Initializing long-polling Telegram AI worker...');
     this.poll();
   }
 
   private async poll() {
+    const BACKOFF_DELAYS = [30000, 60000, 120000, 300000]; // 30s, 60s, 120s, 300s max
+
     while (this.isRunning) {
+      let delay = 1000; // Default sleep delay between successful polls
+
       try {
-        const cfg = await getTelegramConfig();
-        const aiSetting = await prisma.setting.findUnique({ where: { key: 'ai' } });
-        const aiConfig = (aiSetting?.value as any) || {};
+        // 1. Environment Variable Validation
+        const envEnabled = process.env.TELEGRAM_BOT_ENABLED;
+        const envToken = process.env.TELEGRAM_BOT_TOKEN;
 
-        const telegramAiEnabled = aiConfig.telegram_ai_enabled === true || aiConfig.telegram_ai_enabled === 'true';
-        const aiEnabled = aiConfig.ai_enabled === true || aiConfig.ai_enabled === 'true';
-
-        if (!cfg || !cfg.bot_token || !telegramAiEnabled || !aiEnabled) {
-          // Check again in 15 seconds if config is disabled
-          await new Promise(r => setTimeout(r, 15000));
+        if (envEnabled === 'false') {
+          this.setStatus('disabled', null, 'TELEGRAM_BOT_ENABLED is false');
+          await new Promise(r => setTimeout(r, 1000));
           continue;
         }
 
-        const url = `https://api.telegram.org/bot${cfg.bot_token}/getUpdates?offset=${this.offset}&timeout=10`;
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.warn(`[TelegramBotWorker] getUpdates returned status ${res.status}: ${res.statusText}`);
-          await new Promise(r => setTimeout(r, 10000));
-          continue;
-        }
+        let token = envToken || '';
+        let chatId = '';
+        let telegramAiEnabled = true;
+        let aiEnabled = true;
 
-        const data = await res.json() as any;
-        if (data.ok && data.result && data.result.length > 0) {
-          for (const update of data.result) {
-            this.offset = update.update_id + 1;
-            const message = update.message;
-            if (!message || !message.text) continue;
+        try {
+          // Get DB settings
+          const cfg = await getTelegramConfig();
+          const aiSetting = await prisma.setting.findUnique({ where: { key: 'ai' } });
+          const aiConfig = (aiSetting?.value as any) || {};
 
-            const chatId = String(message.chat.id);
-            const userText = message.text;
+          telegramAiEnabled = aiConfig.telegram_ai_enabled === true || aiConfig.telegram_ai_enabled === 'true';
+          aiEnabled = aiConfig.ai_enabled === true || aiConfig.ai_enabled === 'true';
 
-            // Security check: Match sender's chat id
-            if (chatId !== String(cfg.chat_id)) {
-              console.warn(`[TelegramBotWorker] Unauthorized Chat ID ${chatId} tried to interact with the bot.`);
-              await sendTelegram(`❌ Unauthorized Access. You do not have permissions to query HiSecure ERP. Your Chat ID is ${chatId}.`, chatId);
+          if (cfg) {
+            if (!token) token = cfg.bot_token || '';
+            chatId = cfg.chat_id || '';
+            // If DB config disables it, we check DB enabled flag too
+            if (cfg.enabled === false && !process.env.TELEGRAM_BOT_ENABLED) {
+              this.setStatus('disabled', null, 'Disabled in database settings');
+              await new Promise(r => setTimeout(r, 1000));
               continue;
             }
+          }
+        } catch (dbErr: any) {
+          // If database is not ready yet, degrade state but do not crash
+          this.setStatus('degraded', 'other', 'Database connection failure: ' + dbErr.message);
+          
+          const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+          await new Promise(r => setTimeout(r, backoffDelay));
+          continue;
+        }
 
-            console.log(`[TelegramBotWorker] Processing query from authorized Telegram user: "${userText}"`);
+        // 3. Missing Token Check
+        if (!token || token.trim() === '') {
+          this.setStatus('disabled', null, 'Bot token is missing or empty');
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
 
-            // Send typing indicator to user
-            await fetch(`https://api.telegram.org/bot${cfg.bot_token}/sendChatAction`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: chatId, action: 'typing' })
-            });
+        // 4. AI Feature Check
+        if (!telegramAiEnabled || !aiEnabled) {
+          this.setStatus('disabled', null, 'AI feature or Telegram AI interaction is disabled');
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
 
-            // Process message via shared AiService
-            // Pass admin default ID 1
-            const aiResponse = await AiService.processChatMessage(userText, 1);
+        // 5. Query Telegram long-polling endpoint with timeout
+        const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${this.offset}&timeout=8`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Poll timeout = 10 seconds
 
-            // Send Markdown formatted response back or upload file
-            if (aiResponse.startsWith('__FILE_ATTACHMENT__::')) {
-              const parts = aiResponse.split('::');
-              const filePath = parts[1];
-              const fileName = parts[2];
-              const caption = parts.slice(3).join('::') || '';
-              await this.sendTelegramDocument(filePath, fileName, caption, chatId, cfg.bot_token);
-            } else {
-              const sendResult = await sendTelegram(aiResponse, chatId);
-              if (!sendResult.success) {
-                console.error(`[TelegramBotWorker] sendTelegram failed to chat ${chatId}:`, sendResult.error);
+        let res: Response;
+        try {
+          res = await fetch(url, { signal: controller.signal as any }) as any;
+        } catch (fetchErr: any) {
+          clearTimeout(timeoutId);
+          if (fetchErr.name === 'AbortError') {
+            this.setStatus('degraded', 'timeout', 'Polling connection timed out');
+          } else {
+            this.setStatus('degraded', 'other', fetchErr.message || String(fetchErr));
+          }
+
+          const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+          await new Promise(r => setTimeout(r, backoffDelay));
+          continue;
+        }
+        clearTimeout(timeoutId);
+
+        // 6. Handle Invalid Token vs Standard Response Statuses
+        if (res.status === 401 || res.status === 404) {
+          this.setStatus('degraded', 'invalid_token', 'Invalid bot token');
+          const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+          await new Promise(r => setTimeout(r, backoffDelay));
+          continue;
+        }
+
+        if (!res.ok) {
+          this.setStatus('degraded', 'other', `Telegram server error status ${res.status}`);
+          const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+          await new Promise(r => setTimeout(r, backoffDelay));
+          continue;
+        }
+
+        // 7. Parse Data and Reset Failure/Backoff states on success
+        const data = await res.json() as any;
+        if (data.ok) {
+          this.setStatus('healthy', null, null);
+          this.lastSuccessfulPoll = new Date().toISOString();
+          this.failureCount = 0; // Reset consecutive failures count
+
+          if (data.result && data.result.length > 0) {
+            for (const update of data.result) {
+              this.offset = update.update_id + 1;
+              const message = update.message;
+              if (!message || !message.text) continue;
+
+              const chatIdLoc = String(message.chat.id);
+              const userText = message.text;
+
+              // Security check: Match sender's chat id
+              if (chatIdLoc !== String(chatId)) {
+                console.warn(`[TelegramBotWorker] Unauthorized Chat ID ${chatIdLoc} tried to interact with the bot.`);
+                await sendTelegram(`❌ Unauthorized Access. You do not have permissions to query HiSecure ERP. Your Chat ID is ${chatIdLoc}.`, chatIdLoc);
+                continue;
+              }
+
+              console.log(`[TelegramBotWorker] Processing query from authorized Telegram user: "${userText}"`);
+
+              // Send typing indicator to user
+              await fetch(`https://api.telegram.org/bot${token}/sendChatAction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatIdLoc, action: 'typing' })
+              }).catch(() => {});
+
+              // Process message via shared AiService
+              const aiResponse = await AiService.processChatMessage(userText, 1);
+
+              // Send Markdown formatted response back or upload file
+              if (aiResponse.startsWith('__FILE_ATTACHMENT__::')) {
+                const parts = aiResponse.split('::');
+                const filePath = parts[1];
+                const fileName = parts[2];
+                const caption = parts.slice(3).join('::') || '';
+                await this.sendTelegramDocument(filePath, fileName, caption, chatIdLoc, token);
+              } else {
+                const sendResult = await sendTelegram(aiResponse, chatIdLoc);
+                if (!sendResult.success) {
+                  console.error(`[TelegramBotWorker] sendTelegram failed to chat ${chatIdLoc}:`, sendResult.error);
+                }
               }
             }
           }
+        } else {
+          this.setStatus('degraded', 'other', data.description || 'Unknown Telegram API Error');
+          const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+          await new Promise(r => setTimeout(r, backoffDelay));
+          continue;
         }
       } catch (err: any) {
-        console.error('[TelegramBotWorker] Error in polling loop:', err.message || err);
-        await new Promise(r => setTimeout(r, 10000));
+        this.setStatus('degraded', 'other', err.message || String(err));
+        const backoffDelay = BACKOFF_DELAYS[Math.min(this.failureCount++, BACKOFF_DELAYS.length - 1)];
+        await new Promise(r => setTimeout(r, backoffDelay));
+        continue;
       }
       
       // Prevent CPU thrashing
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, delay));
     }
   }
 
@@ -149,8 +282,9 @@ class TelegramBotWorker {
 
   stop() {
     this.isRunning = false;
-    console.log('[TelegramBotWorker] Stopped Telegram AI worker.');
+    this.setStatus('disabled', null, 'Stopped Telegram AI worker');
   }
 }
 
 export const telegramBotWorker = new TelegramBotWorker();
+export default telegramBotWorker;

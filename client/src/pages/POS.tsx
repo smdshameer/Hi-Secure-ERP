@@ -14,6 +14,7 @@ interface CartItem {
   taxRate: number;
   quantity: number;
   total: number;
+  stock: number; // Available stock ceiling
 }
 
 export default function POS() {
@@ -29,6 +30,7 @@ export default function POS() {
   const [paymentMode, setPaymentMode]   = useState<'cash' | 'upi' | 'card'>('cash');
   const [success, setSuccess]           = useState(false);
   const [loading, setLoading]           = useState(false);
+  const [stockWarning, setStockWarning] = useState<string | null>(null);
 
   useEffect(() => {
     api.get('/products', { params: { search, limit: 30 } })
@@ -59,9 +61,14 @@ export default function POS() {
   }, []);
 
   const addToCart = (p: Product) => {
+    setStockWarning(null);
     setCart(prev => {
       const existing = prev.find(i => i.productId === p.id);
       if (existing) {
+        if (existing.quantity >= p.stock) {
+          setStockWarning(`Only ${p.stock} unit(s) of "${p.name}" are available in stock.`);
+          return prev; // Do not exceed stock
+        }
         return prev.map(i => i.productId === p.id
           ? { ...i, quantity: i.quantity + 1, total: (i.quantity + 1) * i.salePrice }
           : i);
@@ -70,16 +77,26 @@ export default function POS() {
         productId: p.id, name: p.name,
         salePrice: p.salePrice, taxRate: p.taxRate,
         quantity: 1, total: p.salePrice,
+        stock: p.stock,
       }];
     });
   };
 
   const updateQty = (productId: number, delta: number) => {
-    setCart(prev => prev
-      .map(i => i.productId === productId
-        ? { ...i, quantity: i.quantity + delta, total: (i.quantity + delta) * i.salePrice }
-        : i)
-      .filter(i => i.quantity > 0));
+    setStockWarning(null);
+    setCart(prev => {
+      return prev
+        .map(i => {
+          if (i.productId !== productId) return i;
+          const newQty = i.quantity + delta;
+          if (newQty > i.stock) {
+            setStockWarning(`Only ${i.stock} unit(s) of "${i.name}" are available in stock.`);
+            return i; // Clamp — do not exceed stock
+          }
+          return { ...i, quantity: newQty, total: newQty * i.salePrice };
+        })
+        .filter(i => i.quantity > 0);
+    });
   };
 
   const removeItem = (productId: number) =>
@@ -202,6 +219,14 @@ export default function POS() {
               </button>
             )}
           </div>
+
+          {/* Stock warning banner */}
+          {stockWarning && (
+            <div className="mx-3 mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+              <span className="text-amber-500 text-[13px] leading-none mt-0.5">⚠</span>
+              <p className="text-[11px] text-amber-700 leading-snug">{stockWarning}</p>
+            </div>
+          )}
 
           {/* Cart items */}
           <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-2">

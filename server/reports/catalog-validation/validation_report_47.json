@@ -1,0 +1,420 @@
+{
+  "sessionId": 47,
+  "fileName": "LG_STK_4.7.23.pdf",
+  "validationStatus": "REVIEW_REQUIRED",
+  "supplierTemplate": "UNKNOWN",
+  "validationDataset": "UNKNOWN_DATASET",
+  "accuracyMetrics": {
+    "brandAccuracy": 100,
+    "modelAccuracy": 100,
+    "priceAccuracy": 100,
+    "categoryAccuracy": 30.434782608695656
+  },
+  "confidenceScores": {
+    "ocrConfidence": 1,
+    "parserConfidence": 0.9,
+    "overallConfidence": 0.95
+  },
+  "performanceMetrics": {
+    "ocrTimeMs": 64,
+    "parsingTimeMs": 13629,
+    "validationTimeMs": 89,
+    "duplicateDetectionTimeMs": 120,
+    "totalProcessingTimeMs": 13884
+  },
+  "failureAnalytics": {
+    "NO_MODEL_FOUND": 0,
+    "NO_PRICE_FOUND": 0,
+    "UNKNOWN_BRAND": 0,
+    "CATEGORY_UNMATCHED": 16,
+    "OCR_LOW_CONFIDENCE": 0,
+    "AI_PARSE_FAILURE": 0
+  },
+  "validProducts": [
+    {
+      "temporary_item_id": "TMP-000001",
+      "brand": "Lg",
+      "model": "LG-SPLITAC-RS-Q19CNZE-1.5TON",
+      "part_number": "LG-SPLITAC-RS-Q19CNZE-1.5TON",
+      "name": "Lg-split Ac-rs-q19cnze-1.5ton",
+      "description": null,
+      "cost_price": 45000,
+      "selling_price": 45000,
+      "tax_rate": 0,
+      "category": "Air Conditioner",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (45000) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000002",
+      "brand": "Lg",
+      "model": "LG-SPLITAC-RS-Q19ENYE-1.5TON",
+      "part_number": "LG-SPLITAC-RS-Q19ENYE-1.5TON",
+      "name": "Lg-split Ac-rs-q19enye-1.5ton",
+      "description": null,
+      "cost_price": 40000,
+      "selling_price": 40000,
+      "tax_rate": 0,
+      "category": "Air Conditioner",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (40000) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000003",
+      "brand": "Lg",
+      "model": "LG-SPLITAC-RS-Q24ENXE-2.0TON",
+      "part_number": "LG-SPLITAC-RS-Q24ENXE-2.0TON",
+      "name": "Lg-split Ac-rs-q24enxe-2.0ton",
+      "description": null,
+      "cost_price": 51000,
+      "selling_price": 51000,
+      "tax_rate": 0,
+      "category": "Air Conditioner",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (51000) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000004",
+      "brand": "Lg",
+      "model": "LG-FL-FHM1409BDM-9KG",
+      "part_number": "LG-FL-FHM1409BDM-9KG",
+      "name": "Lg-fl-fhm1409bdm -9kg",
+      "description": null,
+      "cost_price": 36000,
+      "selling_price": 36000,
+      "tax_rate": 0,
+      "category": "Washing Machine",
+      "confidence": "HIGH",
+      "warnings": [
+        "Cost price (36000) is exceptionally high (more than 10x database average: 3395.68). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000005",
+      "brand": "Lg",
+      "model": "LG-REF-B199OSJB",
+      "part_number": "LG-REF-B199OSJB",
+      "name": "Lg-ref-b199osjb",
+      "description": null,
+      "cost_price": 14000,
+      "selling_price": 14000,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000006",
+      "brand": "Lg",
+      "model": "LG-REF-B201ABCD",
+      "part_number": "LG-REF-B201ABCD",
+      "name": "Lg-ref-b201abcd",
+      "description": null,
+      "cost_price": 16500,
+      "selling_price": 16500,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000007",
+      "brand": "Lg",
+      "model": "LG-REF-B201APZD",
+      "part_number": "LG-REF-B201APZD",
+      "name": "Lg-ref-b201apzd",
+      "description": null,
+      "cost_price": 16500,
+      "selling_price": 16500,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000008",
+      "brand": "Lg",
+      "model": "LG-REF-B201ASCD",
+      "part_number": "LG-REF-B201ASCD",
+      "name": "Lg-ref-b201ascd",
+      "description": null,
+      "cost_price": 16500,
+      "selling_price": 16500,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000009",
+      "brand": "Lg",
+      "model": "LG-REF-B211HBCY",
+      "part_number": "LG-REF-B211HBCY",
+      "name": "Lg-ref-b211hbcy",
+      "description": null,
+      "cost_price": 18000,
+      "selling_price": 18000,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000010",
+      "brand": "Lg",
+      "model": "LG-REF-B221APVY",
+      "part_number": "LG-REF-B221APVY",
+      "name": "Lg-ref-b221apvy",
+      "description": null,
+      "cost_price": 19000,
+      "selling_price": 19000,
+      "tax_rate": 0,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000011",
+      "brand": "Lg",
+      "model": "LG-REF-B221ASVY",
+      "part_number": "6",
+      "name": "Lg-ref-b221asvy",
+      "description": null,
+      "cost_price": 19,
+      "selling_price": 19000,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (19) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000012",
+      "brand": "Lg",
+      "model": "LG-REF-B281BPZX",
+      "part_number": "1",
+      "name": "Lg-ref-b281bpzx",
+      "description": null,
+      "cost_price": 23.5,
+      "selling_price": 23500,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (23.5) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000013",
+      "brand": "Lg",
+      "model": "LG-REF-D221ABEY",
+      "part_number": "10",
+      "name": "Lg-ref-d221abey",
+      "description": null,
+      "cost_price": 19.5,
+      "selling_price": 19500,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (19.5) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000014",
+      "brand": "Lg",
+      "model": "LG-REF-D221ASEY",
+      "part_number": "10",
+      "name": "Lg-ref-d221asey",
+      "description": null,
+      "cost_price": 19.5,
+      "selling_price": 19500,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (19.5) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000015",
+      "brand": "Lg",
+      "model": "LG-SWM-6.0KG-P6001RGZ",
+      "part_number": "2",
+      "name": "Lg-swm-6.0kg-p6001rgz",
+      "description": null,
+      "cost_price": 11.5,
+      "selling_price": 11500,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (11.5) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000016",
+      "brand": "Lg",
+      "model": "LG-SWM-7.0KG-P7010NBAZ",
+      "part_number": "3",
+      "name": "Lg-swm-7.0kg-p7010nbaz",
+      "description": null,
+      "cost_price": 12.5,
+      "selling_price": 12500,
+      "tax_rate": 500,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [
+        "Cost price (12.5) is exceptionally low (less than 10% of database average: 3395.68)."
+      ],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000017",
+      "brand": "Lg",
+      "model": "LG-SWM-7.5KG-P7510RRAZ",
+      "part_number": "17",
+      "name": "Lg-swm-7.5kg-p7510rraz",
+      "description": null,
+      "cost_price": 500,
+      "selling_price": 14000,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000018",
+      "brand": "Lg",
+      "model": "LG-SWM-8.0KG-P8035SRAZ",
+      "part_number": "18",
+      "name": "Lg-swm-8.0kg-p8035sraz",
+      "description": null,
+      "cost_price": 500,
+      "selling_price": 15000,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000019",
+      "brand": "Lg",
+      "model": "LG-TWM-7.0KG-T70SPSF1ZA",
+      "part_number": "19",
+      "name": "Lg-twm-7.0kg-t70spsf1za",
+      "description": null,
+      "cost_price": 500,
+      "selling_price": 20000,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000020",
+      "brand": "Lg",
+      "model": "LG-TWM-7.5KG-T75SKSF1Z",
+      "part_number": "20",
+      "name": "Lg-twm-7.5kg-t75sksf1z",
+      "description": null,
+      "cost_price": 500,
+      "selling_price": 19500,
+      "tax_rate": 18,
+      "category": null,
+      "confidence": "MEDIUM",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000021",
+      "brand": "Lg",
+      "model": "LG-TV-32LQ640BPTA-LEDLCD",
+      "part_number": "21",
+      "name": "Lg-tv-32lq640bpta-led Lcd 32\" [hd]",
+      "description": "LED LCD 32\"",
+      "cost_price": 1000,
+      "selling_price": 18000,
+      "tax_rate": 18,
+      "category": "Led Lcd",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000022",
+      "brand": "Lg",
+      "model": "LG-TV-43UQ7550PSF-LEDLCD",
+      "part_number": "22",
+      "name": "Lg-tv-43uq7550psf-led Lcd 43\" [ud]",
+      "description": "LED LCD 43\"",
+      "cost_price": 1000,
+      "selling_price": 35000,
+      "tax_rate": 18,
+      "category": "Led Lcd",
+      "confidence": "HIGH",
+      "warnings": [],
+      "raw_source_text": ""
+    },
+    {
+      "temporary_item_id": "TMP-000023",
+      "brand": "Lg",
+      "model": "55UQ7550PSF",
+      "part_number": "LG-TV-55UQ7550PSF-LEDLCD55\"",
+      "name": "Lg-tv-55uq7550psf-led Lcd 55\"",
+      "description": null,
+      "cost_price": 1000,
+      "selling_price": 55000,
+      "tax_rate": 0,
+      "category": "Tv",
+      "confidence": "HIGH",
+      "warnings": [
+        "Selling price (55000) is exceptionally high (more than 10x database average: 5483.31). Possible missing decimal point."
+      ],
+      "raw_source_text": ""
+    }
+  ],
+  "potentialDuplicates": [],
+  "rejectedProducts": [],
+  "warnings": [],
+  "runtimeEnvironment": {
+    "cpuModel": "Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz",
+    "totalRam": 8507801600,
+    "processMemoryUsage": 398462976,
+    "osVersion": "Windows_NT 10.0.19045",
+    "nodeVersion": "v25.1.0",
+    "pythonVersion": "Python 3.14.4"
+  },
+  "versionSnapshot": {
+    "applicationVersion": "2.0.0",
+    "parserVersion": "2A.5-HARDENED",
+    "ocrEngineVersion": "pdf-parse-1.1",
+    "gitCommit": "0746dc1",
+    "buildDate": "2026-06-16T18:34:07.135Z"
+  }
+}

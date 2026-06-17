@@ -5,6 +5,7 @@ import { prisma } from '../index';
 import { jobQueue } from '../jobs/JobQueue';
 import { CacheService } from './CacheService';
 import nodemailer from 'nodemailer';
+import { telegramBotWorker } from '../jobs/TelegramBotWorker';
 
 export class SystemHealthService {
   static async getFullHealth() {
@@ -23,7 +24,13 @@ export class SystemHealthService {
         queue: { status: 'healthy', active_jobs: 0, failed_jobs: 0 },
         storage: { status: 'healthy', uploads_dir_exists: false, uploads_count: 0 },
         smtp: { status: 'unknown' },
-        gst_service: { status: 'healthy', endpoint: 'https://publicservices.gst.gov.in' }
+        gst_service: { status: 'healthy', endpoint: 'https://publicservices.gst.gov.in' },
+        ocr_service: { status: 'unknown' },
+        telegram: {
+          status: telegramBotWorker.status,
+          lastSuccessfulPoll: telegramBotWorker.lastSuccessfulPoll,
+          lastError: telegramBotWorker.lastError
+        }
       }
     };
 
@@ -34,9 +41,9 @@ export class SystemHealthService {
       health.services.database.status = 'healthy';
       health.services.database.latency_ms = Date.now() - start;
     } catch (err: any) {
-      health.status = 'degraded';
-      health.services.database.status = 'unhealthy';
-      health.services.database.error = err.message;
+      console.error('[Database Health Check] Query Failure in getFullHealth!');
+      console.error(`[Database Health Check] Error Details: ${err.message || err}`);
+      throw err; // Do not suppress exceptions
     }
 
     // 2. Redis Caching Check
@@ -126,18 +133,45 @@ export class SystemHealthService {
       health.services.smtp.error = err.message;
     }
 
+    // 6. OCR Service Watchdog Check
+    try {
+      const { OCRService } = require('./OCRService');
+      const watchdogResult = await OCRService.runWatchdog();
+      const ocrMetrics = OCRService.getMetrics();
+      health.services.ocr_service = {
+        status: watchdogResult.degraded ? 'warning' : 'healthy',
+        degraded: watchdogResult.degraded,
+        reason: watchdogResult.reason || null,
+        average_latency_ms: ocrMetrics.averageResponseTimeMs,
+        consecutive_failures: ocrMetrics.consecutiveFailures,
+        is_available: ocrMetrics.isAvailable
+      };
+      if (watchdogResult.degraded) {
+        health.status = 'warning';
+      }
+    } catch (ocrErr: any) {
+      health.services.ocr_service = { status: 'unhealthy', error: ocrErr.message };
+      health.status = 'warning';
+    }
+
     return health;
   }
 
   static async checkHealth() {
     let dbStatus = 'connected';
     let dbLatencyMs = 0;
+    console.log('[Database Health Check] Connection Status: Checking...');
     try {
       const start = Date.now();
       await prisma.$queryRaw`SELECT 1`;
       dbLatencyMs = Date.now() - start;
-    } catch {
+      console.log(`[Database Health Check] Query Success. Latency: ${dbLatencyMs}ms`);
+      console.log('[HealthHistoryService] Database check successful');
+    } catch (err: any) {
       dbStatus = 'error';
+      console.error('[Database Health Check] Query Failure!');
+      console.error(`[Database Health Check] Error Details: ${err.message || err}`);
+      throw err; // Do not suppress exceptions
     }
     const uptimeSeconds = process.uptime();
     const mem = process.memoryUsage();

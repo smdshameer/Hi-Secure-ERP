@@ -44,9 +44,9 @@ suppliersRouter.put('/:id', requirePermission('purchase:create'), async (req, re
   }
 });
 
-suppliersRouter.delete('/:id', requirePermission('purchase:create'), async (req, res) => {
+suppliersRouter.delete('/:id', requirePermission('purchase:create'), async (req: any, res) => {
   try {
-    await supplierService.deleteSupplier(Number(req.params.id));
+    await supplierService.deleteSupplier(Number(req.params.id), req.userId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete supplier' });

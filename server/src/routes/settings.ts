@@ -5,8 +5,18 @@ import { sendWhatsApp } from '../services/whatsappService';
 import { sendTelegram } from '../services/telegramService';
 import os from 'os';
 import { AiService } from '../services/AiService';
+import { requirePermission } from '../middleware/auth';
 
 export const settingsRouter = Router();
+
+// Method-based permission middleware: GET requires settings:view, writes require settings:edit
+settingsRouter.use((req, res, next) => {
+  if (req.method === 'GET') {
+    return requirePermission('settings:view')(req, res, next);
+  } else {
+    return requirePermission('settings:edit')(req, res, next);
+  }
+});
 
 // Helper: convert Prisma Decimal objects to plain numbers for JSON serialization
 function toPlain(obj: any): any {
@@ -1148,6 +1158,41 @@ settingsRouter.post('/import', async (req, res) => {
   } catch (err: any) {
     console.error('[Import] Failed:', err);
     res.status(500).json({ error: err.message || 'Import failed', log, warnings: warn });
+  }
+});
+
+// ── POST list NVIDIA NIM models ───────────────────────────────────
+settingsRouter.post('/nvidia-models', async (req, res) => {
+  try {
+    const { apiKey } = req.body;
+    if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
+      return res.status(400).json({ error: 'NVIDIA API key is required.' });
+    }
+
+    const response = await fetch('https://integrate.api.nvidia.com/v1/models', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey.trim()}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({})) as any;
+      return res.status(response.status).json({
+        error: errBody?.message || `NVIDIA API returned status ${response.status}`,
+      });
+    }
+
+    const data = await response.json() as any;
+    // The OpenAI-compatible /v1/models response shape: { data: [{ id, object, ... }] }
+    const models: string[] = Array.isArray(data?.data)
+      ? data.data.map((m: any) => m.id).filter(Boolean)
+      : [];
+
+    return res.json({ success: true, models });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Failed to fetch NVIDIA models.' });
   }
 });
 

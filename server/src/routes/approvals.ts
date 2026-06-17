@@ -1,8 +1,18 @@
 import { Router } from 'express';
 import { ApprovalService } from '../services/ApprovalService';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest, requirePermission } from '../middleware/auth';
 
 export const approvalsRouter = Router();
+
+approvalsRouter.use((req, res, next) => {
+  if (req.method === 'GET') {
+    return requirePermission('approvals:view')(req, res, next);
+  } else if (req.method === 'POST') {
+    return requirePermission('approvals:approve')(req, res, next);
+  } else {
+    next();
+  }
+});
 const approvalService = new ApprovalService();
 
 // Get all pending approvals for the currently logged in user (based on their roles)

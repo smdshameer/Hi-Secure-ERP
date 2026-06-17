@@ -28,8 +28,8 @@ export class AiService {
   /**
    * Main message processing loop with tool invocation support (OpenAI compat)
    */
-  static async processChatMessage(message: string, _userId: number): Promise<string> {
-    const rawResponse = await this.executeChatMessage(message, _userId);
+  static async processChatMessage(message: string, _userId: number, tokenRef?: { tokens: number }): Promise<string> {
+    const rawResponse = await this.executeChatMessage(message, _userId, tokenRef);
     let cleaned = this.wrapAndAlignTables(rawResponse);
 
     // Clean up unnecessary code block wrapping (like ```markdown ... ```) that the LLM might have outputted around lists or text cards
@@ -59,7 +59,7 @@ export class AiService {
     return cleaned;
   }
 
-  private static async executeChatMessage(message: string, _userId: number): Promise<string> {
+  private static async executeChatMessage(message: string, _userId: number, tokenRef?: { tokens: number }): Promise<string> {
     const config = await this.getAiConfig();
     if (!config || !config.ai_enabled || !config.nvidia_api_key) {
       return 'Hi-Secure AI is currently disabled or API credentials are not configured. Please go to Settings → AI Assistant to enable it and enter your NVIDIA NIM API Key.';
@@ -303,6 +303,14 @@ For general greetings, simple chit-chat, or introductions (such as "Hi", "Hello"
               response = fetchRes;
               resData = data;
               modelUsed = modelCandidate;
+              if (tokenRef) {
+                const usage = data?.usage;
+                if (usage && usage.total_tokens) {
+                  tokenRef.tokens += usage.total_tokens;
+                } else {
+                  tokenRef.tokens += Math.ceil((JSON.stringify(messages).length + JSON.stringify(data).length) / 4);
+                }
+              }
               break;
             } else {
               console.warn(`[Hi-Secure AI] Model ${modelCandidate} failed with status ${fetchRes.status}:`, data?.error?.message || data);

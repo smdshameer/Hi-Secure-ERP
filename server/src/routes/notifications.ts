@@ -7,7 +7,7 @@ export const notificationsRouter = Router();
 // GET /api/notifications
 notificationsRouter.get('/', async (req, res) => {
   try {
-    const userId = (req as any).user?.user_id;
+    const userId = (req as any).userId;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     // Fetch user's role ID if any
@@ -27,7 +27,10 @@ notificationsRouter.get('/', async (req, res) => {
 notificationsRouter.put('/:id/read', async (req, res) => {
   try {
     const id = Number(req.params.id);
-    await NotificationService.markAsRead(id);
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    await NotificationService.markAsRead(id, userId);
     res.json({ success: true });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -37,7 +40,7 @@ notificationsRouter.put('/:id/read', async (req, res) => {
 // PUT /api/notifications/read-all
 notificationsRouter.put('/read-all', async (req, res) => {
   try {
-    const userId = (req as any).user?.user_id;
+    const userId = (req as any).userId;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const userRole = await prisma.userRole.findFirst({

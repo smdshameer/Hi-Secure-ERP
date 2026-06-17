@@ -1,10 +1,19 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 **/node_modules/
 
 # Environment & secrets
 .env
+.env.local
+.env.*.local
 *.env
+
+# Private & SSH keys
+*.pem
+*.key
+id_rsa*
+id_ecdsa*
+id_ed25519*
 
 # Logs
 *.log
@@ -23,3 +32,129 @@ client/dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temporary cookie jars & testing logs
+.cookie.txt
+.fresh.jar
+.jar.txt
+.jar2.txt
+.jar_debug.txt
+.jar_fresh.txt
+.session.jar
+.test_login.js
+cookie.jar
+cookies.txt
+dbg.txt
+dc_error.html
+debug-login.js
+debug-req.js
+debug.log
+debug_cookies.txt
+diff-test.js
+err.log
+final.txt
+final_debug.log
+final_run.log
+finalc.txt
+fresh.txt
+fullpage.html
+inline_result.log
+out.log
+output.txt
+parts_error.html
+rb_run.log
+replayed_diff.txt
+run.log
+run.txt
+sales_error.html
+sales_error_full.html
+session.txt
+sessions.txt
+settings_error.html
+settings_full.html
+test-output.txt
+test_output.log
+utf8_diff.txt
+utf8_replayed_diff.txt
+_bodytest.js
+_probe.js
+_probe2.js
+_rbac_output.log
+_rbac_test.js
+_results_all.json
+_results_manual_rbac.txt
+_results_prod.json
+_results_rbac.json
+_test.js
+_validate_curl.sh
+_validate_simple.js
+_validate_slow.sh
+_wf2_simple.js
+_wf2_test.js
+_wf3_test.js
+*.png
+*.txt
+
+# Scratch scripts & temporary codes
+scratch/
+server/scratch/
+_debug2.py
+_debug_flow.py
+_debug_py.py
+_debug_timeout.py
+_themes_update.py
+_validate.rb
+_run.rb
+_prod_all.sh
+_prod_validate.js
+_prod_validate.py
+_prod_validate_wf1.js
+_prod_validation_report.md
+
+# Database backups & local safety snapshots
+backups/
+backups_safety/
+server/backups/
+server/backups_safety/
+*.sql
+*.sql.gz
+
+# Generated Prisma & build metadata
+server/src/generated/
+*.tsbuildinfo
+
+# Verification & Certification reports
+walkthrough.md
+production_certification_report.json
+production_certification_report.md
+server/production_certification_report.json
+server/production_certification_report.md
+integrity-report.json
+server/integrity-report.json
+PHASE_*
+*AUDIT_REPORT*
+*TEST_REPORT*
+*FREEZE*
+*DEPENDENCY_MAP*
+*RISK_MATRIX*
+*VERIFICATION_PLAN*
+*GAP_ANALYSIS*
+*IMPLEMENTATION_REPORT*
+*IMPLEMENTATION_PLAN*
+*PLAN.md*
+*AUDIT.md*
+*HISECURE.md*
+*ROUTE_MAP.md*
+*V1_RESTORE*
+*VALIDATION_TEST_RESULTS.md*
+*QUICKSTART*
+*START-HERE.md*
+*DEBUG_REPORT*
+*DEBUG_SUMMARY*
+*DELIVERY_CHALLAN.md*
+*ERP-Architecture.pdf*
+*erp_app_architecture.md*
+*architecture_report.md*
+__pycache__/
+**/__pycache__/
+

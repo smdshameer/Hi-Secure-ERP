@@ -183,20 +183,35 @@ export class InventoryService {
         throw new Error(`Insufficient stock for "${part.name}". Available: ${currentStock}, requested change: ${quantityChange}`);
       }
 
-      await tx.partStock.upsert({
-        where: {
-          part_id_location_id: {
+      if (quantityChange < 0) {
+        const requestedQty = Math.abs(quantityChange);
+        const updateResult = await tx.partStock.updateMany({
+          where: {
             part_id: partId,
-            location_id: locationId
-          }
-        },
-        update: { quantity: newQty },
-        create: {
-          part_id: partId,
-          location_id: locationId,
-          quantity: newQty
+            location_id: locationId,
+            quantity: { gte: requestedQty }
+          },
+          data: { quantity: { decrement: requestedQty } }
+        });
+        if (updateResult.count === 0) {
+          throw new Error(`Insufficient stock for "${part.name}". Available: ${currentStock}, requested change: ${quantityChange}`);
         }
-      });
+      } else {
+        await tx.partStock.upsert({
+          where: {
+            part_id_location_id: {
+              part_id: partId,
+              location_id: locationId
+            }
+          },
+          update: { quantity: { increment: quantityChange } },
+          create: {
+            part_id: partId,
+            location_id: locationId,
+            quantity: quantityChange
+          }
+        });
+      }
 
       return tx.stockMovement.create({
         data: {
@@ -234,16 +249,18 @@ export class InventoryService {
         throw new Error(`Insufficient stock for "${part.name}" at origin location. Available: ${originQty}, requested transfer: ${qty}`);
       }
 
-      // Decrement origin
-      await tx.partStock.update({
+      // Decrement origin atomically with condition check
+      const updateResult = await tx.partStock.updateMany({
         where: {
-          part_id_location_id: {
-            part_id: partId,
-            location_id: fromLocationId
-          }
+          part_id: partId,
+          location_id: fromLocationId,
+          quantity: { gte: qty }
         },
         data: { quantity: { decrement: qty } }
       });
+      if (updateResult.count === 0) {
+        throw new Error(`Insufficient stock for "${part.name}" at origin location. Available: ${originQty}, requested transfer: ${qty}`);
+      }
 
       // Increment target
       await tx.partStock.upsert({

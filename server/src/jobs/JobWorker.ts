@@ -5,6 +5,7 @@ import { sendEmail } from '../services/emailService';
 import { prisma } from '../index';
 import { AuditService } from '../services/AuditService';
 import { NotificationService } from '../services/NotificationService';
+import { CatalogParserService } from '../services/CatalogParserService';
 
 class JobWorkerService {
   private bullWorker: Worker | null = null;
@@ -152,6 +153,51 @@ class JobWorkerService {
         }
         break;
       }
+      case 'CATALOG_IMPORT': {
+        const { filePath, supplierId, uploadedBy, fileName } = data;
+        const fs = require('fs');
+        
+        console.log(`[JobWorker] Starting background catalog parse (Safe Validation Mode) for supplier ${supplierId}: ${filePath}`);
+        
+        try {
+          if (!fs.existsSync(filePath)) {
+            throw new Error(`Catalog file not found: ${filePath}`);
+          }
+          const fileBuffer = fs.readFileSync(filePath);
+          
+          // Call the CatalogParserService to run the preview parsing pipeline
+          const result = await CatalogParserService.parseCatalog(
+            fileBuffer,
+            fileName || 'catalog.pdf',
+            supplierId,
+            uploadedBy || 1
+          );
+          
+          console.log(`[JobWorker] Completed background catalog parsing (Safe Validation Mode). Session ID: ${result.sessionId}. Found ${result.totalProducts} products.`);
+          
+          try {
+            const { BusinessEventService } = require('../services/BusinessEventService');
+            await BusinessEventService.logEvent({
+              event_type: 'Large Catalog Parsed Background',
+              entity_type: 'Supplier',
+              entity_id: supplierId,
+              description: `Successfully parsed ${result.performance.ocrTimeMs}ms OCR, ${result.totalProducts} products. Session ID: ${result.sessionId}. Preview generated (Safe Validation Mode).`
+            });
+          } catch (e) {
+            console.error('Failed to log catalog parse event:', e);
+          }
+          
+          try {
+            fs.unlinkSync(filePath);
+          } catch (e) {
+            console.warn('Failed to delete catalog temp file:', e);
+          }
+        } catch (err: any) {
+          console.error('[JobWorker] Catalog parsing background task failed:', err);
+          throw err;
+        }
+        break;
+      }
       default:
         throw new Error(`Job type executor not implemented: ${type}`);
     }
@@ -172,6 +218,14 @@ class JobWorkerService {
     } catch (e) {
       console.error('[JobWorker] Failed to write to DLQ:', e);
     }
+  }
+
+  async shutdown() {
+    console.log('[JobWorker] Shutting down job worker...');
+    if (this.bullWorker) {
+      await this.bullWorker.close();
+    }
+    this.isProcessingInMemory = false;
   }
 }
 

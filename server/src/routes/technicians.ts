@@ -32,9 +32,9 @@ techniciansRouter.put('/:id', requirePermission('repairs:update_status'), async 
   }
 });
 
-techniciansRouter.delete('/:id', requirePermission('repairs:update_status'), async (req, res) => {
+techniciansRouter.delete('/:id', requirePermission('repairs:update_status'), async (req: any, res) => {
   try {
-    await technicianService.deleteTechnician(Number(req.params.id));
+    await technicianService.deleteTechnician(Number(req.params.id), req.userId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete technician' });

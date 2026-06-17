@@ -1,0 +1,14 @@
+{
+  "audit_scope": "INCREMENTAL",
+  "run_date": "2026-06-15T13:07:40.923Z",
+  "status": "SUCCESS",
+  "duration_ms": 31,
+  "counts": {
+    "inventory_errors": 0,
+    "accounting_errors": 0,
+    "warnings": 0
+  },
+  "inventory_errors": [],
+  "accounting_errors": [],
+  "warnings": []
+}

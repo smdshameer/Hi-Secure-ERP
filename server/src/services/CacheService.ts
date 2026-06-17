@@ -108,6 +108,17 @@ export class CacheService {
       return false;
     }
   }
+
+  static async shutdown() {
+    console.log('[CacheService] Disconnecting Redis...');
+    if (this.redisClient) {
+      try {
+        await this.redisClient.quit();
+      } catch (err: any) {
+        console.warn('[CacheService] Redis quit error:', err.message);
+      }
+    }
+  }
 }
 
 // Initialize on load

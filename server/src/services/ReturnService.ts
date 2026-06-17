@@ -174,6 +174,15 @@ export class ReturnService {
         salesReturn
       );
 
+      const { BusinessEventService } = require('./BusinessEventService');
+      await BusinessEventService.logEvent({
+        event_type: 'Return Processed',
+        entity_type: 'SalesReturn',
+        entity_id: salesReturn.return_id,
+        user_id: userId,
+        description: `Sales Return Credit Note #${salesReturn.return_number} processed for grand total Rs. ${Number(salesReturn.grand_total).toFixed(2)}`
+      });
+
       return salesReturn;
     });
   }
@@ -271,15 +280,28 @@ export class ReturnService {
 
       // 5. Adjust Inventory & Stock Movements
       for (const retItem of returnItemsData) {
-        await tx.partStock.update({
+        const updateResult = await tx.partStock.updateMany({
           where: {
-            part_id_location_id: {
-              part_id: retItem.part_id,
-              location_id: locationId
-            }
+            part_id: retItem.part_id,
+            location_id: locationId,
+            quantity: { gte: retItem.quantity }
           },
           data: { quantity: { decrement: retItem.quantity } }
         });
+        if (updateResult.count === 0) {
+          const stockRow = await tx.partStock.findUnique({
+            where: {
+              part_id_location_id: {
+                part_id: retItem.part_id,
+                location_id: locationId
+              }
+            }
+          });
+          const available = stockRow ? Number(stockRow.quantity) : 0;
+          throw new Error(
+            `Insufficient stock to return. Available: ${available}, requested return: ${retItem.quantity}`
+          );
+        }
 
         await tx.stockMovement.create({
           data: {

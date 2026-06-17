@@ -27,7 +27,14 @@ export class DocumentSeriesService {
       'PurchaseOrder': 'PO',
       'Quotation': 'QUO',
       'DeliveryChallan': 'DC',
-      'Repair': 'REP'
+      'Repair': 'REP',
+      'StockTransfer': 'TRF',
+      'CycleCount': 'CYC',
+      'ServiceJob': 'JOB',
+      'WarrantyClaim': 'WRN',
+      'Lead': 'LD',
+      'Opportunity': 'OPP',
+      'AmcContract': 'AMC'
     };
 
     const prefix = PREFIX_MAP[module] || 'DOC';
