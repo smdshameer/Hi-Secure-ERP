@@ -109,22 +109,24 @@ export default function Reports() {
       />
 
       {/* Range filter */}
-      <div className="flex items-center gap-2 mb-4">
-        <IconCalendar size={15} className="text-gray-400" />
-        {RANGES.map(r => (
-          <button
-            key={r.value}
-            onClick={() => setRange(r.value)}
-            className={[
-              'px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all cursor-pointer',
-              range === r.value
-                ? 'bg-[#1a3480] text-white border-[#1a3480]'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300',
-            ].join(' ')}
-          >
-            {r.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar scroll-container w-full">
+        <IconCalendar size={15} className="text-gray-400 flex-shrink-0" />
+        <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control flex-1">
+          {RANGES.map(r => (
+            <button
+              key={r.value}
+              onClick={() => setRange(r.value)}
+              className={[
+                'px-3 py-1.5 text-[12px] font-medium transition-all cursor-pointer capitalize flex-1 text-center',
+                range === r.value
+                  ? 'bg-[#1a3480] text-white border-[#1a3480]'
+                  : 'bg-white text-gray-600 hover:bg-gray-50',
+              ].join(' ')}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (

@@ -2066,6 +2066,110 @@ body {
   .header-right-wrap {
     gap: 4px !important;
   }
+
+  /* ─ Mobile Page Banner & Standardized Actions ─ */
+  .page-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+  }
+  .banner-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .banner-actions > div {
+    display: flex !important;
+    gap: 8px !important;
+    flex: 1 !important;
+  }
+  /* Standardize all button/link sizes inside header actions */
+  .banner-actions a,
+  .banner-actions button {
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  /* ─ Segment control tab styling ─ */
+  .segment-control {
+    background-color: #f1f5f9 !important; /* light gray control container */
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 2.5px !important;
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .segment-control button {
+    flex: 1 !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    color: #475569 !important;
+    background: transparent !important;
+    transition: all 0.15s ease !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 8px !important;
+    cursor: pointer !important;
+  }
+  /* White card highlight for active segment button */
+  .segment-control button.active,
+  .segment-control button[class*="bg-[#1a3480]"] {
+    background-color: #ffffff !important;
+    color: #1a3480 !important;
+    box-shadow: 0 1.5px 4px rgba(0,0,0,0.08) !important;
+    font-weight: 700 !important;
+  }
+
+  /* Dark mode specific segment control overrides (e.g. Audit Trail page) */
+  .bg-\[\#0b0f1a\] .segment-control {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+  }
+  .bg-\[\#0b0f1a\] .segment-control button {
+    border-radius: 7px !important;
+    color: #94a3b8 !important;
+  }
+  .bg-\[\#0b0f1a\] .segment-control button[class*="bg-[#1a3480]"] {
+    background-color: #1a3480 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+  }
+
+  /* ─ Explicit Scrollbars for Swipeable Content ─ */
+  .overflow-x-auto {
+    scrollbar-width: thin !important;
+  }
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 5px !important;
+    display: block !important;
+  }
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18) !important;
+    border-radius: 3px !important;
+  }
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04) !important;
+  }
 }
 
 /* Sidebar Nav Scrollbar styling - global */

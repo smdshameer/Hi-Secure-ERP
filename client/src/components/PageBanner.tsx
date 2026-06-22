@@ -27,7 +27,7 @@ export default function PageBanner({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 banner-actions">
         {action}
         {backLabel && backPath && (
           <button

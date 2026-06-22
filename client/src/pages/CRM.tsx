@@ -160,7 +160,7 @@ export default function CRM() {
               value={search} onChange={e => setSearch(e.target.value)}
               className="outline-none border-none text-[13px] text-gray-700 placeholder:text-gray-400 w-full" />
           </div>
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+          <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control">
             {(['list','pipeline'] as const).map(v => (
               <button key={v} onClick={() => setView(v)}
                 className={[

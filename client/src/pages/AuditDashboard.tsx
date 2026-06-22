@@ -143,7 +143,7 @@ export default function AuditDashboard() {
         />
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 mt-6 mb-6 bg-white/5 rounded-xl p-1 w-fit">
+        <div className="flex gap-1 mt-6 mb-6 bg-white/5 rounded-xl p-1 w-full md:w-fit segment-control">
           {[
             { key: 'monitoring', label: 'System Monitoring', icon: IconServer },
             { key: 'audit', label: 'Audit Trail', icon: IconShieldCheck },
