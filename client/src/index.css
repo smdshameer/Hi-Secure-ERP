@@ -2067,40 +2067,77 @@ body {
     gap: 4px !important;
   }
 
-  /* ─ Mobile Page Banner & Standardized Actions ─ */
+  /* ─ Compact Mobile Page Banner & Actions ─ */
   .page-banner {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 12px !important;
-    padding: 14px 16px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 0px !important;
+  }
+  .page-banner p {
+    display: none !important; /* Hide subtitle to keep it compact on mobile */
+  }
+  .page-banner h1.page-title,
+  .page-banner h1 {
+    font-size: 15px !important; /* Compact premium size */
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+  .page-banner .text-\[28px\] {
+    font-size: 18px !important; /* Compact icon */
   }
   .banner-actions {
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    width: 100% !important;
+    gap: 6px !important;
+    width: auto !important;
+    flex: none !important;
   }
   .banner-actions > div {
     display: flex !important;
-    gap: 8px !important;
-    flex: 1 !important;
+    gap: 6px !important;
+    flex: none !important;
+    width: auto !important;
   }
-  /* Standardize all button/link sizes inside header actions */
+  /* Compact button sizes inside header actions */
   .banner-actions a,
   .banner-actions button {
-    flex: 1 !important;
+    flex: none !important;
+    width: auto !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    font-size: 13px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    font-size: 11.5px !important;
     font-weight: 600 !important;
-    border-radius: 8px !important;
-    padding: 0 12px !important;
+    border-radius: 6px !important;
+    padding: 0 10px !important;
     box-sizing: border-box !important;
     white-space: nowrap !important;
     text-align: center !important;
+  }
+
+  /* ─ Stack list header wrappers vertically on mobile ─ */
+  .bg-white.rounded-xl.border.border-gray-200 > .flex.items-center.justify-between.px-4.py-3.border-b,
+  .bg-white.rounded-xl.border.border-gray-200 > .flex.items-center.justify-between.px-5.py-3\.5.border-b,
+  .panel > .flex.items-center.justify-between.px-4.py-3.border-b {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Search input wrappers take full width on mobile */
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\],
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\].w-\[240px\],
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\].w-\[280px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
   }
 
   /* ─ Segment control tab styling ─ */
@@ -2117,7 +2154,7 @@ body {
     flex: 1 !important;
     height: 32px !important;
     min-height: 32px !important;
-    font-size: 12.5px !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
     border-radius: 6px !important;
     color: #475569 !important;

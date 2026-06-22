@@ -84,21 +84,23 @@ export default function DeliveryChallanPage() {
       />
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 gap-4">
-          <div className="flex gap-2 flex-wrap">
-            {STATUS_FILTERS.map(f => (
-              <button key={f.value} onClick={() => setFilter(f.value)}
-                className={[
-                  'px-3 py-1 rounded-full text-[12px] font-medium border transition-all',
-                  filter === f.value
-                    ? 'bg-[#1a3480] text-white border-[#1a3480]'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300',
-                ].join(' ')}>
-                {f.label}
-              </button>
-            ))}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-gray-50 gap-3">
+          <div className="overflow-x-auto no-scrollbar scroll-container w-full sm:w-auto">
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control min-w-max">
+              {STATUS_FILTERS.map(f => (
+                <button key={f.value} onClick={() => setFilter(f.value)}
+                  className={[
+                    'px-3 py-1.5 text-[12px] font-medium transition-all cursor-pointer capitalize flex-1 text-center',
+                    filter === f.value
+                      ? 'bg-[#1a3480] text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50',
+                  ].join(' ')}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
+          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-full sm:w-[240px]">
             <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
             <input type="text" placeholder="Search challan, customer..."
               value={search} onChange={e => setSearch(e.target.value)}
