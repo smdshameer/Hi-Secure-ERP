@@ -112,7 +112,7 @@ export default function Header({ userName: propUserName, role: propRole, onMenuC
             <i className="ti ti-user text-[16px] text-white" aria-hidden="true" />
           </div>
           <span className="hidden lg:inline">{userName}</span>
-          <span className="hidden lg:inline-block bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+          <span className="hidden lg:inline-block bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium header-user-role">
             {role?.toLowerCase()}
           </span>
           <i className="hidden lg:inline-block ti ti-chevron-down text-[14px]" aria-hidden="true" />

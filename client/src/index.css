@@ -1581,6 +1581,11 @@ body {
 
 /* ── Mobile & Tablet Collapsible Drawer Sidebar Responsiveness ── */
 @media (max-width: 1023px) {
+  /* Hide user role badge on mobile/tablet viewports */
+  .header-user-role {
+    display: none !important;
+  }
+
   /* ─ Let layout wrappers remain fixed height but scroll contents internally ─ */
   .layout-wrapper {
     height: 100vh !important;
