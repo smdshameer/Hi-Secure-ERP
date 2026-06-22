@@ -2015,13 +2015,19 @@ body {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
+  .overflow-x-auto table th,
+  .overflow-x-auto table td {
+    white-space: nowrap !important;
+  }
   .erp-table th {
     font-size: 11.5px !important;
     padding: 8px 10px !important;
+    white-space: nowrap !important;
   }
   .erp-table td {
     font-size: 12px !important;
     padding: 8px 10px !important;
+    white-space: nowrap !important;
   }
   .erp-table button,
   .erp-table a {
@@ -2081,12 +2087,11 @@ body {
     gap: 4px !important;
   }
 
-  /* ─ Compact Mobile Page Banner & Actions (Desktop Style Reference) ─ */
+  /* ─ Compact Mobile Page Banner & Actions (Stacked Layout for Overlap Prevention) ─ */
   .page-banner {
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
     padding: 10px 14px !important;
     border-radius: 10px !important;
     margin-bottom: 0px !important;
@@ -2097,6 +2102,7 @@ body {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
+    width: 100% !important;
   }
   .page-banner h1.page-title,
   .page-banner h1 {
@@ -2104,19 +2110,13 @@ body {
     font-weight: 600 !important;
     line-height: 1.2 !important;
     margin: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
   }
   .page-banner p {
     display: block !important; /* Keep subtitle visible like desktop style */
     font-size: 11px !important;
     color: rgba(255, 255, 255, 0.7) !important;
     margin: 2px 0 0 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    max-width: 140px !important;
+    max-width: 100% !important;
   }
   .page-banner .text-\[28px\] {
     font-size: 20px !important;
@@ -2125,19 +2125,19 @@ body {
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    width: auto !important;
-    flex: 0 0 auto !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
   }
   .banner-actions > div {
     display: flex !important;
     gap: 6px !important;
-    flex: none !important;
+    flex: 1 !important;
     width: auto !important;
   }
   /* Compact button sizes inside header actions */
   .banner-actions a,
   .banner-actions button {
-    flex: none !important;
+    flex: 1 !important;
     width: auto !important;
     display: inline-flex !important;
     align-items: center !important;
