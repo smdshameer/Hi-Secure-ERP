@@ -1,0 +1,85 @@
+section 3_transaction_flow
+flowchart TD
+    subgraph Sales Transaction Flow
+        Start([Create Sales Invoice\nPOST /api/invoices]) --> Validate{Validate Input}
+        Validate -->|Invalid| ReturnErr[Return 400 Error]
+        Validate -->|Valid| CheckRBAC{RBAC Check\nrequirePermission:invoice:create}
+        CheckRBAC -->|Denied| Return403[Return 403 Forbidden]
+        CheckRBAC -->|Allowed| BeginTX{Start Transaction}
+
+        BeginTX --> FetchStock[Fetch PartStocks]
+        FetchStock --> CheckAvail{Stock Available\nfor each item?}
+        CheckAvail -->|No| RollbackTX[Rollback Transaction] --> ReturnStockErr
+
+        CheckAvail -->|Yes| CalcTax[Calculate CGST/SGST/IGST\nper place_of_supply]
+        CalcTax --> CreateInvoice[INSERT sales_invoice]
+        CreateInvoice --> CreateItems[INSERT invoice_items]
+        CreateItems --> DecrementStock[UPDATE PartStock\nquantity -= qty]
+        DecrementStock --> LogStockMovement[INSERT stock_movements\n(OUT type)]
+
+        DecrementStock --> PostLedger[Post Double-Entry Ledger]
+        PostLedger --> DrCash[DR: Cash/AR 101000/104000]
+        PostLedger --> CrSales[CR: SalesRevenue 401000]
+
+        DrCash --> CommitTX[Commit Transaction]
+        CrSales --> CommitTX
+
+        CommitTX --> LogAudit[INSERT audit_logs\nJSON diff of old/new state]
+        LogAudit --> TriggerEmail[Queue Email Job\nBullMQ]
+        TriggerEmail --> Success([Return 201 Created\n+ Invoice JSON])
+    end
+
+    subgraph Purchase Order Approval Flow
+        POStart([Create PO\nPOST /api/purchase-orders]) --> POCheck{RBAC & Status}
+        POCheck -->|Draft| SaveDraft[Save as draft]
+        POCheck -->|Submit| TriggerApproval[Trigger Approval Workflow\napproval_workflows lookup]
+        TriggerApproval --> GetSteps[Get approval_steps\nordered by step_number]
+        GetSteps --> NotifyStep[Notify assigned_role\nvia Email Job]
+        NotifyStep --> StepApprove{Each Step:\nApprove or Reject?}
+
+        StepApprove -->|Reject| RejectPO[Set PO status = rejected\nINSERT approval_histories\nrollback transaction]
+        StepApprove -->|Approve & Has Next| NextStep[Move to next step\nevaluate against threshold]
+        StepApprove -->|Approve & Final| ApprovePO[Set PO status = approved\nReady for receiving]
+
+        NextStep --> StepApprove
+    end
+
+    subgraph Repair / Ticket Flow
+        RepairStart([Create Repair Job\nPOST /api/repairs]) --> RepairFlow
+        subgraph RepairFlow [Repair Status Machine]
+            RF1[received] --> RF2[diagnosed]
+            RF2 --> RF3[awaiting_parts]
+            RF3 --> RF4[in_repair]
+            RF4 --> RF5[ready_for_pickup]
+            RF5 --> RF6[completed]
+            RF2 --> Cancel[cancelled]
+        end
+        RepairFlow --> AssignTech[Assign technician\ntechnicians.assigned]
+        AssignTech --> ConsumeParts[Consume parts\nreduce PartStock\ncreate stock_movements OUT]
+        ConsumeParts --> RepairPayment[Record payment\npayments table]
+        RepairPayment --> RepairAudit[Audit log entry]
+    end
+
+    subgraph GST / India Compliance Flow
+        GSTStart([GST Captcha & Lookup\n/app/api/gst-captcha]) --> SolveCaptcha[Solve reCAPTCHA\nvia Python micro-script]
+        SolveCaptcha --> GSTSearch[Query GST Portal\nwith resolved token]
+        GSTSearch --> ParseGST[Parse GST Data\nbusiness constitution, address, status]
+        ParseGST --> GSTInvoice[Populate Invoice\nplace_of_supply + GSTIN fields]
+        GSTInvoice --> GenerateEInvoice[Generate E-Invoice\nwith IRN + QR code]
+
+        GenerateEInvoice --> GSTReturn[Auto-fill GSTR-1 / GSTR-3B\nsales_invoice data aggregation]
+        GSTReturn --> TDSReport[Generate TDS / TCS Reports]
+    end
+
+    subgraph Mobile Sync Flow
+        MobileOffline[User Works Offline\nSQLite on device] --> QueueChanges[Queue local changes\nCRDT / last-writer-wins]
+        QueueChanges --> DetectNetwork{Network Available?}
+        DetectNetwork -->|No| KeepQueue[Keep queue]
+        DetectNetwork -->|Yes| PushChanges[POST /api/mobile/sync\nbatched JSON payload]
+        PushChanges --> ServerValidate[Server validates\nRBAC + business rules]
+        ServerValidate -->|Conflict| ResolveConflict[Conflict resolution\nreturn server-wins or merge]
+        ServerValidate -->|Success| SyncComplete[Pull latest server state\nGET /api/mobile/data]
+        ResolveConflict --> SyncComplete
+        SyncComplete --> UpdateLocal[Update local SQLite\ntrigger UI refresh]
+    end
+endsection

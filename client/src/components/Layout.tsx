@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -7,9 +7,11 @@ import AiAssistant from './AiAssistant';
 interface LayoutProps {
   children: ReactNode;
 }
+
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -18,10 +20,11 @@ export default function Layout({ children }: LayoutProps) {
   // Determine main container classes based on current route requirements
   const getMainClass = () => {
     const path = location.pathname;
+    const pathClass = 'page-' + (path.replace(/\//g, '-').replace(/^-|-$/g, '') || 'dashboard');
 
     // Reports and Settings scroll the main container naturally
     if (path === '/reports' || path === '/settings') {
-      return "flex-1 overflow-y-auto p-5 content-area";
+      return `flex-1 overflow-y-auto p-5 content-area ${pathClass}`;
     }
 
     // Complex document forms (InvoiceForm, QuotationForm, POForm, ChallanForm)
@@ -30,24 +33,35 @@ export default function Layout({ children }: LayoutProps) {
     const isComplexForm = complexFormPrefixes.some(prefix => path.startsWith(prefix)) &&
       (path.endsWith('/edit') || path.endsWith('/new') || path.includes('/new') || path.includes('/create'));
     if (isComplexForm) {
-      return "flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col p-5 content-area";
+      return `flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col p-5 content-area ${pathClass}`;
     }
 
     // Simple forms (e.g. /users/new, /users/1, /customers/new) should scroll normally
     const isSimpleForm = path.split('/').filter(Boolean).length > 1 && path !== '/pos';
     if (isSimpleForm) {
-      return "flex-1 overflow-y-auto p-5 content-area";
+      return `flex-1 overflow-y-auto p-5 content-area ${pathClass}`;
     }
 
     // All standard tabular list pages get stable headers and internal table scroll containment
-    return "flex-1 overflow-hidden flex flex-col p-5 content-area";
+    return `flex-1 overflow-hidden flex flex-col p-5 content-area ${pathClass}`;
   };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-100 layout-wrapper">
-      <Header userName="System Admin" role="admin" />
-      <div className="flex flex-1 overflow-hidden main-container">
-        <Sidebar />
+      <Header 
+        userName="System Admin" 
+        role="admin" 
+        onMenuClick={() => setSidebarOpen(v => !v)}
+      />
+      <div className="flex flex-1 overflow-hidden main-container relative">
+        {/* Mobile/Tablet Drawer Backdrop Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className={getMainClass()}>
           {children}
         </main>

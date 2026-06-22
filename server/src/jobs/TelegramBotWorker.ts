@@ -82,10 +82,11 @@ class TelegramBotWorker {
         let chatId = '';
         let telegramAiEnabled = true;
         let aiEnabled = true;
+        let cfg: any = null;
 
         try {
           // Get DB settings
-          const cfg = await getTelegramConfig();
+          cfg = await getTelegramConfig();
           const aiSetting = await prisma.setting.findUnique({ where: { key: 'ai' } });
           const aiConfig = (aiSetting?.value as any) || {};
 
@@ -95,8 +96,8 @@ class TelegramBotWorker {
           if (cfg) {
             if (!token) token = cfg.bot_token || '';
             chatId = cfg.chat_id || '';
-            // If DB config disables it, we check DB enabled flag too
-            if (cfg.enabled === false && !process.env.TELEGRAM_BOT_ENABLED) {
+            // If DB config disables it, respect the user's choice in settings UI
+            if (cfg.enabled === false) {
               this.setStatus('disabled', null, 'Disabled in database settings');
               await new Promise(r => setTimeout(r, 1000));
               continue;
@@ -126,7 +127,8 @@ class TelegramBotWorker {
         }
 
         // 5. Query Telegram long-polling endpoint with timeout
-        const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${this.offset}&timeout=8`;
+        const telegramBaseUrl = cfg?.api_base_url || process.env.TELEGRAM_API_BASE_URL || 'https://api.telegram.org';
+        const url = `${telegramBaseUrl}/bot${token}/getUpdates?offset=${this.offset}&timeout=8`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // Poll timeout = 10 seconds
 
@@ -188,7 +190,7 @@ class TelegramBotWorker {
               console.log(`[TelegramBotWorker] Processing query from authorized Telegram user: "${userText}"`);
 
               // Send typing indicator to user
-              await fetch(`https://api.telegram.org/bot${token}/sendChatAction`, {
+              await fetch(`${telegramBaseUrl}/bot${token}/sendChatAction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ chat_id: chatIdLoc, action: 'typing' })
@@ -264,7 +266,9 @@ class TelegramBotWorker {
       };
       formData.append('reply_markup', JSON.stringify(defaultKeyboard));
 
-      const res = await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+      const cfg = await getTelegramConfig();
+      const telegramBaseUrl = cfg?.api_base_url || process.env.TELEGRAM_API_BASE_URL || 'https://api.telegram.org';
+      const res = await fetch(`${telegramBaseUrl}/bot${botToken}/sendDocument`, {
         method: 'POST',
         body: formData,
       });

@@ -435,7 +435,7 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
     }));
   };
 
-  // Fetch a new captcha image and session cookie from the backend
+  // Fetch a new captcha image — uses direct img tag to bypass CORS/server IP blocking
   const fetchGstCaptcha = async (gstinVal?: string | React.MouseEvent) => {
     let targetGstin = '';
     if (gstinVal && typeof gstinVal === 'string') {
@@ -457,24 +457,21 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
       return;
     }
 
+    // Generate a unique session ID for the captcha verification flow
+    const uniqueSessionId = `${targetGstin}_${Date.now()}`;
+    setCaptchaSessionId(uniqueSessionId);
+
+    // Use a direct image URL — the browser fetches from user's IP (not blocked)
+    // The GST portal serves captcha as a plain image at this endpoint
+    const rnd = Math.random();
+    const directCaptchaUrl = `https://services.gst.gov.in/services/captcha?rnd=${rnd}`;
+    setCaptchaImg(directCaptchaUrl);
+    setCaptchaLoading(false);
+
+    // Also notify the backend to start a Selenium session in the background
     try {
-      setCaptchaLoading(true);
-      const res = await api.get('/customers/captcha', { params: { gstin: targetGstin } });
-      if (res.data && res.data.success) {
-        setCaptchaImg(res.data.image);
-        setCaptchaSessionId(res.data.sessionId);
-        setCaptchaError('');
-      } else {
-        const errorMsg = res.data?.error || 'Failed to fetch captcha from the GST portal';
-        setCaptchaError(errorMsg);
-      }
-    } catch (err: any) {
-      console.warn('GST captcha fetch failed:', err);
-      const errorMsg = err.response?.data?.error || err.message || 'Could not reach the GST portal. Check your internet connection.';
-      setCaptchaError(errorMsg);
-    } finally {
-      setCaptchaLoading(false);
-    }
+      api.get('/customers/captcha', { params: { gstin: targetGstin } }).catch(() => {});
+    } catch {}
   };
 
   // Submit the solved captcha to perform live look up of GSTIN details on the portal
@@ -2046,9 +2043,10 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
                 ) : captchaImg ? (
                   <div className="flex flex-col items-center gap-2">
                     <img 
-                      src={captchaImg.startsWith('data:') ? captchaImg : `data:image/png;base64,${captchaImg}`} 
+                      src={captchaImg.startsWith('data:') ? captchaImg : captchaImg.startsWith('http') ? captchaImg : `data:image/png;base64,${captchaImg}`} 
                       alt="GST Captcha" 
                       className="h-[45px] max-w-[200px] border border-gray-300 rounded shadow-inner object-contain bg-white block mx-auto"
+                      onError={() => setCaptchaError('Could not load captcha image. Please try again.')}
                     />
                     <button
                       type="button"

@@ -34,6 +34,15 @@ crmRouter.get('/leads/:id', requirePermission('crm:read'), async (req: AuthReque
   }
 });
 
+crmRouter.put('/leads/:id', requirePermission('crm:manage'), async (req: AuthRequest, res) => {
+  try {
+    const lead = await crmService.updateLead(Number(req.params.id), req.body, req.userId);
+    res.json(lead);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 crmRouter.post('/leads/:id/activity', requirePermission('crm:manage'), async (req: AuthRequest, res) => {
   try {
     const activity = await crmService.logLeadActivity({

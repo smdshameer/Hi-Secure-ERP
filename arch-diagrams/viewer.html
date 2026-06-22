@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HiSecure ERP — Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root { --bg:#0f1117; --card:#1a1d27; --border:#2a2d3a; --text:#e2e4e9; --accent:#4a9eff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; padding: 2rem; }
+  h1 { text-align:center; margin-bottom:.5rem; }
+  .subtitle { text-align:center; color:#888; margin-bottom:2rem; font-size:.9rem; }
+  nav { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-bottom:2rem; }
+  nav a { color: var(--accent); text-decoration:none; padding:.35rem .7rem; border:1px solid var(--border); border-radius:6px; font-size:.85rem; }
+  nav a:hover { background:var(--card); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:2rem; scroll-margin-top:1rem; }
+  .card h2 { font-size:1.1rem; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:.5rem; }
+  .mermaid { display:flex; justify-content:center; }
+</style>
+</head>
+<body>
+  <h1>🏢 HiSecure ERP — Architecture Overview</h1>
+  <p class="subtitle">HiSecure ERP v2.0 · React 19 · Express · PostgreSQL · Prisma</p>
+  <nav>
+    <a href="#card-1_high_level">High-Level System Topology</a>
+    <a href="#card-2_database_schema">Database Entity-Relationship</a>
+    <a href="#card-3_transaction_flow">Core Transaction & Workflow Flows</a>
+    <a href="#card-4_rbac_matrix">RBAC Role-Permission Matrix</a>
+    <a href="#card-5_ci_pipeline">CI/CD Validation Pipeline</a>
+    <a href="#card-6_module_breakdown">Module Functional Breakdown</a>
+  </nav>
+
+  <div class="card" id="card-1_high_level">
+    <h2>High-Level System Topology</h2>
+    <div class="mermaid">
+section 1_high_level
+graph TD
+    subgraph External [External Systems]
+        GST[GST Portal]
+        SMTP[SMTP Mail Server]
+        Redis[Redis / BullMQ Jobs]
+    end
+
+    subgraph Client [React Client — Port 3009]
+        UI[React 19 + Tailwind v4]
+        Router[React Router v7]
+        AxiosClient[Axios API Client]
+        UI --> Router --> AxiosClient
+    end
+
+    subgraph Portal [Customer Portal — EJS]
+        PortalLogin[app/login]
+        PortalInvoices[app/invoices]
+        PortalPayments[app/payments]
+        PortalAMC[app/amc]
+        PortalComplaints[app/complaints]
+    end
+
+    subgraph Mobile [React Native Mobile]
+        MobileScreens[screens/*]
+        LocalDB[(Local SQLite)]
+        MobileScreens --> LocalDB
+    end
+
+    subgraph Server [Express API — Port 3009]
+        SubGraph --> Server
+
+        subgraph MW [Middleware Pipeline]
+            H[helmet / security headers]
+            RL[rate limiting]
+            CORS[CORS]
+            AUTH[JWT Cookie Auth]
+            RBAC[requirePermission RBAC]
+            H --> RL --> CORS --> AUTH --> RBAC
+        end
+
+        subgraph Routes [Route Controllers routes/*.ts]
+            AuthRoute[auth]
+            InvoiceRoute[sales / invoices]
+            PORoute[purchase-orders]
+            RepairRoute[repairs / tickets]
+            GSTRoute[gst / compliance]
+            ReportRoute[reports]
+            UploadRoute[uploads]
+            SettingsRoute[settings]
+        end
+
+        subgraph Services [Business Services services/*.ts]
+            AuthService[AuthService]
+            InvoiceService[InvoiceService + POS]
+            POService[POService]
+            RepairService[RepairService]
+            GSTService[GSTService]
+            ReportService[ReportService]
+            SettingsService[SettingsService]
+            EmailService[Nodemailer Email]
+            PDFService[PDFKit Reports]
+            AuditService[AuditService]
+        end
+
+        subgraph Repos [Data Repositories repositories/*.ts]
+            InvoiceRepo[InvoiceRepository]
+            PORepo[PORepository]
+            PartRepo[PartRepository]
+            StockRepo[StockRepository]
+            RepairRepo[RepairRepository]
+            UserRepo[UserRepository]
+            AuditRepo[AuditRepository]
+            SettingsRepo[SettingsRepository]
+            ReportRepo[ReportRepository]
+        end
+
+        subgraph Jobs [Background Jobs jobs/*.ts]
+            BullJobs[BullMQ Queue]
+            EmailJob[Email Jobs]
+            BackupJob[Backup Jobs]
+            ReportJob[Report Generation]
+        end
+
+        MW --> Routes --> Services --> Repos --> DB[(PostgreSQL DB)]
+        Services --> Jobs --> Redis
+        Services --> External
+    end
+
+    AxiosClient -->|HTTP/JSON| Server
+    Portal -->|HTTP/JSON| Server
+    Mobile -->|HTTP/JSON| Server
+
+    linkStyle 5 stroke:#666,stroke-dasharray:5 5
+    linkStyle 36 stroke:#666,stroke-dasharray:5 5
+endsection
+    </div>
+  </div>
+
+  <div class="card" id="card-2_database_schema">
+    <h2>Database Entity-Relationship</h2>
+    <div class="mermaid">
+section 2_database_schema
+erDiagram
+    users ||--o{ user_roles : has
+    users ||--o{ audit_logs : performs
+    users ||--o{ sales_invoices : creates
+    users ||--o{ purchase_orders : creates
+    users ||--o{ repair_parts : "creates (physician)"
+    roles ||--o{ user_roles : "assigned to"
+    roles ||--o{ role_permissions : "has"
+    permissions ||--o{ role_permissions : "grants to"
+
+    customers ||--o{ sales_invoices : "is billed in"
+    customers ||--o{ repairs : "has repaired"
+    suppliers ||--o{ purchase_orders : "supplies"
+    locations ||--o{ part_stocks : "holds stock at"
+    locations ||--o{ stock_movements : "is source of"
+    brands ||--o{ parts : manufactures
+    parts ||--o{ part_stocks : "has stock at"
+    parts ||--o{ stock_movements : "moves"
+    parts ||--o{ sales_invoice_items : "is sold as"
+    parts ||--o{ purchase_order_items : "is ordered as"
+    parts ||--o{ repair_parts : "is consumed by"
+
+    sales_invoices ||--o{ sales_invoice_items : contains
+    sales_invoices ||--o{ journal_entries : "triggers"
+    journal_entries ||--o{ journal_entry_lines : has
+    accounts ||--o{ journal_entry_lines : "is credited/debited in"
+
+    purchase_orders ||--o{ purchase_order_items : contains
+    purchase_orders ||--o{ approval_workflows : "triggers"
+    approval_workflows ||--o{ approval_steps : defines
+    approval_steps ||--o{ approval_histories : "is executed in"
+    users ||--o{ approval_histories : "approves as"
+    roles ||--o{ approval_steps : "required in"
+
+    repairs ||--o{ repair_parts : "consumes"
+    repairs ||--o{ payments : "has payments"
+    repairs ||--o{ audit_logs : "is tracked in"
+
+    stock_movements ||--o{ audit_logs : "is logged in"
+    settings ||--o{ audit_logs : "changes"
+
+    %% RBAC junction
+    users ||--o{ approval_histories : acts_as
+
+    %% Many-to-many tech assignment (shown implicitly via repair.assigned_technician_id FK)
+    technicians ||--o{ repairs : assigned_to
+endsection
+    </div>
+  </div>
+
+  <div class="card" id="card-3_transaction_flow">
+    <h2>Core Transaction & Workflow Flows</h2>
+    <div class="mermaid">
+section 3_transaction_flow
+flowchart TD
+    subgraph Sales Transaction Flow
+        Start([Create Sales Invoice\nPOST /api/invoices]) --> Validate{Validate Input}
+        Validate -->|Invalid| ReturnErr[Return 400 Error]
+        Validate -->|Valid| CheckRBAC{RBAC Check\nrequirePermission:invoice:create}
+        CheckRBAC -->|Denied| Return403[Return 403 Forbidden]
+        CheckRBAC -->|Allowed| BeginTX{Start Transaction}
+
+        BeginTX --> FetchStock[Fetch PartStocks]
+        FetchStock --> CheckAvail{Stock Available\nfor each item?}
+        CheckAvail -->|No| RollbackTX[Rollback Transaction] --> ReturnStockErr
+
+        CheckAvail -->|Yes| CalcTax[Calculate CGST/SGST/IGST\nper place_of_supply]
+        CalcTax --> CreateInvoice[INSERT sales_invoice]
+        CreateInvoice --> CreateItems[INSERT invoice_items]
+        CreateItems --> DecrementStock[UPDATE PartStock\nquantity -= qty]
+        DecrementStock --> LogStockMovement[INSERT stock_movements\n(OUT type)]
+
+        DecrementStock --> PostLedger[Post Double-Entry Ledger]
+        PostLedger --> DrCash[DR: Cash/AR 101000/104000]
+        PostLedger --> CrSales[CR: SalesRevenue 401000]
+
+        DrCash --> CommitTX[Commit Transaction]
+        CrSales --> CommitTX
+
+        CommitTX --> LogAudit[INSERT audit_logs\nJSON diff of old/new state]
+        LogAudit --> TriggerEmail[Queue Email Job\nBullMQ]
+        TriggerEmail --> Success([Return 201 Created\n+ Invoice JSON])
+    end
+
+    subgraph Purchase Order Approval Flow
+        POStart([Create PO\nPOST /api/purchase-orders]) --> POCheck{RBAC & Status}
+        POCheck -->|Draft| SaveDraft[Save as draft]
+        POCheck -->|Submit| TriggerApproval[Trigger Approval Workflow\napproval_workflows lookup]
+        TriggerApproval --> GetSteps[Get approval_steps\nordered by step_number]
+        GetSteps --> NotifyStep[Notify assigned_role\nvia Email Job]
+        NotifyStep --> StepApprove{Each Step:\nApprove or Reject?}
+
+        StepApprove -->|Reject| RejectPO[Set PO status = rejected\nINSERT approval_histories\nrollback transaction]
+        StepApprove -->|Approve & Has Next| NextStep[Move to next step\nevaluate against threshold]
+        StepApprove -->|Approve & Final| ApprovePO[Set PO status = approved\nReady for receiving]
+
+        NextStep --> StepApprove
+    end
+
+    subgraph Repair / Ticket Flow
+        RepairStart([Create Repair Job\nPOST /api/repairs]) --> RepairFlow
+        subgraph RepairFlow [Repair Status Machine]
+            RF1[received] --> RF2[diagnosed]
+            RF2 --> RF3[awaiting_parts]
+            RF3 --> RF4[in_repair]
+            RF4 --> RF5[ready_for_pickup]
+            RF5 --> RF6[completed]
+            RF2 --> Cancel[cancelled]
+        end
+        RepairFlow --> AssignTech[Assign technician\ntechnicians.assigned]
+        AssignTech --> ConsumeParts[Consume parts\nreduce PartStock\ncreate stock_movements OUT]
+        ConsumeParts --> RepairPayment[Record payment\npayments table]
+        RepairPayment --> RepairAudit[Audit log entry]
+    end
+
+    subgraph GST / India Compliance Flow
+        GSTStart([GST Captcha & Lookup\n/app/api/gst-captcha]) --> SolveCaptcha[Solve reCAPTCHA\nvia Python micro-script]
+        SolveCaptcha --> GSTSearch[Query GST Portal\nwith resolved token]
+        GSTSearch --> ParseGST[Parse GST Data\nbusiness constitution, address, status]
+        ParseGST --> GSTInvoice[Populate Invoice\nplace_of_supply + GSTIN fields]
+        GSTInvoice --> GenerateEInvoice[Generate E-Invoice\nwith IRN + QR code]
+
+        GenerateEInvoice --> GSTReturn[Auto-fill GSTR-1 / GSTR-3B\nsales_invoice data aggregation]
+        GSTReturn --> TDSReport[Generate TDS / TCS Reports]
+    end
+
+    subgraph Mobile Sync Flow
+        MobileOffline[User Works Offline\nSQLite on device] --> QueueChanges[Queue local changes\nCRDT / last-writer-wins]
+        QueueChanges --> DetectNetwork{Network Available?}
+        DetectNetwork -->|No| KeepQueue[Keep queue]
+        DetectNetwork -->|Yes| PushChanges[POST /api/mobile/sync\nbatched JSON payload]
+        PushChanges --> ServerValidate[Server validates\nRBAC + business rules]
+        ServerValidate -->|Conflict| ResolveConflict[Conflict resolution\nreturn server-wins or merge]
+        ServerValidate -->|Success| SyncComplete[Pull latest server state\nGET /api/mobile/data]
+        ResolveConflict --> SyncComplete
+        SyncComplete --> UpdateLocal[Update local SQLite\ntrigger UI refresh]
+    end
+endsection
+    </div>
+  </div>
+
+  <div class="card" id="card-4_rbac_matrix">
+    <h2>RBAC Role-Permission Matrix</h2>
+    <div class="mermaid">
+section 4_rbac_matrix
+graph LR
+    subgraph Roles [RBAC Roles]
+        R1[admin]
+        R2[sales]
+        R3[inventory_manager]
+        R4[accountant]
+        R5[technician]
+        R6[viewer]
+    end
+
+    subgraph Perms [Typical Permission Granules]
+        P1[user:create|edit|delete]
+        P2[invoice:create|view|void]
+        P3[invoice:approve]
+        P4[purchase_order:create|approve|receive]
+        P5[inventory:edit|transfer]
+        P6[repair:create|assign|complete]
+        P7[catalog:import|export]
+        P8[reports:view|export]
+        P9[ledger:view|post]
+        P10[settings:edit]
+    end
+
+    subgraph Mapping [Role → Permission Mapping]
+        R1 --> P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8 & P9 & P10
+        R2 --> P2 & P4 & P8
+        R3 --> P5 & P7
+        R4 --> P2 & P9 & P8
+        R5 --> P6
+        R6 --> P8
+    end
+endsection
+    </div>
+  </div>
+
+  <div class="card" id="card-5_ci_pipeline">
+    <h2>CI/CD Validation Pipeline</h2>
+    <div class="mermaid">
+section 5_ci_pipeline
+graph LR
+    subgraph CI [CI/CD]
+        dir1[/.github/workflows/] --> CI_Validate
+        subgraph CI_Validate [Validation Phase — run on every PR]
+            LS[Lint Check\nESLint + Prettier]
+            Unit[Unit Tests\nJest + Supertest]
+            Type[TypeScript Compile Check\nnpx tsc --noEmit]
+            DB[DB Migration Check\nprisma migrate diff --from-empty]
+        end
+        CI_Validate --> CI_Integration
+
+        subgraph CI_Integration [Integration & Storage Phase]
+            Inv[Invoice Persistence Test\ncatalog-validation/ci-persist-root]
+            Verify[Replay Verification\ncatalog-validation/ci-verify-root]
+            Catalog[Catalog Validation\ntest_tables2.py + patch_search.py]
+            Compliance[India Compliance\nGST Captcha E2E test]
+        end
+        CI_Integration --> CI_Deploy
+
+        subgraph CI_Deploy [Deploy Gate]
+            Build[Build Client + Server]
+            Docker[Docker Image — if configured]
+            DeployProd[Deploy to production]
+        end
+    end
+endsection
+    </div>
+  </div>
+
+  <div class="card" id="card-6_module_breakdown">
+    <h2>Module Functional Breakdown</h2>
+    <div class="mermaid">
+section 6_module_breakdown
+graph TB
+    subgraph Core [Core Platform]
+        Auth[🔐 Authentication & RBAC]
+        Users[👥 Users & Roles]
+        Settings[⚙️ Settings]
+    end
+
+    subgraph Sales [Sales & Billing]
+        Invoices[📄 Sales Invoices]
+        POS[💳 Point of Sale]
+        Payments[💵 Payment Collection]
+        EInv[🧾 E-Invoicing / IRN]
+    end
+
+    subgraph Inventory [Inventory & Procurement]
+        Catalog[📦 Product Catalog]
+        Stock[🏭 Multi-Location Stock]
+        Transfer[🚚 Stock Transfers]
+        Supplier[🚛 Supplier Management]
+        PO[📋 Purchase Orders]
+    end
+
+    subgraph Service [Field Service]
+        Repairs[🔧 Repair Jobs / Tickets]
+        AMC[🛡️ AMC Contracts]
+        Complaints[📣 Customer Complaints]
+        Dispatch[🚚 Technician Dispatch]
+    end
+
+    subgraph Finance [Finance & Compliance]
+        Ledger[📒 Double-Entry Ledger]
+        Reports[📊 Financial Reports]
+        Audit[🔍 Audit Trail]
+        GST[🇮🇳 GST Compliance]
+        ReportsGST[📑 GSTR-1 / 3B / TDS / TCS]
+    end
+
+    subgraph Platforms [Cross-Platform]
+        WebPortal[🌐 Customer Portal]
+        MobileApp[📱 Mobile App]
+        AIBot[🤖 AI Bot]
+    end
+
+    subgraph Infra [Infrastructure]
+        Bi[🔄 BullMQ Job Queue]
+        Backup[💾 Backup & Safety]
+        Deploy[🚢 Deploy Scripts]
+    end
+
+    Auth --> Users
+    Auth --> Sales
+    Auth --> Inventory
+    Auth --> Service
+    Auth --> Finance
+
+    Invoices --> EInv --> GST
+    POS --> Invoices
+    Payments --> Ledger
+
+    Catalog --> Stock
+    Stock --> Transfer
+    Supplier --> PO
+
+    Repairs --> AMC --> Complaints
+    Repairs --> Payments
+
+    Ledger --> Reports --> Audit
+    GST --> ReportsGST
+
+    Platforms --> Core
+    WebPortal --> Sales
+    WebPortal --> Finance
+    MobileApp --> Sales
+    MobileApp --> Inventory
+    AIBot --> Core
+
+    Bi --> Email & PDF
+    Backup --> Inventory
+    Deploy --> WebPortal
+endsection
+    </div>
+  </div>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose', flowchart: { useMaxWidth: true } });
+</script>
+</body>
+</html>

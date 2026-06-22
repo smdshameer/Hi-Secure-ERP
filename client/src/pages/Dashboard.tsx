@@ -85,7 +85,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="h-full flex flex-col gap-4 overflow-hidden">
+    <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
       {/* Page header */}
       <div className="page-header flex-shrink-0 items-center !mb-0">
         <div>
@@ -95,11 +95,10 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="text-right flex-shrink-0 no-print">
-          <div className="text-[12px] font-medium text-gray-500 bg-white border border-gray-200/80 rounded-xl px-3 py-1.5 shadow-sm flex items-center gap-2">
+          <div className="text-[12px] font-medium text-gray-500 bg-white border border-gray-200/80 rounded-xl px-3 py-1.5 shadow-sm flex items-center gap-2 date-time-container">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>{formattedDate}</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-bold text-blue-600 bg-blue-50/50 px-2 py-0.5 rounded border border-blue-100">{formattedTime}</span>
+            <span className="font-bold text-blue-600 bg-blue-50/50 px-2 py-0.5 rounded border border-blue-100 time-badge">{formattedTime}</span>
           </div>
         </div>
       </div>
@@ -173,10 +172,10 @@ export default function Dashboard() {
       </div>
 
       {/* Main Workspace grid - 3 panels side-by-side */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:flex-1 lg:min-h-0">
         {/* Panel 1: Revenue Chart (5 columns) */}
-        <div className="lg:col-span-5 flex flex-col min-h-0">
-          <div className="panel flex flex-col min-h-0 flex-1">
+        <div className="lg:col-span-5 flex flex-col lg:min-h-0">
+          <div className="panel flex flex-col lg:min-h-0 lg:flex-1 h-[240px] lg:h-auto">
             <div className="panel-header flex-shrink-0">
               <div className="panel-title text-gray-700 font-bold">
                 {chartMode === 'revenue' ? (
@@ -343,8 +342,8 @@ export default function Dashboard() {
         </div>
 
         {/* Panel 2: Operations Alert Desk (3 columns) */}
-        <div className="lg:col-span-3 flex flex-col min-h-0">
-          <div className="panel flex flex-col min-h-0 flex-1 bg-slate-50/25 p-3">
+        <div className="lg:col-span-3 flex flex-col lg:min-h-0">
+          <div className="panel flex flex-col lg:min-h-0 lg:flex-1 bg-slate-50/25 p-3">
             <div className="panel-header flex-shrink-0 mb-1.5">
               <div className="panel-title text-gray-700 font-bold">
                 <IconBell size={18} className="text-amber-500" /> Operations Alert Desk
@@ -440,14 +439,14 @@ export default function Dashboard() {
         </div>
 
         {/* Panel 3: Quick Actions (4 columns, 2x5 grid) */}
-        <div className="lg:col-span-4 flex flex-col min-h-0">
-          <div className="panel flex flex-col justify-between flex-1 min-h-0 p-3">
+        <div className="lg:col-span-4 flex flex-col lg:min-h-0">
+          <div className="panel flex flex-col justify-between lg:min-h-0 lg:flex-1 p-3">
             <div className="panel-header flex-shrink-0">
               <div className="panel-title text-gray-700 font-bold">
                 <IconBolt size={18} className="text-indigo-500" /> Quick Actions
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 py-1">
+            <div className="grid grid-cols-2 grid-rows-5 grid-flow-col gap-2 flex-1 min-h-0 py-1 quick-actions-grid">
               <Link to="/quotations/new?from=dashboard" className="action-btn bg-[#0f766e]">
                 <IconFileText size={14} />
                 <span>Quotation</span>

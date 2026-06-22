@@ -469,7 +469,7 @@ export default function Settings() {
   const [waTestResult, setWaTestResult] = useState<TestResult>(idleResult);
 
   const [telegram, setTelegram] = useState({
-    bot_token: '', chat_id: '', enabled: false,
+    bot_token: '', chat_id: '', enabled: false, api_base_url: '',
   });
   const [tgTestResult, setTgTestResult] = useState<TestResult>(idleResult);
   const [aiTestResult, setAiTestResult] = useState<TestResult>(idleResult);
@@ -1225,6 +1225,9 @@ export default function Settings() {
                   </FieldRow>
                   <FieldRow label="Chat ID" hint="Group / channel / personal chat">
                     <SInput value={telegram.chat_id} onChange={v => setTelegram(p => ({ ...p, chat_id: v }))} placeholder="-1001234567890" />
+                  </FieldRow>
+                  <FieldRow label="API Base URL (Proxy)" hint="Optional proxy URL (e.g., https://yourproxy.com)">
+                    <SInput value={telegram.api_base_url || ''} onChange={v => setTelegram(p => ({ ...p, api_base_url: v }))} placeholder="https://api.telegram.org" />
                   </FieldRow>
                 </div>
               </SectionCard>

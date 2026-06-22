@@ -1,0 +1,203 @@
+{
+  "audit_scope": "INCREMENTAL",
+  "run_date": "2026-06-17T20:28:20.410Z",
+  "status": "FAILED",
+  "duration_ms": 1007,
+  "report_path": "C:\\Users\\Admin\\Desktop\\Calude Test\\erp-app\\reports\\integrity\\integrity_audit_incremental_2026-06-17_1781728100410.md",
+  "counts": {
+    "inventory_errors": 18,
+    "accounting_errors": 0,
+    "warnings": 24
+  },
+  "inventory_errors": [
+    {
+      "part_id": 4033,
+      "part_number": "P3A-1-1781674453336",
+      "name": "P3A Test Part 1",
+      "location_id": 323,
+      "stock_quantity": 3,
+      "stock_movements_sum": -7,
+      "difference": 10
+    },
+    {
+      "part_id": 4034,
+      "part_number": "P3A-2-1781674453342",
+      "name": "P3A Test Part 2",
+      "location_id": 323,
+      "stock_quantity": 18,
+      "stock_movements_sum": 3,
+      "difference": 15
+    },
+    {
+      "part_id": 4035,
+      "part_number": "P3A-1-1781674509768",
+      "name": "P3A Test Part 1",
+      "location_id": 325,
+      "stock_quantity": 3,
+      "stock_movements_sum": -7,
+      "difference": 10
+    },
+    {
+      "part_id": 4036,
+      "part_number": "P3A-2-1781674509772",
+      "name": "P3A Test Part 2",
+      "location_id": 325,
+      "stock_quantity": 18,
+      "stock_movements_sum": 3,
+      "difference": 15
+    },
+    {
+      "part_id": 4037,
+      "part_number": "P3B-1-1781675160474",
+      "name": "P3B Test Part 1",
+      "location_id": 327,
+      "stock_quantity": 12,
+      "stock_movements_sum": -3,
+      "difference": 15
+    },
+    {
+      "part_id": 4039,
+      "part_number": "P3B-1-1781675279468",
+      "name": "P3B Test Part 1",
+      "location_id": 328,
+      "stock_quantity": 12,
+      "stock_movements_sum": -3,
+      "difference": 15
+    },
+    {
+      "part_id": 4041,
+      "part_number": "P3A-1-1781675341925",
+      "name": "P3A Test Part 1",
+      "location_id": 329,
+      "stock_quantity": 3,
+      "stock_movements_sum": -7,
+      "difference": 10
+    },
+    {
+      "part_id": 4042,
+      "part_number": "P3A-2-1781675341929",
+      "name": "P3A Test Part 2",
+      "location_id": 329,
+      "stock_quantity": 18,
+      "stock_movements_sum": 3,
+      "difference": 15
+    },
+    {
+      "part_id": 4044,
+      "part_number": "P3C-2-1781678192575",
+      "name": "P3C Test Part 2",
+      "location_id": 331,
+      "stock_quantity": 5,
+      "stock_movements_sum": -3,
+      "difference": 8
+    },
+    {
+      "part_id": 4045,
+      "part_number": "P3A-1-1781678239779",
+      "name": "P3A Test Part 1",
+      "location_id": 332,
+      "stock_quantity": 3,
+      "stock_movements_sum": -7,
+      "difference": 10
+    },
+    {
+      "part_id": 4046,
+      "part_number": "P3A-2-1781678239783",
+      "name": "P3A Test Part 2",
+      "location_id": 332,
+      "stock_quantity": 18,
+      "stock_movements_sum": 3,
+      "difference": 15
+    },
+    {
+      "part_id": 4047,
+      "part_number": "P3B-1-1781678268678",
+      "name": "P3B Test Part 1",
+      "location_id": 334,
+      "stock_quantity": 12,
+      "stock_movements_sum": -3,
+      "difference": 15
+    },
+    {
+      "part_id": 4056,
+      "part_number": "PART-P4-INV-1781680340792",
+      "name": "P4 Part INV",
+      "location_id": 1,
+      "stock_quantity": 48,
+      "stock_movements_sum": -2,
+      "difference": 50
+    },
+    {
+      "part_id": 4058,
+      "part_number": "PART-P4-INV-1781680855444",
+      "name": "P4 Part INV",
+      "location_id": 1,
+      "stock_quantity": 48,
+      "stock_movements_sum": -2,
+      "difference": 50
+    },
+    {
+      "part_id": 4059,
+      "part_number": "P3B-1-1781680915638",
+      "name": "P3B Test Part 1",
+      "location_id": 335,
+      "stock_quantity": 12,
+      "stock_movements_sum": -3,
+      "difference": 15
+    },
+    {
+      "part_id": 4061,
+      "part_number": "P3A-1-1781680969998",
+      "name": "P3A Test Part 1",
+      "location_id": 336,
+      "stock_quantity": 3,
+      "stock_movements_sum": -7,
+      "difference": 10
+    },
+    {
+      "part_id": 4062,
+      "part_number": "P3A-2-1781680970004",
+      "name": "P3A Test Part 2",
+      "location_id": 336,
+      "stock_quantity": 18,
+      "stock_movements_sum": 3,
+      "difference": 15
+    },
+    {
+      "part_id": 4064,
+      "part_number": "P3C-2-1781681023312",
+      "name": "P3C Test Part 2",
+      "location_id": 338,
+      "stock_quantity": 5,
+      "stock_movements_sum": -3,
+      "difference": 8
+    }
+  ],
+  "accounting_errors": [],
+  "warnings": [
+    "Invoice #INV3C-1781678192868 (ID: 269) has no security audit log.",
+    "Invoice #INV-P4-1781680340799 (ID: 272) has no security audit log.",
+    "Invoice #INV-P4-1781680855453 (ID: 273) has no security audit log.",
+    "Invoice #INV3C-1781681023689 (ID: 274) has no security audit log.",
+    "Invoice #INV-OVERDUE-1781682800045 (ID: 275) has no security audit log.",
+    "Invoice #INV-OVERDUE-1781682865911 (ID: 276) has no security audit log.",
+    "Invoice #INV-OVERDUE-1781682914614 (ID: 277) has no security audit log.",
+    "Invoice #INV-OVERDUE-1781683259925 (ID: 278) has no security audit log.",
+    "Invoice #INV3C-1781678192868 (ID: 269) has no stock movements logged.",
+    "Invoice #INV3C-1781678192868 (ID: 269) has no accounting journal entry logged.",
+    "Invoice #INV-P4-1781680340799 (ID: 272) has no stock movements logged.",
+    "Invoice #INV-P4-1781680340799 (ID: 272) has no accounting journal entry logged.",
+    "Invoice #INV-P4-1781680855453 (ID: 273) has no stock movements logged.",
+    "Invoice #INV-P4-1781680855453 (ID: 273) has no accounting journal entry logged.",
+    "Invoice #INV3C-1781681023689 (ID: 274) has no stock movements logged.",
+    "Invoice #INV3C-1781681023689 (ID: 274) has no accounting journal entry logged.",
+    "Invoice #INV-OVERDUE-1781682800045 (ID: 275) has no stock movements logged.",
+    "Invoice #INV-OVERDUE-1781682800045 (ID: 275) has no accounting journal entry logged.",
+    "Invoice #INV-OVERDUE-1781682865911 (ID: 276) has no stock movements logged.",
+    "Invoice #INV-OVERDUE-1781682865911 (ID: 276) has no accounting journal entry logged.",
+    "Invoice #INV-OVERDUE-1781682914614 (ID: 277) has no stock movements logged.",
+    "Invoice #INV-OVERDUE-1781682914614 (ID: 277) has no accounting journal entry logged.",
+    "Invoice #INV-OVERDUE-1781683259925 (ID: 278) has no stock movements logged.",
+    "Invoice #INV-OVERDUE-1781683259925 (ID: 278) has no accounting journal entry logged."
+  ]
+}

@@ -23,13 +23,30 @@ export default function AiAssistant() {
   
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Draggable states
+  // Mobile viewport detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Draggable states for the Chat Panel
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0, posX: 0, posY: 0 });
 
+  // Draggable states for the Chat Toggle Button
+  const [btnPosition, setBtnPosition] = useState({ x: 0, y: 0 });
+  const [isDraggingBtn, setIsDraggingBtn] = useState(false);
+  const dragBtnRef = useRef({ startX: 0, startY: 0, posX: 0, posY: 0 });
+  const isMovedRef = useRef(false);
+
+  // Panel Drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only drag on left click
     if (e.button !== 0) return;
     setIsDragging(true);
     dragRef.current = {
@@ -39,6 +56,18 @@ export default function AiAssistant() {
       posY: position.y
     };
     e.preventDefault();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setIsDragging(true);
+    dragRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      posX: position.x,
+      posY: position.y
+    };
   };
 
   useEffect(() => {
@@ -52,6 +81,19 @@ export default function AiAssistant() {
       });
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      if (e.touches.length !== 1) return;
+      e.preventDefault(); // prevent scrolling while dragging the chat panel
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragRef.current.startX;
+      const dy = touch.clientY - dragRef.current.startY;
+      setPosition({
+        x: dragRef.current.posX + dx,
+        y: dragRef.current.posY + dy
+      });
+    };
+
     const handleMouseUp = () => {
       setIsDragging(false);
     };
@@ -59,13 +101,76 @@ export default function AiAssistant() {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleMouseUp);
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleMouseUp);
     };
   }, [isDragging]);
+
+  // Button Drag handlers
+  const handleBtnStart = (clientX: number, clientY: number) => {
+    setIsDraggingBtn(true);
+    isMovedRef.current = false;
+    dragBtnRef.current = {
+      startX: clientX,
+      startY: clientY,
+      posX: btnPosition.x,
+      posY: btnPosition.y
+    };
+  };
+
+  const handleBtnMove = (clientX: number, clientY: number) => {
+    if (!isDraggingBtn) return;
+    const dx = clientX - dragBtnRef.current.startX;
+    const dy = clientY - dragBtnRef.current.startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      isMovedRef.current = true;
+    }
+    setBtnPosition({
+      x: dragBtnRef.current.posX + dx,
+      y: dragBtnRef.current.posY + dy
+    });
+  };
+
+  const handleBtnEnd = () => {
+    setIsDraggingBtn(false);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      handleBtnMove(e.clientX, e.clientY);
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault(); // prevent scrolling while dragging the toggle button
+      handleBtnMove(e.touches[0].clientX, e.touches[0].clientY);
+    };
+    const handleMouseUp = () => {
+      handleBtnEnd();
+    };
+
+    if (isDraggingBtn) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
+    
+    // Always listen to release on document to avoid race conditions
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchend', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleMouseUp);
+    };
+  }, [isDraggingBtn]);
 
   // Check if AI is enabled on mount/open
   useEffect(() => {
@@ -200,11 +305,24 @@ export default function AiAssistant() {
     <>
       {/* ── Chat Toggle Button ── */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onMouseDown={(e) => {
+          if (e.button !== 0) return;
+          handleBtnStart(e.clientX, e.clientY);
+        }}
+        onTouchStart={(e) => {
+          if (e.touches.length !== 1) return;
+          const touch = e.touches[0];
+          handleBtnStart(touch.clientX, touch.clientY);
+        }}
+        onClick={() => {
+          if (!isMovedRef.current) {
+            setIsOpen(v => !v);
+          }
+        }}
         style={{
           position: 'fixed',
-          bottom: '24px',
-          right: '24px',
+          bottom: isMobile ? '16px' : '24px',
+          right: isMobile ? '16px' : '24px',
           width: '56px',
           height: '56px',
           borderRadius: '50%',
@@ -212,13 +330,14 @@ export default function AiAssistant() {
           color: '#ffffff',
           border: 'none',
           boxShadow: '0 4px 14px rgba(26, 52, 128, 0.4)',
-          cursor: 'pointer',
+          cursor: isDraggingBtn ? 'grabbing' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 9999,
-          transition: 'all 0.3s ease',
-          transform: isOpen ? 'rotate(90deg)' : 'none',
+          transition: isDraggingBtn ? 'none' : 'transform 0.2s ease',
+          transform: `translate(${btnPosition.x}px, ${btnPosition.y}px) ${isOpen ? 'rotate(90deg)' : 'none'}`,
+          touchAction: 'none'
         }}
         className="hover:scale-105"
         title="Hi-Secure AI Assistant"
@@ -231,11 +350,11 @@ export default function AiAssistant() {
         <div
           style={{
             position: 'fixed',
-            bottom: '96px',
-            right: '24px',
-            transform: `translate(${position.x}px, ${position.y}px)`,
-            width: '380px',
-            height: '550px',
+            bottom: isMobile ? '80px' : '96px',
+            right: isMobile ? '16px' : '24px',
+            transform: `translate(${position.x + btnPosition.x}px, ${position.y + btnPosition.y}px)`,
+            width: isMobile ? 'calc(100vw - 32px)' : '380px',
+            height: isMobile ? '480px' : '550px',
             maxHeight: 'calc(100vh - 120px)',
             borderRadius: '16px',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -253,6 +372,7 @@ export default function AiAssistant() {
           {/* Header */}
           <div
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
             style={{
               padding: '16px',
               backgroundColor: '#1a3480',
@@ -260,8 +380,9 @@ export default function AiAssistant() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              cursor: 'move',
+              cursor: isMobile ? 'default' : 'move',
               userSelect: 'none',
+              touchAction: 'none', // prevent default drag scroll
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

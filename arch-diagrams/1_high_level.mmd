@@ -1,0 +1,96 @@
+section 1_high_level
+graph TD
+    subgraph External [External Systems]
+        GST[GST Portal]
+        SMTP[SMTP Mail Server]
+        Redis[Redis / BullMQ Jobs]
+    end
+
+    subgraph Client [React Client — Port 3009]
+        UI[React 19 + Tailwind v4]
+        Router[React Router v7]
+        AxiosClient[Axios API Client]
+        UI --> Router --> AxiosClient
+    end
+
+    subgraph Portal [Customer Portal — EJS]
+        PortalLogin[app/login]
+        PortalInvoices[app/invoices]
+        PortalPayments[app/payments]
+        PortalAMC[app/amc]
+        PortalComplaints[app/complaints]
+    end
+
+    subgraph Mobile [React Native Mobile]
+        MobileScreens[screens/*]
+        LocalDB[(Local SQLite)]
+        MobileScreens --> LocalDB
+    end
+
+    subgraph Server [Express API — Port 3009]
+        SubGraph --> Server
+
+        subgraph MW [Middleware Pipeline]
+            H[helmet / security headers]
+            RL[rate limiting]
+            CORS[CORS]
+            AUTH[JWT Cookie Auth]
+            RBAC[requirePermission RBAC]
+            H --> RL --> CORS --> AUTH --> RBAC
+        end
+
+        subgraph Routes [Route Controllers routes/*.ts]
+            AuthRoute[auth]
+            InvoiceRoute[sales / invoices]
+            PORoute[purchase-orders]
+            RepairRoute[repairs / tickets]
+            GSTRoute[gst / compliance]
+            ReportRoute[reports]
+            UploadRoute[uploads]
+            SettingsRoute[settings]
+        end
+
+        subgraph Services [Business Services services/*.ts]
+            AuthService[AuthService]
+            InvoiceService[InvoiceService + POS]
+            POService[POService]
+            RepairService[RepairService]
+            GSTService[GSTService]
+            ReportService[ReportService]
+            SettingsService[SettingsService]
+            EmailService[Nodemailer Email]
+            PDFService[PDFKit Reports]
+            AuditService[AuditService]
+        end
+
+        subgraph Repos [Data Repositories repositories/*.ts]
+            InvoiceRepo[InvoiceRepository]
+            PORepo[PORepository]
+            PartRepo[PartRepository]
+            StockRepo[StockRepository]
+            RepairRepo[RepairRepository]
+            UserRepo[UserRepository]
+            AuditRepo[AuditRepository]
+            SettingsRepo[SettingsRepository]
+            ReportRepo[ReportRepository]
+        end
+
+        subgraph Jobs [Background Jobs jobs/*.ts]
+            BullJobs[BullMQ Queue]
+            EmailJob[Email Jobs]
+            BackupJob[Backup Jobs]
+            ReportJob[Report Generation]
+        end
+
+        MW --> Routes --> Services --> Repos --> DB[(PostgreSQL DB)]
+        Services --> Jobs --> Redis
+        Services --> External
+    end
+
+    AxiosClient -->|HTTP/JSON| Server
+    Portal -->|HTTP/JSON| Server
+    Mobile -->|HTTP/JSON| Server
+
+    linkStyle 5 stroke:#666,stroke-dasharray:5 5
+    linkStyle 36 stroke:#666,stroke-dasharray:5 5
+endsection

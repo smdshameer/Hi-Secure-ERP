@@ -17,12 +17,19 @@ export default function CRMForm({ backPath }: { backPath: string }) {
     const id = getId();
     if (id) {
       setLoading(true);
-      api.get('/crm').then(r => {
-        const lead = (r.data.data ?? r.data ?? []).find((l: any) => l.contact_id === Number(id));
+      api.get(`/crm/leads/${id}`).then(r => {
+        const lead = r.data.data ?? r.data;
         if (lead) setForm({
-          name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '',
-          company: lead.company ?? '', source: lead.source ?? 'direct',
-          status: lead.status ?? 'new', value: lead.value ?? 0, notes: lead.notes ?? '',
+          name: `${lead.first_name} ${lead.last_name || ''}`.trim(),
+          phone: lead.phone ?? '',
+          email: lead.email ?? '',
+          company: lead.company_name ?? '',
+          source: (lead.source ?? 'direct').toLowerCase(),
+          status: (lead.status ?? 'new').toLowerCase(),
+          value: lead.opportunities && lead.opportunities.length > 0 
+            ? lead.opportunities.reduce((s: number, o: any) => s + (o.estimated_revenue || 0), 0)
+            : 0,
+          notes: lead.notes ?? '',
         });
       }).catch(() => {}).finally(() => setLoading(false));
     }
@@ -35,9 +42,23 @@ export default function CRMForm({ backPath }: { backPath: string }) {
     e.preventDefault(); setSaving(true);
     try {
       const id = getId();
-      const data: any = { ...form };
-      if (id) await api.put(`/crm/${id}`, data);
-      else await api.post('/crm', data);
+      const nameParts = form.name.trim().split(/\s+/);
+      const first_name = nameParts[0];
+      const last_name = nameParts.slice(1).join(' ') || undefined;
+
+      const data: any = {
+        first_name,
+        last_name,
+        phone: form.phone,
+        email: form.email,
+        company_name: form.company || undefined,
+        source: form.source.toUpperCase(),
+        notes: form.notes || undefined,
+        status: form.status.toUpperCase()
+      };
+
+      if (id) await api.put(`/crm/leads/${id}`, data);
+      else await api.post('/crm/leads', data);
       window.location.href = '/crm';
     } catch { alert('Failed to save lead details'); }
     finally { setSaving(false); }

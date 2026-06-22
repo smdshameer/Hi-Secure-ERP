@@ -73,6 +73,48 @@ export class CrmService {
     });
   }
 
+  async updateLead(id: number, data: {
+    first_name?: string;
+    last_name?: string;
+    company_name?: string;
+    email?: string;
+    phone?: string;
+    assigned_to?: number;
+    source?: string;
+    notes?: string;
+    status?: string;
+  }, userId?: number) {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.lead.findUnique({ where: { lead_id: id } });
+      if (!existing) throw new Error('LEAD_NOT_FOUND');
+
+      const lead = await tx.lead.update({
+        where: { lead_id: id },
+        data: {
+          first_name: data.first_name,
+          last_name: data.last_name !== undefined ? data.last_name : undefined,
+          company_name: data.company_name !== undefined ? data.company_name : undefined,
+          email: data.email,
+          phone: data.phone,
+          status: data.status,
+          assigned_to: data.assigned_to !== undefined ? data.assigned_to : undefined,
+          source: data.source,
+          notes: data.notes !== undefined ? data.notes : undefined
+        }
+      });
+
+      await BusinessEventService.logEvent({
+        event_type: 'CRM_LEAD_UPDATED',
+        entity_type: 'Lead',
+        entity_id: lead.lead_id,
+        user_id: userId,
+        description: `Lead ${lead.lead_number} updated.`
+      }, tx);
+
+      return lead;
+    });
+  }
+
   // ─── ACTIVITIES ──────────────────────────────────────────────────────────
   async logLeadActivity(data: {
     lead_id: number;

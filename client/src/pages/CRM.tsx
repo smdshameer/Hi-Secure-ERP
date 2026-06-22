@@ -55,8 +55,25 @@ export default function CRM() {
 
   useEffect(() => {
     setLoading(true);
-    api.get('/crm', { params: { status: filter === 'all' ? undefined : filter, search } })
-      .then(r => setLeads(r.data.data ?? r.data))
+    api.get('/crm/leads', { params: { status: filter === 'all' ? undefined : filter.toUpperCase(), search } })
+      .then(r => {
+        const d = r.data.data ?? r.data;
+        const mapped = (Array.isArray(d) ? d : []).map((l: any) => ({
+          id: l.lead_id,
+          name: `${l.first_name} ${l.last_name || ''}`.trim(),
+          phone: l.phone,
+          email: l.email,
+          source: l.source || 'Direct',
+          status: (l.status || 'new').toLowerCase(),
+          value: l.opportunities && l.opportunities.length > 0 
+            ? l.opportunities.reduce((s: number, o: any) => s + (o.estimated_revenue || 0), 0)
+            : 0,
+          assignedTo: l.assignedUser ? l.assignedUser.full_name : undefined,
+          lastContact: l.followUps && l.followUps.length > 0 ? l.followUps[0].scheduled_at : undefined,
+          createdAt: l.created_at
+        }));
+        setLeads(mapped);
+      })
       .catch(() => setLeads([]))
       .finally(() => setLoading(false));
   }, [filter, search]);
@@ -178,7 +195,7 @@ export default function CRM() {
                 <tr key={l.id}>
                   <td className="font-medium text-[13px]">{l.name}</td>
                   <td>
-                    <Link to="/tel:${l.phone}"
+                    <Link to={`tel:${l.phone}`}
                       className="flex items-center gap-1 text-[12px] text-blue-600 hover:underline">
                       <IconPhone size={11} />{l.phone}
                     </Link>
@@ -199,7 +216,7 @@ export default function CRM() {
                         <IconEye size={14} />
                       </Link>
                       {l.email && (
-                        <Link to="/mailto:${l.email}"
+                        <Link to={`mailto:${l.email}`}
                           className="p-1.5 rounded border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors">
                           <IconMail size={14} />
                         </Link>

@@ -33,16 +33,22 @@ const navItems: NavItem[] = [
   { label: 'System Audit',     path: '/admin/audit',       icon: 'ti-shield-lock' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <nav className="w-[180px] bg-[#1a3480] flex-shrink-0 overflow-y-auto flex flex-col gap-0.5 px-2 py-1.5 h-full no-print">
+    <nav className={`sidebar-nav ${isOpen ? 'open' : ''} w-[180px] bg-[#1a3480] flex-shrink-0 overflow-y-auto flex flex-col gap-0.5 px-2 py-1.5 h-full no-print`}>
       {navItems.map((item) => (
         <NavLink
           key={item.path}
           to={item.path}
           end={item.path === '/'}
+          onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-[11px] px-3 py-[9px] rounded-lg text-[13.5px] transition-colors duration-150 cursor-pointer
+            `flex items-center gap-[11px] px-3 py-[7.5px] rounded-lg text-[13.5px] transition-colors duration-150 cursor-pointer
             ${isActive
               ? 'bg-white/[0.18] text-white font-medium'
               : 'text-white/[0.78] hover:bg-white/10 hover:text-white'
@@ -50,7 +56,7 @@ export default function Sidebar() {
           }
         >
           <i className={`ti ${item.icon} text-[18px] flex-shrink-0`} aria-hidden="true" />
-          <span className="flex-1">{item.label}</span>
+          <span className="sidebar-label flex-1">{item.label}</span>
           {item.badge !== undefined && (
             <span className={`text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[22px] text-center
               ${item.badgeColor === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`}>

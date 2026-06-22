@@ -1,0 +1,33 @@
+section 4_rbac_matrix
+graph LR
+    subgraph Roles [RBAC Roles]
+        R1[admin]
+        R2[sales]
+        R3[inventory_manager]
+        R4[accountant]
+        R5[technician]
+        R6[viewer]
+    end
+
+    subgraph Perms [Typical Permission Granules]
+        P1[user:create|edit|delete]
+        P2[invoice:create|view|void]
+        P3[invoice:approve]
+        P4[purchase_order:create|approve|receive]
+        P5[inventory:edit|transfer]
+        P6[repair:create|assign|complete]
+        P7[catalog:import|export]
+        P8[reports:view|export]
+        P9[ledger:view|post]
+        P10[settings:edit]
+    end
+
+    subgraph Mapping [Role → Permission Mapping]
+        R1 --> P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8 & P9 & P10
+        R2 --> P2 & P4 & P8
+        R3 --> P5 & P7
+        R4 --> P2 & P9 & P8
+        R5 --> P6
+        R6 --> P8
+    end
+endsection

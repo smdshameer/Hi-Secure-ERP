@@ -1,0 +1,27 @@
+section 5_ci_pipeline
+graph LR
+    subgraph CI [CI/CD]
+        dir1[/.github/workflows/] --> CI_Validate
+        subgraph CI_Validate [Validation Phase — run on every PR]
+            LS[Lint Check\nESLint + Prettier]
+            Unit[Unit Tests\nJest + Supertest]
+            Type[TypeScript Compile Check\nnpx tsc --noEmit]
+            DB[DB Migration Check\nprisma migrate diff --from-empty]
+        end
+        CI_Validate --> CI_Integration
+
+        subgraph CI_Integration [Integration & Storage Phase]
+            Inv[Invoice Persistence Test\ncatalog-validation/ci-persist-root]
+            Verify[Replay Verification\ncatalog-validation/ci-verify-root]
+            Catalog[Catalog Validation\ntest_tables2.py + patch_search.py]
+            Compliance[India Compliance\nGST Captcha E2E test]
+        end
+        CI_Integration --> CI_Deploy
+
+        subgraph CI_Deploy [Deploy Gate]
+            Build[Build Client + Server]
+            Docker[Docker Image — if configured]
+            DeployProd[Deploy to production]
+        end
+    end
+endsection

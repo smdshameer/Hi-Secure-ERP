@@ -1,0 +1,48 @@
+section 2_database_schema
+erDiagram
+    users ||--o{ user_roles : has
+    users ||--o{ audit_logs : performs
+    users ||--o{ sales_invoices : creates
+    users ||--o{ purchase_orders : creates
+    users ||--o{ repair_parts : "creates (physician)"
+    roles ||--o{ user_roles : "assigned to"
+    roles ||--o{ role_permissions : "has"
+    permissions ||--o{ role_permissions : "grants to"
+
+    customers ||--o{ sales_invoices : "is billed in"
+    customers ||--o{ repairs : "has repaired"
+    suppliers ||--o{ purchase_orders : "supplies"
+    locations ||--o{ part_stocks : "holds stock at"
+    locations ||--o{ stock_movements : "is source of"
+    brands ||--o{ parts : manufactures
+    parts ||--o{ part_stocks : "has stock at"
+    parts ||--o{ stock_movements : "moves"
+    parts ||--o{ sales_invoice_items : "is sold as"
+    parts ||--o{ purchase_order_items : "is ordered as"
+    parts ||--o{ repair_parts : "is consumed by"
+
+    sales_invoices ||--o{ sales_invoice_items : contains
+    sales_invoices ||--o{ journal_entries : "triggers"
+    journal_entries ||--o{ journal_entry_lines : has
+    accounts ||--o{ journal_entry_lines : "is credited/debited in"
+
+    purchase_orders ||--o{ purchase_order_items : contains
+    purchase_orders ||--o{ approval_workflows : "triggers"
+    approval_workflows ||--o{ approval_steps : defines
+    approval_steps ||--o{ approval_histories : "is executed in"
+    users ||--o{ approval_histories : "approves as"
+    roles ||--o{ approval_steps : "required in"
+
+    repairs ||--o{ repair_parts : "consumes"
+    repairs ||--o{ payments : "has payments"
+    repairs ||--o{ audit_logs : "is tracked in"
+
+    stock_movements ||--o{ audit_logs : "is logged in"
+    settings ||--o{ audit_logs : "changes"
+
+    %% RBAC junction
+    users ||--o{ approval_histories : acts_as
+
+    %% Many-to-many tech assignment (shown implicitly via repair.assigned_technician_id FK)
+    technicians ||--o{ repairs : assigned_to
+endsection

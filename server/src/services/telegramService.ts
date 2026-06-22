@@ -8,6 +8,7 @@ export async function getTelegramConfig() {
     bot_token: v.bot_token || '',
     chat_id: v.chat_id || '',
     enabled: v.enabled === true || v.enabled === 'true',
+    api_base_url: v.api_base_url || '',
   };
 }
 
@@ -42,8 +43,9 @@ export async function sendTelegram(
 
     const sanitizedMessage = sanitizeTelegramMarkdown(message);
 
+    const telegramBaseUrl = cfg.api_base_url || process.env.TELEGRAM_API_BASE_URL || 'https://api.telegram.org';
     const res = await fetch(
-      `https://api.telegram.org/bot${cfg.bot_token}/sendMessage`,
+      `${telegramBaseUrl}/bot${cfg.bot_token}/sendMessage`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,7 +69,7 @@ export async function sendTelegram(
       if (isParseError) {
         console.warn(`[telegramService] Telegram Markdown parsing failed. Retrying in plain text. Error: ${data.description}`);
         const fallbackRes = await fetch(
-          `https://api.telegram.org/bot${cfg.bot_token}/sendMessage`,
+          `${telegramBaseUrl}/bot${cfg.bot_token}/sendMessage`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

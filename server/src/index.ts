@@ -114,6 +114,7 @@ export const prisma = new PrismaClient().$extends({
 }) as unknown as PrismaClient;
 
 const app = express();
+app.set('trust proxy', 1); // Trust Nginx reverse proxy
 const PORT = process.env.PORT || 3004;
 
 // Global HTTP server reference for graceful shutdown
@@ -123,6 +124,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'style-src': ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      'font-src': ["'self'", "https://cdn.jsdelivr.net"],
       'img-src': ["'self'", "data:", "blob:", "https://publicservices.gst.gov.in"],
     },
   },
@@ -256,8 +259,16 @@ if (process.env.NODE_ENV !== 'production') {
 // Serve React static files in production
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../../client/dist');
-  app.use(express.static(clientBuildPath));
+  app.use(express.static(clientBuildPath, {
+    maxAge: '1d',
+    setHeaders: (res, filepath) => {
+      if (filepath.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      }
+    }
+  }));
   app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
 }

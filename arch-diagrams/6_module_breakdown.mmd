@@ -1,0 +1,81 @@
+section 6_module_breakdown
+graph TB
+    subgraph Core [Core Platform]
+        Auth[🔐 Authentication & RBAC]
+        Users[👥 Users & Roles]
+        Settings[⚙️ Settings]
+    end
+
+    subgraph Sales [Sales & Billing]
+        Invoices[📄 Sales Invoices]
+        POS[💳 Point of Sale]
+        Payments[💵 Payment Collection]
+        EInv[🧾 E-Invoicing / IRN]
+    end
+
+    subgraph Inventory [Inventory & Procurement]
+        Catalog[📦 Product Catalog]
+        Stock[🏭 Multi-Location Stock]
+        Transfer[🚚 Stock Transfers]
+        Supplier[🚛 Supplier Management]
+        PO[📋 Purchase Orders]
+    end
+
+    subgraph Service [Field Service]
+        Repairs[🔧 Repair Jobs / Tickets]
+        AMC[🛡️ AMC Contracts]
+        Complaints[📣 Customer Complaints]
+        Dispatch[🚚 Technician Dispatch]
+    end
+
+    subgraph Finance [Finance & Compliance]
+        Ledger[📒 Double-Entry Ledger]
+        Reports[📊 Financial Reports]
+        Audit[🔍 Audit Trail]
+        GST[🇮🇳 GST Compliance]
+        ReportsGST[📑 GSTR-1 / 3B / TDS / TCS]
+    end
+
+    subgraph Platforms [Cross-Platform]
+        WebPortal[🌐 Customer Portal]
+        MobileApp[📱 Mobile App]
+        AIBot[🤖 AI Bot]
+    end
+
+    subgraph Infra [Infrastructure]
+        Bi[🔄 BullMQ Job Queue]
+        Backup[💾 Backup & Safety]
+        Deploy[🚢 Deploy Scripts]
+    end
+
+    Auth --> Users
+    Auth --> Sales
+    Auth --> Inventory
+    Auth --> Service
+    Auth --> Finance
+
+    Invoices --> EInv --> GST
+    POS --> Invoices
+    Payments --> Ledger
+
+    Catalog --> Stock
+    Stock --> Transfer
+    Supplier --> PO
+
+    Repairs --> AMC --> Complaints
+    Repairs --> Payments
+
+    Ledger --> Reports --> Audit
+    GST --> ReportsGST
+
+    Platforms --> Core
+    WebPortal --> Sales
+    WebPortal --> Finance
+    MobileApp --> Sales
+    MobileApp --> Inventory
+    AIBot --> Core
+
+    Bi --> Email & PDF
+    Backup --> Inventory
+    Deploy --> WebPortal
+endsection

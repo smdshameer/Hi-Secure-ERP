@@ -141,6 +141,7 @@ body {
   color: rgba(255,255,255,0.7);
   font-size: 16px;
 }
+
 .erp-user {
   display: flex;
   align-items: center;
@@ -1576,4 +1577,519 @@ body {
 .settings-import-log-scrollable {
   max-height: 160px;
   overflow-y: auto;
+}
+
+/* ── Mobile & Tablet Collapsible Drawer Sidebar Responsiveness ── */
+@media (max-width: 1023px) {
+  /* ─ Let layout wrappers remain fixed height but scroll contents internally ─ */
+  .layout-wrapper {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .main-container {
+    height: calc(100vh - 52px) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    flex-direction: row !important; /* Keep sidebar next to content naturally */
+  }
+  .content-area {
+    overflow-y: auto !important;
+    padding: 12px 10px 80px 10px !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex: 1 !important;
+  }
+  /* ─ Header Logo Hide - Removed to show shield icon ─ */
+  /* Reduce container padding on tablet for maximal screen width usage */
+  .max-w-\[1600px\] {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  /* ─ Page header compact ─ */
+  .page-header {
+    margin-bottom: 8px !important;
+    gap: 8px;
+    flex-direction: row !important;
+  }
+  .page-title {
+    font-size: 18px !important;
+  }
+  .page-sub {
+    font-size: 12px !important;
+  }
+
+  /* ─ Touch friendly target sizes ─ */
+  button, 
+  .btn,
+  .action-btn,
+  .btn-primary,
+  .btn-outline,
+  a.border {
+    min-height: 36px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* ─ Horizontal swipe tabs ─ */
+  .flex.border-b.border-gray-200, 
+  .flex.gap-2.border-b,
+  [role="tablist"],
+  .tabs-container {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  [role="tablist"]::-webkit-scrollbar,
+  .tabs-container::-webkit-scrollbar {
+    display: none !important;
+  }
+  [role="tablist"] > *,
+  .tabs-container > * {
+    flex-shrink: 0 !important;
+  }
+
+  /* ─ Tablet Collapsible Sidebar Layout ─ */
+  .sidebar-nav {
+    width: 60px !important;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 40 !important;
+    overflow: hidden !important;
+  }
+  .sidebar-nav .sidebar-label,
+  .sidebar-nav .sidebar-badge {
+    display: none !important;
+  }
+  /* When open, expands as absolute overlay */
+  .sidebar-nav.open {
+    width: 165px !important;
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15) !important;
+  }
+  .sidebar-nav.open .sidebar-label {
+    display: inline !important;
+  }
+  .sidebar-nav.open .sidebar-badge {
+    display: inline-block !important;
+  }
+  .sidebar-nav a {
+    gap: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 12.5px !important;
+  }
+  .sidebar-nav a i {
+    font-size: 16px !important;
+  }
+
+  /* ─ Tablet Dashboard Grid (3 columns for KPI cards) ─ */
+  .page-dashboard .grid-cols-2.md\:grid-cols-5 {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  .page-dashboard .grid-cols-2.md\:grid-cols-5 > * {
+    flex: none !important;
+    width: auto !important;
+  }
+
+  /* ─ Tablet Forms Layout: 2 Columns ─ */
+  .content-area form .grid,
+  .content-area form [class*="grid-cols-"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+  .content-area form [class*="col-span-"] {
+    grid-column: span 1 / span 1 !important;
+  }
+  .content-area form .col-span-12.description,
+  .content-area form .col-span-12.full-width,
+  .content-area form .col-span-12:has(textarea),
+  .content-area form .col-span-2 {
+    grid-column: span 2 / span 2 !important;
+  }
+
+  /* ─ Tablet POS Module Split Layout ─ */
+  .page-pos .flex.gap-4 {
+    flex-direction: row !important;
+    height: calc(100vh - 160px) !important;
+  }
+  .page-pos .flex.gap-4 > div:first-child {
+    flex: 1 !important;
+  }
+  .page-pos .flex.gap-4 > div:last-child {
+    width: 320px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ── Mobile-only portrait corrections (< 640px) ── */
+@media (max-width: 639px) {
+  /* ─ Off-canvas Sidebar Drawer ─ */
+  .sidebar-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    z-index: 50 !important;
+    width: 170px !important; /* expanded slightly */
+    transform: translateX(-100%) !important;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2) !important;
+    overflow-y: auto !important; /* scrolling function enabled */
+    display: flex !important;
+    flex-direction: column !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 60px !important; /* ensure System Audit link is scrollable above OS bottom-bars */
+  }
+  .sidebar-nav.open {
+    transform: translateX(0) !important;
+  }
+  .sidebar-nav .sidebar-label {
+    display: inline !important;
+  }
+  /* Note: Keep scrollbar visible for scroll indicator clarity */
+  .sidebar-nav a {
+    gap: 8px !important;
+    padding: 9px 12px !important; /* expanded item height slightly */
+    font-size: 12px !important;
+  }
+  .sidebar-nav a i {
+    font-size: 16px !important;
+  }
+
+  /* Professional mobile logo font overrides */
+  .header-logo-wrap span.lg\:hidden {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #ffffff !important;
+  }
+
+  /* ─ Centered Search Bar in Header ─ */
+  .header-search-wrap {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: 145px !important; /* search bar width remains at full size */
+    margin: 0 !important;
+  }
+  /* Clean search input style override to prevent white-on-white */
+  .header-search-wrap input {
+    background-color: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    height: auto !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  /* ─ Mobile Page Header Horizontal Stack (Next to Header) ─ */
+  .page-header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+  }
+  .page-title {
+    font-size: 22px !important; /* increased Dashboard h1 text size slightly */
+  }
+  .page-dashboard .page-sub {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 11px !important; /* force single line for welcome back subheader */
+  }
+  .date-time-container {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+    gap: 4px !important;
+    border-radius: 8px !important;
+  }
+  .time-badge {
+    padding: 1px 4px !important;
+    font-size: 10px !important;
+  }
+  .date-time-container span.w-1\.5 {
+    width: 4px !important;
+    height: 4px !important;
+  }
+
+  /* ─ KPI cards horizontal scroll on mobile ─ */
+  .page-dashboard .grid-cols-2.md\:grid-cols-5 {
+    display: flex !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 2px 4px 8px 4px !important;
+    scrollbar-width: none !important;
+  }
+  .page-dashboard .grid-cols-2.md\:grid-cols-5::-webkit-scrollbar {
+    display: none !important;
+  }
+  .page-dashboard .grid-cols-2.md\:grid-cols-5 > * {
+    flex: 0 0 102px !important;
+    width: 102px !important;
+    min-width: 102px !important;
+  }
+  .page-dashboard .stat-card {
+    border-radius: 12px !important;
+    border-left: 3.5px solid transparent !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  }
+  .page-dashboard .stat-card.blue { border-left-color: #2563eb !important; }
+  .page-dashboard .stat-card.green { border-left-color: #22c55e !important; }
+  .page-dashboard .stat-card.amber { border-left-color: #f59e0b !important; }
+  .page-dashboard .stat-card.red { border-left-color: #ef4444 !important; }
+  
+  .page-dashboard .stat-card-body {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 4px 6px !important; /* increased vertical padding slightly */
+    gap: 1px !important;
+    min-height: 46px !important; /* increased header kpi card height slightly */
+  }
+  .page-dashboard .stat-icon {
+    width: 20px !important; /* reduced icon wrap size */
+    height: 20px !important;
+    border-radius: 4px !important;
+    margin-bottom: 0px !important;
+  }
+  .page-dashboard .stat-icon svg {
+    width: 10px !important; /* reduced icon size */
+    height: 10px !important;
+  }
+  .page-dashboard .stat-label {
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.1 !important;
+  }
+  .page-dashboard .stat-value {
+    font-size: 13.5px !important; /* increased font size slightly to fit taller card */
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin-top: 1px !important;
+    margin-bottom: 0 !important;
+  }
+  .page-dashboard .stat-sub {
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    margin-top: 1px !important;
+  }
+  .page-dashboard .stat-sub:not(.text-emerald-600):not(.text-amber-600) {
+    display: none !important;
+  }
+
+  /* Date/Time container guarantees */
+  .date-time-container {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 6px 12px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  }
+  .time-badge {
+    border: 1px solid #bfdbfe !important;
+    background-color: rgba(239, 246, 255, 0.5) !important;
+    color: #2563eb !important;
+  }
+
+  /* 3-column Quick Grid to prevent horizontal viewport stretch */
+  .page-dashboard .quick-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Force Quick Actions into a stable 2x5 column-first grid on mobile with equal sized columns */
+  .page-dashboard .quick-actions-grid.grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* equal width columns */
+    grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+    grid-auto-flow: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .page-dashboard .quick-actions-grid.grid-cols-2 .action-btn {
+    width: 100% !important;
+    height: 38px !important;
+    box-sizing: border-box !important;
+    justify-content: flex-start !important;
+  }
+
+  /* ─ Form container & fields styling: single-column forms ─ */
+  form {
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+  }
+  form .p-6, form .p-5 {
+    padding: 0 !important;
+  }
+  form .grid, 
+  form .grid-cols-2, 
+  form .md\:grid-cols-2, 
+  form .grid-cols-12, 
+  form [class*="grid-cols-"],
+  .grid.grid-cols-2,
+  .grid.md\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  form .col-span-2, 
+  form .md\:col-span-2,
+  form [class*="col-span-"],
+  [class*="col-span-"] {
+    grid-column: span 1 / span 1 !important;
+  }
+  form label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    margin-bottom: 3px !important;
+  }
+  form input, 
+  form select, 
+  form textarea, 
+  .content-area input[type="text"], 
+  .content-area input[type="number"], 
+  .content-area input[type="email"], 
+  .content-area input[type="tel"], 
+  .content-area select, 
+  .content-area textarea {
+    height: 38px !important;
+    font-size: 15px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    border-radius: 6px !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  form textarea, .content-area textarea {
+    height: auto !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    outline: none !important;
+  }
+
+  /* ─ Workspaces and Detail Views ─ */
+  .grid-container {
+    padding-right: 0 !important;
+  }
+  .grid-container .gap-5 {
+    gap: 10px !important;
+  }
+  
+  /* Table wrappers scrolling on phone views ─ Keep original table design but scrollable */
+  .card-wrapper, .table-container, .overflow-x-auto {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Detail View customer info lists */
+  .card-wrapper table th {
+    font-size: 11px !important;
+    width: 90px !important;
+  }
+  .card-wrapper table td {
+    font-size: 11.5px !important;
+  }
+  .card-wrapper table svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  /* ─ POS Module on Mobile ─ */
+  .page-pos .flex.gap-4 {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 16px !important;
+  }
+  .page-pos .flex.gap-4 > div:first-child {
+    flex: none !important;
+    height: auto !important;
+  }
+  .page-pos .flex.gap-4 > div:last-child {
+    width: 100% !important;
+    flex: none !important;
+    height: auto !important;
+  }
+  /* POS products grid: 2 columns */
+  .page-pos .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Reduce Dashboard h1 header text size slightly on mobile */
+  .page-title {
+    font-size: 19px !important;
+  }
+
+  /* Reduce revenue overview container height on mobile */
+  .page-dashboard .lg\:col-span-5 .panel {
+    height: 228px !important;
+  }
+
+  /* Reduce header right padding and gap on mobile */
+  header.no-print {
+    padding-right: 8px !important;
+  }
+  .header-right-wrap {
+    gap: 4px !important;
+  }
+}
+
+/* Sidebar Nav Scrollbar styling - global */
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px !important;
+  display: block !important;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Center header search bar on desktop views */
+@media (min-width: 1024px) {
+  .header-search-wrap {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+  }
+
+  /* Desktop-only sidebar link horizontal transition hover effect */
+  .sidebar-nav a {
+    transition: transform 0.2s ease, background-color 0.15s ease, color 0.15s ease !important;
+  }
+  .sidebar-nav a:hover {
+    transform: translateX(5px) !important;
+  }
 }
