@@ -131,7 +131,7 @@ export default function Accounting() {
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         {[
           { label: 'Total Debits',  value: totalDebit,  color: '#dc2626', bg: '#fef2f2', icon: <IconArrowUpRight size={20} color="#dc2626" /> },
           { label: 'Total Credits', value: totalCredit, color: '#16a34a', bg: '#f0fdf4', icon: <IconArrowDownRight size={20} color="#16a34a" /> },

@@ -2231,7 +2231,7 @@ export default function Settings() {
                 </h4>
 
                 {selectedLog.details && Object.keys(selectedLog.details).length > 0 ? (
-                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                       <thead>
                         <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>

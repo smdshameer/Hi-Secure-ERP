@@ -265,30 +265,32 @@ export default function Reports() {
             <div className="px-4 py-3 border-b border-gray-50">
               <h2 className="text-[14px] font-medium text-gray-800">Top Products / Parts by Sales</h2>
             </div>
-            <table className="erp-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Product</th>
-                  <th className="text-center">Qty Sold</th>
-                  <th className="text-right">Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.topProducts.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center py-8 text-gray-400">No data</td></tr>
-                ) : data.topProducts.map((p, i) => (
-                  <tr key={i}>
-                    <td className="text-gray-400 text-[12px]">{i + 1}</td>
-                    <td className="font-medium text-[13px]">{p.name}</td>
-                    <td className="text-center text-[13px]">{p.qty}</td>
-                    <td className="text-right font-semibold text-[13px]">
-                      ₹{p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="erp-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th className="text-center">Qty Sold</th>
+                    <th className="text-right">Revenue</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.topProducts.length === 0 ? (
+                    <tr><td colSpan={4} className="text-center py-8 text-gray-400">No data</td></tr>
+                  ) : data.topProducts.map((p, i) => (
+                    <tr key={i}>
+                      <td className="text-gray-400 text-[12px]">{i + 1}</td>
+                      <td className="font-medium text-[13px]">{p.name}</td>
+                      <td className="text-center text-[13px]">{p.qty}</td>
+                      <td className="text-right font-semibold text-[13px]">
+                        ₹{p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>

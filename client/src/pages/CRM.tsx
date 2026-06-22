@@ -119,7 +119,7 @@ export default function CRM() {
       />
 
       {/* Summary row */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         {[
           { label: 'Total Leads',  value: leads.length,                                bg: '#eff6ff', color: '#1a3480' },
           { label: 'Active',       value: leads.filter(l => !['won','lost'].includes(l.status)).length, bg: '#fffbeb', color: '#d97706' },

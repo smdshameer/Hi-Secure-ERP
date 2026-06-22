@@ -308,36 +308,38 @@ export default function AuditDashboard() {
 
             {/* Event Log Table */}
             <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
-              <table className="w-full text-[12px]">
-                <thead>
-                  <tr className="border-b border-white/10 text-gray-400 text-left">
-                    <th className="px-4 py-3 font-medium">Timestamp</th>
-                    <th className="px-4 py-3 font-medium">Event Type</th>
-                    <th className="px-4 py-3 font-medium">User</th>
-                    <th className="px-4 py-3 font-medium">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {events.length === 0 ? (
-                    <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">No audit events found</td></tr>
-                  ) : events.map(e => (
-                    <tr key={e.event_id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-2.5 text-gray-400 whitespace-nowrap">{new Date(e.created_at).toLocaleString()}</td>
-                      <td className="px-4 py-2.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          e.event_type?.includes('CRITICAL') || e.event_type?.includes('FAILED') ? 'bg-red-500/20 text-red-400' :
-                          e.event_type?.includes('WARNING') || e.event_type?.includes('DENIED') ? 'bg-amber-500/20 text-amber-400' :
-                          'bg-blue-500/20 text-blue-400'
-                        }`}>
-                          {e.event_type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-gray-300">{e.user?.full_name || e.user?.username || '—'}</td>
-                      <td className="px-4 py-2.5 text-gray-400 max-w-[400px] truncate">{e.description}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead>
+                    <tr className="border-b border-white/10 text-gray-400 text-left">
+                      <th className="px-4 py-3 font-medium">Timestamp</th>
+                      <th className="px-4 py-3 font-medium">Event Type</th>
+                      <th className="px-4 py-3 font-medium">User</th>
+                      <th className="px-4 py-3 font-medium">Description</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {events.length === 0 ? (
+                      <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">No audit events found</td></tr>
+                    ) : events.map(e => (
+                      <tr key={e.event_id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="px-4 py-2.5 text-gray-400 whitespace-nowrap">{new Date(e.created_at).toLocaleString()}</td>
+                        <td className="px-4 py-2.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            e.event_type?.includes('CRITICAL') || e.event_type?.includes('FAILED') ? 'bg-red-500/20 text-red-400' :
+                            e.event_type?.includes('WARNING') || e.event_type?.includes('DENIED') ? 'bg-amber-500/20 text-amber-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {e.event_type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-300">{e.user?.full_name || e.user?.username || '—'}</td>
+                        <td className="px-4 py-2.5 text-gray-400 max-w-[400px] truncate">{e.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

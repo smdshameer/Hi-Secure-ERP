@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 import {
@@ -121,7 +121,7 @@ export default function Companies() {
       />
 
       {/* Company cards */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         {loading ? (
           <div className="col-span-2 text-center py-8 text-gray-400">Loading companies...</div>
         ) : companies.length === 0 ? (
@@ -162,7 +162,7 @@ export default function Companies() {
             </Link>
 
             {/* Details grid */}
-            <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mb-4">
               {c.gstin && (
                 <div>
                   <p className="text-[10px] text-gray-400 font-medium uppercase">GSTIN</p>

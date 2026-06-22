@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 import {
@@ -106,7 +106,7 @@ export default function Locations() {
       />
 
       {/* Location cards */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         {[
           { label: 'Total',         value: locations.length,                         bg: '#eff6ff', color: '#1a3480' },
           { label: 'Active',        value: locations.filter(l => l.isActive).length,  bg: '#f0fdf4', color: '#16a34a' },

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IconCash, IconPlus, IconSearch, IconEye, IconCheck } from '@tabler/icons-react';
 import PageBanner from '../components/PageBanner';
@@ -74,7 +74,7 @@ export default function Payroll() {
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         {[
           { label: 'Total Payroll',   value: totalNet,     color: '#1a3480', bg: '#eff6ff' },
           { label: 'Paid',            value: totalPaid,    color: '#16a34a', bg: '#f0fdf4' },
