@@ -4,7 +4,7 @@ import {
   IconFileText, IconHierarchy, IconPackage, IconBuildingStore, IconShoppingCart,
   IconTruckDelivery, IconShieldCheck, IconUsers, IconScissors, IconMapPin,
   IconIdBadge, IconChartLine, IconSettings, IconCash, IconBook2,
-  IconBuildingBank, IconBuilding, IconShieldLock
+  IconBuildingBank, IconBuilding, IconShieldLock,
 } from '@tabler/icons-react';
 
 type IconComp = React.FC<{ size?: number; stroke?: number }>;
@@ -50,7 +50,15 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <nav className={`sidebar-nav ${isOpen ? 'open' : ''} w-[180px] bg-[#1a3480] flex-shrink-0 overflow-y-auto flex flex-col gap-0.5 px-2 py-1.5 h-full no-print`}>
+    <nav
+      className={[
+        'sidebar-nav',
+        isOpen ? 'open' : '',
+        'w-[180px] bg-[#1a3480] flex-shrink-0',
+        'overflow-y-auto flex flex-col gap-0.5',
+        'px-2 py-1.5 h-full no-print',
+      ].join(' ')}
+    >
       {navItems.map((item) => (
         <NavLink
           key={item.path}
@@ -58,21 +66,31 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           end={item.path === '/'}
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-[11px] px-3 py-[7.5px] rounded-lg text-[13.5px] transition-colors duration-150 cursor-pointer ${
+            [
+              'flex items-center gap-[11px]',
+              'px-3 py-[7.5px] rounded-lg text-[13.5px]',
+              'transition-colors duration-150 cursor-pointer',
               isActive
                 ? 'bg-white/[0.18] text-white font-medium'
-                : 'text-white/[0.78] hover:bg-white/10 hover:text-white'
-            }`
+                : 'text-white/[0.78] hover:bg-white/10 hover:text-white',
+            ].join(' ')
           }
         >
-          <span className="flex-shrink-0 flex items-center justify-center" style={{ width: 18, height: 18 }}>
+          <span
+            className="flex-shrink-0 flex items-center justify-center"
+            style={{ width: 18, height: 18 }}
+          >
             <item.icon size={18} stroke={1.5} />
           </span>
           <span className="sidebar-label flex-1">{item.label}</span>
           {item.badge !== undefined && (
-            <span className={`text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[22px] text-center ${
-              item.badgeColor === 'yellow' ? 'bg-amber-500' : 'bg-red-500'
-            }`}>
+            <span
+              className={[
+                'text-white text-[10px] font-semibold',
+                'px-1.5 py-0.5 rounded-full min-w-[22px] text-center',
+                item.badgeColor === 'yellow' ? 'bg-amber-500' : 'bg-red-500',
+              ].join(' ')}
+            >
               {item.badge}
             </span>
           )}
