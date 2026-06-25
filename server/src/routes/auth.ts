@@ -100,7 +100,15 @@ authRouter.get('/me', async (req, res) => {
     const auth = req.headers.authorization;
     if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = auth.slice(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as { user_id: number; role: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { user_id: number; role: string; jti?: string };
+
+  // Honor token revocation (blacklist check)
+  if (decoded.jti) {
+    const isBlacklisted = await prisma.tokenBlacklist.findUnique({ where: { token_jti: decoded.jti } });
+    if (isBlacklisted) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
+  }
     const user = await userService.getUserById(decoded.user_id);
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({

@@ -224,7 +224,7 @@ export default function Banking() {
 
       {/* Transactions table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-gray-50 gap-3">
           <h2 className="text-[14px] font-medium text-gray-800 flex items-center gap-2">
             <IconRefresh size={16} color="#1a3480" />
             Transactions
@@ -232,7 +232,7 @@ export default function Banking() {
               <span className="text-[12px] text-gray-400 font-normal">— {selectedAcc.name}</span>
             )}
           </h2>
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
+          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-full sm:w-[240px]">
             <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
             <input type="text" placeholder="Search transaction..."
               value={search} onChange={e => setSearch(e.target.value)}

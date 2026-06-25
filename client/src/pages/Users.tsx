@@ -35,7 +35,7 @@ setUsers(mapped);
 }, [search]);
 
 return (
-<div>
+<div className="max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
 <PageBanner
 icon={<IconIdBadge size={28} />}
 title="Users"
@@ -52,9 +52,9 @@ className="flex items-center gap-1.5 bg-white text-[#1a3480] text-[13px] font-se
 />
 
 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-<div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-gray-50 gap-3">
 <p className="text-[13px] text-gray-500">{users.length} system users</p>
-<div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
+<div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-full sm:w-[240px]">
 <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
 <input type="text" placeholder="Search user, email..."
 value={search} onChange={e => setSearch(e.target.value)}

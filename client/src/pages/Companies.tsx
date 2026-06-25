@@ -235,7 +235,7 @@ export default function Companies() {
 
       {/* Search bar when many companies */}
       {companies.length > 4 && (
-        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[36px] w-[260px] mb-4 bg-white">
+        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[36px] w-full sm:w-[260px] mb-4 bg-white">
           <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
           <input type="text" placeholder="Search company..."
             value={search} onChange={e => setSearch(e.target.value)}

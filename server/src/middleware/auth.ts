@@ -21,7 +21,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, nextFn: Ne
   }
   try {
     const decoded = jwt.verify(auth.slice(7), JWT_SECRET) as unknown as { user_id: number; role: string; jti?: string };
-    
+
     // Revocation Blacklist Check
     if (decoded.jti) {
       const isBlacklisted = await prisma.tokenBlacklist.findUnique({
@@ -32,8 +32,8 @@ export async function authMiddleware(req: AuthRequest, res: Response, nextFn: Ne
       }
     }
 
-    // Periodically clean up expired blacklist records
-    if (Math.random() < 0.05) { // 5% chance on requests to run cleanup async
+    // Periodically clean up expired blacklist records (non-blocking)
+    if (Math.random() < 0.05) { // 5% chance on requests to run cleanup
       prisma.tokenBlacklist.deleteMany({
         where: { expires_at: { lt: new Date() } }
       }).catch(err => console.error('Blacklist cleanup error:', err));
@@ -43,7 +43,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, nextFn: Ne
     req.userRole = decoded.role;
     nextFn();
   } catch {
-    res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }
 
@@ -106,4 +106,4 @@ export function requirePermission(permission: string) {
       res.status(500).json({ error: 'Authorization check failed' });
     }
   };
-}
+}

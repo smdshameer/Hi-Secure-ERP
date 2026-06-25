@@ -95,10 +95,10 @@ export default function Payroll() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-gray-50 gap-3">
           {/* Month selector */}
           <select value={month} onChange={e => setMonth(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 h-[34px] text-[13px] text-gray-700 outline-none">
+            className="border border-gray-200 rounded-lg px-3 h-[34px] text-[13px] text-gray-700 outline-none w-full sm:w-auto">
             {Array.from({ length: 12 }, (_, i) => {
               const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
               const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -110,7 +110,7 @@ export default function Payroll() {
             })}
           </select>
 
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[240px]">
+          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-full sm:w-[240px]">
             <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
             <input type="text" placeholder="Search employee..."
               value={search} onChange={e => setSearch(e.target.value)}

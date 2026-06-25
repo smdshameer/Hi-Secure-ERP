@@ -150,7 +150,7 @@ export default function Invoices() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3.5 border-b border-gray-100 gap-4 bg-gray-50/40 shrink-0">
           {/* Status filters segment control style */}
-          <div className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0">
+          <div className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0 segment-control">
             {STATUS_FILTERS.map(f => (
               <button
                 key={f.value}

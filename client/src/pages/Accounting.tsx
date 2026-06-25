@@ -152,12 +152,12 @@ export default function Accounting() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        {/* Tab bar */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex flex-col sm:flex-row border-b border-gray-100">
+          <div className="flex overflow-x-auto no-scrollbar">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={[
-                'px-5 py-3 text-[13px] font-medium border-b-2 transition-colors',
+                'px-5 py-3 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap',
                 tab === t.key
                   ? 'border-b-[#1a3480] text-[#1a3480]'
                   : 'border-b-transparent text-gray-500 hover:text-gray-700',
@@ -165,17 +165,18 @@ export default function Accounting() {
               {t.label}
             </button>
           ))}
+          </div>
 
           {/* Date filters */}
-          <div className="ml-auto flex items-center gap-2 px-4">
+          <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:py-0 sm:ml-auto">
             <IconCalendar size={14} className="text-gray-400" />
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none" />
+              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]" />
             <span className="text-gray-400 text-[12px]">to</span>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none" />
+              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]" />
             {tab !== 'trial' && (
-              <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 h-[30px] w-[180px]">
+              <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 h-[30px] w-full sm:w-[180px]">
                 <IconSearch size={13} className="text-gray-400 flex-shrink-0" />
                 <input type="text" placeholder="Search..."
                   value={search} onChange={e => setSearch(e.target.value)}
