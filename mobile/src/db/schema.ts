@@ -1,4 +1,5 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
+import { Job, Visit, VisitAttachment, SyncQueueItem } from './models';
 
 export const hisecureSchema = appSchema({
   version: 1,
@@ -13,8 +14,8 @@ export const hisecureSchema = appSchema({
         { name: 'customer_name', type: 'string' },
         { name: 'customer_phone', type: 'string' },
         { name: 'customer_address', type: 'string' },
-        { name: 'created_at', type: 'number' }
-      ]
+        { name: 'created_at', type: 'number' },
+      ],
     }),
     tableSchema({
       name: 'visits',
@@ -23,8 +24,8 @@ export const hisecureSchema = appSchema({
         { name: 'visit_date', type: 'number' },
         { name: 'status', type: 'string' },
         { name: 'findings', type: 'string', isOptional: true },
-        { name: 'signature_url', type: 'string', isOptional: true }
-      ]
+        { name: 'signature_url', type: 'string', isOptional: true },
+      ],
     }),
     tableSchema({
       name: 'visit_attachments',
@@ -33,18 +34,18 @@ export const hisecureSchema = appSchema({
         { name: 'file_url', type: 'string' },
         { name: 'file_name', type: 'string' },
         { name: 'latitude', type: 'number', isOptional: true },
-        { name: 'longitude', type: 'number', isOptional: true }
-      ]
+        { name: 'longitude', type: 'number', isOptional: true },
+      ],
     }),
     tableSchema({
       name: 'sync_queue',
       columns: [
         { name: 'entity_type', type: 'string' },
         { name: 'operation', type: 'string' },
-        { name: 'payload', type: 'string' }, // JSON stringified
+        { name: 'payload', type: 'string' },
         { name: 'timestamp', type: 'number' },
-        { name: 'status', type: 'string' } // PENDING, SYNCED, FAILED
-      ]
-    })
-  ]
+        { name: 'status', type: 'string' },
+      ],
+    }),
+  ],
 });

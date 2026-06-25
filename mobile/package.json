@@ -4,7 +4,8 @@
   "description": "HiSecure ERP Technician Mobile App (Offline-First)",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "npx expo-cli start"
   },
   "dependencies": {
     "@hisecure/shared": "*",
