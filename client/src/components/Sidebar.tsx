@@ -1,71 +1,46 @@
 import { NavLink } from 'react-router-dom';
-import { IconLayoutDashboard, IconTool, IconFileInvoice, IconDeviceDesktop,
+import {
+  IconLayoutDashboard, IconTool, IconFileInvoice, IconDeviceDesktop,
   IconFileText, IconHierarchy, IconPackage, IconBuildingStore, IconShoppingCart,
   IconTruckDelivery, IconShieldCheck, IconUsers, IconScissors, IconMapPin,
   IconIdBadge, IconChartLine, IconSettings, IconCash, IconBook2,
-  IconBuildingBank, IconBuilding, IconShieldLock } from '@tabler/icons-react';
+  IconBuildingBank, IconBuilding, IconShieldLock
+} from '@tabler/icons-react';
 
-function tablerIcon(name: string, size = 18) {
-  const map: Record<string, React.FC<{ size?: number; stroke?: number }>> = {
-    'ti-layout-dashboard': IconLayoutDashboard,
-    'ti-tool': IconTool,
-    'ti-file-invoice': IconFileInvoice,
-    'ti-device-desktop': IconDeviceDesktop,
-    'ti-file-text': IconFileText,
-    'ti-hierarchy': IconHierarchy,
-    'ti-package': IconPackage,
-    'ti-building-store': IconBuildingStore,
-    'ti-shopping-cart': IconShoppingCart,
-    'ti-truck-delivery': IconTruckDelivery,
-    'ti-shield-check': IconShieldCheck,
-    'ti-users': IconUsers,
-    'ti-cut': IconScissors,
-    'ti-map-pin': IconMapPin,
-    'ti-id-badge': IconIdBadge,
-    'ti-chart-line': IconChartLine,
-    'ti-settings': IconSettings,
-    'ti-cash': IconCash,
-    'ti-book-2': IconBook2,
-    'ti-building-bank': IconBuildingBank,
-    'ti-building': IconBuilding,
-    'ti-shield-lock': IconShieldLock,
-  };
-  const Comp = map[name];
-  if (!Comp) return null;
-  return <Comp size={size} stroke={1.5} />;
-}
+type IconComp = React.FC<{ size?: number; stroke?: number }>;
 
 interface NavItem {
   label: string;
   path: string;
-  icon: string;
+  icon: IconComp;
+  iconSize?: number;
   badge?: number;
   badgeColor?: 'red' | 'yellow';
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/', icon: 'ti-layout-dashboard' },
-  { label: 'Repairs', path: '/repairs', icon: 'ti-tool', badge: 29, badgeColor: 'red' },
-  { label: 'Invoices', path: '/sales', icon: 'ti-file-invoice' },
-  { label: 'POS', path: '/pos', icon: 'ti-device-desktop' },
-  { label: 'Quotations', path: '/quotations', icon: 'ti-file-text' },
-  { label: 'CRM', path: '/crm', icon: 'ti-hierarchy' },
-  { label: 'Products', path: '/parts', icon: 'ti-package', badge: 282, badgeColor: 'yellow' },
-  { label: 'Suppliers', path: '/suppliers', icon: 'ti-building-store' },
-  { label: 'Purchase Orders', path: '/purchases', icon: 'ti-shopping-cart' },
-  { label: 'Delivery Challan', path: '/delivery-challans', icon: 'ti-truck-delivery' },
-  { label: 'Approvals', path: '/approvals', icon: 'ti-shield-check' },
-  { label: 'Customers', path: '/customers', icon: 'ti-users' },
-  { label: 'Technicians', path: '/technicians', icon: 'ti-cut' },
-  { label: 'Locations', path: '/locations', icon: 'ti-map-pin' },
-  { label: 'Users', path: '/users', icon: 'ti-id-badge' },
-  { label: 'Reports', path: '/reports', icon: 'ti-chart-line' },
-  { label: 'Settings', path: '/settings', icon: 'ti-settings' },
-  { label: 'Payroll', path: '/payroll', icon: 'ti-cash' },
-  { label: 'Accounting', path: '/accounting', icon: 'ti-book-2' },
-  { label: 'Banking', path: '/banking', icon: 'ti-building-bank' },
-  { label: 'Companies', path: '/companies', icon: 'ti-building' },
-  { label: 'System Audit', path: '/admin/audit', icon: 'ti-shield-lock' },
+  { label: 'Dashboard', path: '/', icon: IconLayoutDashboard },
+  { label: 'Repairs', path: '/repairs', icon: IconTool, badge: 29, badgeColor: 'red' },
+  { label: 'Invoices', path: '/sales', icon: IconFileInvoice },
+  { label: 'POS', path: '/pos', icon: IconDeviceDesktop },
+  { label: 'Quotations', path: '/quotations', icon: IconFileText },
+  { label: 'CRM', path: '/crm', icon: IconHierarchy },
+  { label: 'Products', path: '/parts', icon: IconPackage, badge: 282, badgeColor: 'yellow' },
+  { label: 'Suppliers', path: '/suppliers', icon: IconBuildingStore },
+  { label: 'Purchase Orders', path: '/purchases', icon: IconShoppingCart },
+  { label: 'Delivery Challan', path: '/delivery-challans', icon: IconTruckDelivery },
+  { label: 'Approvals', path: '/approvals', icon: IconShieldCheck },
+  { label: 'Customers', path: '/customers', icon: IconUsers },
+  { label: 'Technicians', path: '/technicians', icon: IconScissors },
+  { label: 'Locations', path: '/locations', icon: IconMapPin },
+  { label: 'Users', path: '/users', icon: IconIdBadge },
+  { label: 'Reports', path: '/reports', icon: IconChartLine },
+  { label: 'Settings', path: '/settings', icon: IconSettings },
+  { label: 'Payroll', path: '/payroll', icon: IconCash },
+  { label: 'Accounting', path: '/accounting', icon: IconBook2 },
+  { label: 'Banking', path: '/banking', icon: IconBuildingBank },
+  { label: 'Companies', path: '/companies', icon: IconBuilding },
+  { label: 'System Audit', path: '/admin/audit', icon: IconShieldLock },
 ];
 
 interface SidebarProps {
@@ -91,7 +66,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           }
         >
           <span className="flex-shrink-0 flex items-center justify-center" style={{ width: 18, height: 18 }}>
-            {tablerIcon(item.icon, 18)}
+            <item.icon size={18} stroke={1.5} />
           </span>
           <span className="sidebar-label flex-1">{item.label}</span>
           {item.badge !== undefined && (
