@@ -52,7 +52,7 @@ export function requireRole(...roles: string[]) {
     if (!req.userRole || !roles.includes(req.userRole)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    next();
+    return next();
   };
 }
 
@@ -103,7 +103,7 @@ export function requirePermission(permission: string) {
       nextFn();
     } catch (err) {
       console.error('RBAC authorization error:', err);
-      res.status(500).json({ error: 'Authorization check failed' });
+      return res.status(500).json({ error: 'Authorization check failed' });
     }
   };
 }
