@@ -70,7 +70,8 @@ export $(grep -v '^#' "${APP_DIR}/server/.env" | xargs)
 # --- PRE-DEPLOYMENT BACKUP ---
 log "Executing pre-deployment database backup..."
 if [ -n "${DATABASE_URL:-}" ]; then
-  pg_dump "$DATABASE_URL" | gzip > "$PRE_DEPLOY_BACKUP"
+  CLEAN_DB_URL=$(echo "$DATABASE_URL" | sed 's/\?.*//')
+  pg_dump "$CLEAN_DB_URL" | gzip > "$PRE_DEPLOY_BACKUP"
 else
   error_log "DATABASE_URL is not set in environment."
   exit 1
