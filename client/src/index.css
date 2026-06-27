@@ -763,17 +763,9 @@ body {
   }
 }
 
-/* Print Page Layout Base */
+/* Print Page Layout Base - Transparent wrapper to let theme-specific cards render cleanly */
 .print-document {
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   margin: 0 auto;
-  padding: 15mm;
-  font-size: 10pt;
-  line-height: 1.4;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
   box-sizing: border-box;
 }
 
