@@ -8,8 +8,8 @@ export interface PrintTemplateProps {
     phone: string;
     email: string;
     gstin: string;
-    pan: string;
-    state: string;
+    pan?: string;
+    state?: string;
     website?: string;
     bank_name?: string;
     bank_account?: string;
@@ -159,7 +159,11 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
             <div className="mt-1">{company.address}</div>
             <div>Phone: {company.phone} · Email: {company.email}</div>
             {company.website && <div>Web: {company.website}</div>}
-            {company.gstin && <div className="font-semibold text-slate-900 mt-1">GSTIN: {company.gstin}</div>}
+            <div className="font-semibold text-slate-900 mt-1">
+              {company.gstin && `GSTIN: ${company.gstin}`}
+              {company.pan && ` · PAN: ${company.pan}`}
+            </div>
+            {company.state && <div className="text-[10px] text-slate-500">State: {company.state}</div>}
           </div>
         </div>
 
@@ -168,10 +172,12 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
           <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Billed To</div>
             <div className="text-[13px] font-bold text-slate-905">{customer.name}</div>
+            {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
             <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
             <div className="text-[11px] text-slate-505 mt-2">
               {customer.phone && `Phone: ${customer.phone}`}
-              {customer.state && ` · PoS: ${customer.state}`}
+              {customer.email && ` · Email: ${customer.email}`}
+              {customer.state && ` · State: ${customer.state}`}
             </div>
             {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
           </div>
@@ -182,14 +188,12 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
               <div><span className="text-slate-400">Date:</span> <span className="font-medium text-slate-955">{invoice.date}</span></div>
               {invoice.due_date && <div><span className="text-slate-400">Due Date:</span> <span className="font-medium text-slate-955">{invoice.due_date}</span></div>}
               {invoice.place_of_supply && <div><span className="text-slate-400">Place of Supply:</span> <span className="text-slate-955">{invoice.place_of_supply}</span></div>}
+              {invoice.reverse_charge && <div><span className="text-slate-400">Reverse Charge:</span> <span className="text-slate-955">{invoice.reverse_charge}</span></div>}
             </div>
-            {invoice.reverse_charge && (
-              <div className="text-[10px] text-slate-500">Reverse Charge: {invoice.reverse_charge}</div>
-            )}
           </div>
         </div>
 
-        {/* Table - with increased padding for row height */}
+        {/* Table */}
         <table className="w-full text-[11px] border-collapse mb-6 flex-grow">
           <thead>
             <tr className="bg-slate-100/75 border-y border-slate-200 text-slate-700">
@@ -285,6 +289,13 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
               <div className="text-[11px] font-semibold text-slate-808 italic">{summary.amount_in_words}</div>
             </div>
 
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 text-[10px] text-slate-500 space-y-1">
               <div className="font-bold text-slate-707 text-[11px] mb-1">Terms & Conditions:</div>
               <div>• Guarantee/Warranty claims as per manufacturer terms.</div>
@@ -349,7 +360,7 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
               <div className="text-right">
                 <div className="text-[10px] text-slate-400">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-707 border-t border-slate-200 pt-1">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -401,6 +412,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
               </div>
               <div className="text-right px-1">
                 <div className="text-[20px] font-bold tracking-wider uppercase text-slate-200">{invoice.title || 'INVOICE'}</div>
+                <div className="text-[11px] text-slate-400">{invoice.copy_type || 'Original Copy'}</div>
                 <div className="text-[12px] font-mono-premium text-slate-400 mt-1">No: {invoice.number}</div>
                 <div className="text-[11px] text-slate-400">Date: {invoice.date}</div>
               </div>
@@ -413,16 +425,24 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
               <div>
                 <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5">CLIENT DETAILS</div>
                 <div className="text-[14px] font-bold text-slate-900">{customer.name}</div>
+                {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
                 <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-                {customer.phone && <div className="text-[11px] text-slate-500 mt-1">Phone: {customer.phone}</div>}
+                <div className="text-[11px] text-slate-500 mt-1">
+                  {customer.phone && `Phone: ${customer.phone}`}
+                  {customer.email && ` · Email: ${customer.email}`}
+                </div>
+                {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
                 {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
               </div>
               <div className="space-y-1.5 text-right text-[11px] text-slate-600 px-1">
                 <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 text-right">BUSINESS IDENTITY</div>
                 {company.gstin && <div><span className="text-slate-400">GSTIN:</span> <span className="font-semibold text-slate-900">{company.gstin}</span></div>}
+                {company.pan && <div><span className="text-slate-400">PAN:</span> <span className="font-semibold text-slate-900">{company.pan}</span></div>}
                 <div><span className="text-slate-400">Email:</span> {company.email}</div>
                 {company.website && <div><span className="text-slate-400">Web:</span> {company.website}</div>}
+                {company.state && <div><span className="text-slate-400">State:</span> {company.state}</div>}
                 {invoice.place_of_supply && <div><span className="text-slate-400">Place of Supply:</span> {invoice.place_of_supply}</div>}
+                {invoice.reverse_charge && <div><span className="text-slate-400">Reverse Charge:</span> {invoice.reverse_charge}</div>}
               </div>
             </div>
 
@@ -461,7 +481,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
             {/* GST Breakup Table */}
             {hsnSummaryList.length > 0 && (
               <div className="mb-6">
-                <div className="text-[10px] uppercase font-bold text-slate-450 tracking-wider mb-2">GST Tax Breakup Summary</div>
+                <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-2">GST Tax Breakup Summary</div>
                 <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
@@ -523,6 +543,13 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
               <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-805 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
 
             {company.bank_name && (
               <div className="p-4 border border-slate-100 rounded-lg bg-slate-50 space-y-1 text-[10px]">
@@ -625,12 +652,17 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
             <div className="text-[24px] font-bold uppercase tracking-wider text-slate-955 font-serif-premium">{company.name}</div>
             <div className="text-[11px] italic text-slate-500 mt-1 max-w-[500px] mx-auto leading-relaxed">{company.address}</div>
             <div className="text-[11px] text-slate-500">Contact: {company.phone} · Email: {company.email}</div>
-            {company.gstin && <div className="text-[11px] font-bold mt-1 text-slate-805">GSTIN: {company.gstin}</div>}
+            <div className="text-[11px] font-bold mt-1 text-slate-805">
+              {company.gstin && `GSTIN: ${company.gstin}`}
+              {company.pan && ` · PAN: ${company.pan}`}
+            </div>
+            {company.state && <div className="text-[10px] text-slate-500 italic">State: {company.state}</div>}
           </div>
 
           {/* Invoice Title */}
           <div className="text-center mb-6">
             <span className="text-[16px] font-bold uppercase tracking-widest border-b border-slate-900 pb-1">{invoice.title || 'TAX INVOICE'}</span>
+            <div className="text-[11px] italic text-slate-550 mt-1.5">{invoice.copy_type || 'Original Copy'}</div>
           </div>
 
           {/* Billing / Info Grid */}
@@ -638,8 +670,13 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
             <div>
               <div className="font-bold border-b border-slate-900 uppercase text-[10px] tracking-wider mb-2 text-slate-600">INVOICE TO</div>
               <div className="font-bold text-slate-955 text-[13px]">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
               <div className="mt-1 whitespace-pre-line leading-relaxed text-slate-700">{customer.address || '—'}</div>
-              {customer.phone && <div className="mt-1.5 text-slate-550">Phone: {customer.phone}</div>}
+              <div className="mt-1.5 text-slate-550">
+                {customer.phone && `Phone: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+              </div>
+              {customer.state && <div className="text-[11px] text-slate-500">State: {customer.state}</div>}
               {customer.gstin && <div className="font-bold mt-0.5">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="pl-6 space-y-1.5 pr-1">
@@ -648,6 +685,7 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
               <div><span className="text-slate-400">Issue Date:</span> {invoice.date}</div>
               {invoice.due_date && <div><span className="text-slate-400">Due Date:</span> {invoice.due_date}</div>}
               {invoice.place_of_supply && <div><span className="text-slate-400">Place of Supply:</span> {invoice.place_of_supply}</div>}
+              {invoice.reverse_charge && <div><span className="text-slate-400">Reverse Charge:</span> {invoice.reverse_charge}</div>}
             </div>
           </div>
 
@@ -677,7 +715,7 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
                   <td className="py-3.5 px-3 text-center">{item.qty}</td>
                   <td className="py-3.5 px-3 text-right font-mono-premium text-slate-707">₹{fmt(item.rate)}</td>
                   <td className="py-3.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-950">₹{fmt(item.total)}</td>
+                  <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -689,7 +727,7 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
               <div className="font-bold border-b border-slate-900 uppercase text-[10px] tracking-wider mb-2 text-slate-600">GST Tax Summary Breakup</div>
               <table className="w-full text-[10px] border border-slate-800 border-collapse text-center">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-850 text-slate-955 font-bold uppercase tracking-wider text-[9px]">
+                  <tr className="bg-slate-50 border-b border-slate-855 text-slate-955 font-bold uppercase tracking-wider text-[9px]">
                     <th className="p-2 border-r border-slate-800">HSN/SAC</th>
                     <th className="p-2 border-r border-slate-800 text-right">Taxable Value</th>
                     {!invoice.is_interstate ? (
@@ -747,6 +785,14 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
               <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[12px] font-bold text-slate-900 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="p-3 border-t border-slate-200 text-[10px] text-slate-650 leading-relaxed bg-slate-50/50">
                 <div className="font-bold text-slate-808 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
@@ -854,7 +900,12 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
               <div className="text-[15px] font-bold text-slate-900">{company.name}</div>
               <div>{company.address}</div>
               <div>Contact: {company.phone} · Email: {company.email}</div>
-              {company.gstin && <div className="font-bold text-blue-600 mt-1">GSTIN: {company.gstin}</div>}
+              {company.website && <div>Web: {company.website}</div>}
+              <div className="font-bold text-blue-600 mt-1">
+                {company.gstin && `GSTIN: ${company.gstin}`}
+                {company.pan && ` · PAN: ${company.pan}`}
+              </div>
+              {company.state && <div className="text-[10px] text-slate-400">State: {company.state}</div>}
             </div>
           </div>
 
@@ -863,6 +914,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
             <div>
               <div className="text-[11px] text-blue-600 font-bold uppercase tracking-wider">Document Type</div>
               <div className="text-[18px] font-bold text-slate-900">{invoice.title || 'TAX INVOICE'}</div>
+              <div className="text-[10px] text-blue-500 italic mt-0.5">{invoice.copy_type || 'Original Copy'}</div>
             </div>
             <div className="text-right pr-1">
               <div className="text-[11px] text-slate-450 text-right">Invoice Number</div>
@@ -875,8 +927,13 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
             <div className="p-4 border border-slate-100 rounded-xl bg-white shadow-sm">
               <div className="text-[10px] uppercase font-bold text-blue-600 tracking-wider mb-2">BILL TO CLIENT</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-600">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-              {customer.phone && <div className="text-[11px] text-slate-500 mt-2">Contact: {customer.phone}</div>}
+              <div className="text-[11px] text-slate-500 mt-2">
+                {customer.phone && `Contact: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+                {customer.state && ` · State: ${customer.state}`}
+              </div>
               {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex flex-col justify-between">
@@ -895,8 +952,14 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
                   )}
                   {invoice.place_of_supply && (
                     <tr>
-                      <td className="text-slate-555 py-0.5 text-left font-medium">Place of Supply</td>
+                      <td className="text-slate-505 py-0.5 text-left font-medium">Place of Supply</td>
                       <td className="text-right text-slate-955">{invoice.place_of_supply}</td>
+                    </tr>
+                  )}
+                  {invoice.reverse_charge && (
+                    <tr>
+                      <td className="text-slate-505 py-0.5 text-left font-medium">Reverse Charge</td>
+                      <td className="text-right text-slate-955">{invoice.reverse_charge}</td>
                     </tr>
                   )}
                 </tbody>
@@ -920,17 +983,17 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
                 <tr key={idx} className="even:bg-blue-50/10">
-                  <td className="py-3.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
-                  <td className="py-3.5 px-3 text-left font-semibold text-slate-900">
+                  <td className="p-2.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
+                  <td className="p-2.5 px-3 text-left font-semibold text-slate-900">
                     {item.description}
                     {item.model && <span className="font-normal text-slate-400 block text-[9px] mt-0.5">Model: {item.model}</span>}
                     {item.warranty && <span className="font-normal text-blue-600 block text-[9px]">Warranty: {item.warranty}</span>}
                   </td>
-                  <td className="py-3.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
-                  <td className="py-3.5 px-3 text-center font-medium">{item.qty} {item.unit || 'NOS'}</td>
-                  <td className="py-3.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
-                  <td className="py-3.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center font-medium">{item.qty} {item.unit || 'NOS'}</td>
+                  <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
+                  <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
+                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -1000,6 +1063,14 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
               <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-805 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-blue-600 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="p-3 border border-slate-100 bg-slate-50/50 rounded-xl space-y-1 text-[10px] text-slate-600">
                 <div className="font-bold text-blue-700 text-[10px] uppercase tracking-wider mb-1">BANK TRANSFER LEDGER</div>
@@ -1106,6 +1177,7 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
             </div>
             <div className="text-right pr-1">
               <div className="text-[20px] font-light text-slate-900 tracking-widest uppercase">{invoice.title || 'INVOICE'}</div>
+              <div className="text-[11px] text-slate-400 italic mt-0.5">{invoice.copy_type || 'Original Copy'}</div>
               <div className="text-[12px] font-semibold text-slate-800 mt-1"># {invoice.number}</div>
               <div className="text-[11px] text-slate-400 mt-1">Date: {invoice.date}</div>
             </div>
@@ -1116,16 +1188,24 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
             <div>
               <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-1.5">BILLED TO</div>
               <div className="text-[13px] font-bold text-slate-955">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line">{customer.address || '—'}</div>
-              {customer.phone && <div className="text-[11px] text-slate-505 mt-2">Phone: {customer.phone}</div>}
+              <div className="text-[11px] text-slate-505 mt-2">
+                {customer.phone && `Phone: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+              </div>
+              {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
               {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="space-y-1 text-right text-[11px] text-slate-500 pr-1">
               <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-1.5 text-right">CONTACT & REGISTRY</div>
               {company.gstin && <div>GSTIN: {company.gstin}</div>}
+              {company.pan && <div>PAN: {company.pan}</div>}
               <div>Email: {company.email}</div>
               {company.website && <div>Web: {company.website}</div>}
+              {company.state && <div>State: {company.state}</div>}
               {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
+              {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
             </div>
           </div>
 
@@ -1170,6 +1250,14 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
               <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">IN WORDS</div>
               <div className="text-[11px] font-semibold text-slate-808 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="text-[10px] text-slate-550 space-y-0.5 border-t border-slate-100 pt-3">
                 <div className="font-bold text-slate-707 text-[10px] uppercase tracking-wider mb-1">BANK REMITTANCE</div>
@@ -1275,13 +1363,18 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
               ) : (
                 <div className="text-[20px] font-bold text-orange-600 tracking-tight">{company.name}</div>
               )}
-              <div className="text-[11px] text-slate-500 mt-2 max-w-[320px]">{company.address}</div>
+              <div className="text-[11px] text-slate-505 mt-2 max-w-[320px]">{company.address}</div>
             </div>
-            <div className="text-right text-[11px] text-slate-600 leading-relaxed pr-1">
+            <div className="text-right text-[11px] text-slate-605 leading-relaxed pr-1">
               <div className="text-[18px] font-bold text-orange-600 uppercase">{invoice.title || 'TAX INVOICE'}</div>
+              <div className="text-[10px] italic text-slate-500 mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div>Invoice No: <span className="font-bold text-slate-900">{invoice.number}</span></div>
               <div>Date: {invoice.date}</div>
-              {company.gstin && <div className="font-bold text-green-700 mt-1">GSTIN: {company.gstin}</div>}
+              <div className="mt-1 font-semibold">
+                {company.gstin && `GSTIN: ${company.gstin}`}
+                {company.pan && ` · PAN: ${company.pan}`}
+              </div>
+              {company.state && <div className="text-[10px] text-slate-500">State: {company.state}</div>}
             </div>
           </div>
 
@@ -1290,8 +1383,13 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
             <div className="p-4 border-l-4 border-orange-500 bg-orange-50/30 rounded-r-lg">
               <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">BILL TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-              {customer.phone && <div className="text-[11px] text-slate-500 mt-1">Phone: {customer.phone}</div>}
+              <div className="text-[11px] text-slate-500 mt-1">
+                {customer.phone && `Phone: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+              </div>
+              {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
               {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-805">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border-l-4 border-green-600 bg-green-50/20 rounded-r-lg flex flex-col justify-between">
@@ -1299,6 +1397,7 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
               <div className="text-[11px] text-slate-655 font-medium">
                 {invoice.due_date && <div>Due Date: <span className="font-semibold">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
+                {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
               </div>
             </div>
           </div>
@@ -1398,6 +1497,14 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
               <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="p-3 border-l-2 border-green-600 bg-green-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-655">
                 <div className="font-bold text-green-700 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
@@ -1496,6 +1603,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
           {/* Tally Top Title Header */}
           <div className="text-center font-bold text-[14px] border-b-2 border-black pb-2 uppercase tracking-wider">
             {invoice.title || 'TAX INVOICE'}
+            <div className="text-[10px] font-normal italic lowercase mt-0.5">({invoice.copy_type || 'Original for Recipient'})</div>
           </div>
 
           {/* Main Grid Split */}
@@ -1506,14 +1614,17 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
                 <div className="text-[12px] font-bold uppercase">{company.name}</div>
                 <div className="text-[10px] mt-0.5 leading-normal">{company.address}</div>
                 {company.gstin && <div className="font-bold mt-1">GSTIN/UIN: {company.gstin}</div>}
-                <div>State Name: {company.state}</div>
+                {company.pan && <div>PAN: {company.pan}</div>}
+                {company.state && <div>State Name: {company.state}</div>}
               </div>
               
               <div className="border-t border-black pt-2">
                 <div className="font-bold text-[9px] uppercase tracking-wide text-gray-500">Buyer / Consignee (Bill To)</div>
                 <div className="text-[11px] font-bold uppercase">{customer.name}</div>
+                {customer.contactPerson && <div className="text-[10px] font-semibold">Attn: {customer.contactPerson}</div>}
                 <div className="text-[10px] leading-normal whitespace-pre-line">{customer.address || '—'}</div>
                 {customer.phone && <div>Contact No: {customer.phone}</div>}
+                {customer.email && <div>Email: {customer.email}</div>}
                 {customer.gstin && <div className="font-bold">GSTIN/UIN: {customer.gstin}</div>}
                 {customer.state && <div>State Name: {customer.state}</div>}
               </div>
@@ -1536,6 +1647,10 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
               <div className="p-2">
                 <div className="text-[8px] text-gray-555 uppercase">Place of Supply</div>
                 <div className="font-bold">{invoice.place_of_supply || '—'}</div>
+              </div>
+              <div className="p-2">
+                <div className="text-[8px] text-gray-500 uppercase">Reverse Charge</div>
+                <div className="font-bold">{invoice.reverse_charge || 'No'}</div>
               </div>
               <div className="p-2 col-span-2">
                 <div className="text-[8px] text-gray-500 uppercase">Remittance bank</div>
@@ -1665,6 +1780,13 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
               <div className="font-bold italic text-slate-800">{summary.amount_in_words}</div>
             </div>
             
+            {invoice.notes && (
+              <div className="border-t border-black/20 pt-1">
+                <div className="text-[8px] uppercase tracking-wider text-gray-500">Declaration / Remarks</div>
+                <div className="font-bold text-[9px] text-slate-800 italic">{invoice.notes}</div>
+              </div>
+            )}
+
             <div className="border-t border-black/40 pt-2 text-[8px] text-gray-600 leading-normal">
               <div className="font-bold text-[9px] text-black">Company's Tax Declaration:</div>
               We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
@@ -1780,9 +1902,14 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
             </div>
             <div className="text-right text-[11px] text-slate-650 leading-relaxed pr-1">
               <div className="text-[18px] font-bold text-emerald-800 uppercase">{invoice.title || 'TAX INVOICE'}</div>
+              <div className="text-[10px] italic text-slate-500 mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div>Invoice No: <span className="font-bold text-slate-900">{invoice.number}</span></div>
               <div>Date: {invoice.date}</div>
-              {company.gstin && <div className="font-bold text-emerald-800 mt-1">GSTIN: {company.gstin}</div>}
+              <div className="mt-1 font-semibold text-emerald-850">
+                {company.gstin && `GSTIN: ${company.gstin}`}
+                {company.pan && ` · PAN: ${company.pan}`}
+              </div>
+              {company.state && <div className="text-[10px] text-slate-500">State: {company.state}</div>}
             </div>
           </div>
 
@@ -1791,15 +1918,21 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
             <div className="p-4 border-l-4 border-emerald-700 bg-emerald-50/20 rounded-r-lg">
               <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">BILL TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-              {customer.phone && <div className="text-[11px] text-slate-500 mt-1">Phone: {customer.phone}</div>}
-              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-805">GSTIN: {customer.gstin}</div>}
+              <div className="text-[11px] text-slate-500 mt-1">
+                {customer.phone && `Phone: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+              </div>
+              {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
+              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-800">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border-l-4 border-emerald-700 bg-emerald-50/10 rounded-r-lg flex flex-col justify-between">
               <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">DOCUMENT METADATA:</div>
               <div className="text-[11px] text-slate-655 font-medium">
-                {invoice.due_date && <div>Due Date: <span className="font-semibold text-slate-950">{invoice.due_date}</span></div>}
+                {invoice.due_date && <div>Due Date: <span className="font-semibold text-slate-955">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
+                {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
               </div>
             </div>
           </div>
@@ -1899,6 +2032,14 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
               <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="p-3 border-l-2 border-emerald-700 bg-emerald-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-655">
                 <div className="font-bold text-emerald-800 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
@@ -2005,6 +2146,7 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
             </div>
             <div className="text-right pr-1">
               <div className="text-[18px] font-bold uppercase tracking-wider text-slate-200">{invoice.title || 'TAX INVOICE'}</div>
+              <div className="text-[11px] text-slate-300 italic mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div className="text-[11px] font-mono-premium text-slate-300"># {invoice.number}</div>
               <div className="text-[11px] text-slate-355">Date: {invoice.date}</div>
             </div>
@@ -2015,16 +2157,26 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
               <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">BILLED TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-              {customer.phone && <div className="text-[11px] text-slate-500 mt-1">Phone: {customer.phone}</div>}
+              <div className="text-[11px] text-slate-500 mt-1">
+                {customer.phone && `Phone: ${customer.phone}`}
+                {customer.email && ` · Email: ${customer.email}`}
+              </div>
+              {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
               {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-850">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex flex-col justify-between">
-              <div className="text-[10px] uppercase font-bold text-slate-550 tracking-wider mb-2">SUMMARY:</div>
+              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">SUMMARY:</div>
               <div className="text-[11px] text-slate-600 leading-relaxed">
                 {invoice.due_date && <div>Due Date: <span className="font-semibold">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
-                {company.gstin && <div className="font-semibold text-slate-855 mt-1">Business GSTIN: {company.gstin}</div>}
+                {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
+                <div className="mt-1 font-semibold">
+                  {company.gstin && `Business GSTIN: ${company.gstin}`}
+                  {company.pan && ` · PAN: ${company.pan}`}
+                </div>
+                {company.state && <div>State: {company.state}</div>}
               </div>
             </div>
           </div>
@@ -2050,7 +2202,7 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
                     {item.description}
                     {item.model && <span className="font-normal text-slate-450 block text-[9px] mt-0.5">Model: {item.model}</span>}
                   </td>
-                  <td className="p-2.5 px-3 text-center text-slate-650">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
                   <td className="p-2.5 px-3 text-center font-semibold">{item.qty} {item.unit || 'NOS'}</td>
                   <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
@@ -2124,6 +2276,14 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
               <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
+
+            {invoice.notes && (
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+              </div>
+            )}
+
             {company.bank_name && (
               <div className="p-3 border border-slate-100 bg-slate-50 rounded-xl space-y-1 text-[10px] text-slate-655">
                 <div className="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
@@ -2163,7 +2323,7 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
                 )}
                 {Math.abs(summary.round_off) > 0.001 && (
                   <tr>
-                    <td className="py-1.5 text-slate-450 text-left font-medium">Round Off</td>
+                    <td className="py-1.5 text-slate-455 text-left font-medium">Round Off</td>
                     <td className="py-1.5 font-mono-premium text-slate-500">₹{fmt(summary.round_off)}</td>
                   </tr>
                 )}
@@ -2174,22 +2334,22 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
               </tbody>
             </table>
 
-          <div className="flex justify-end gap-4 items-center">
-            {upiPaymentId && qrUrl && (
-              <div className="flex flex-col items-center justify-center p-1 border border-slate-100 rounded-md bg-white shadow-sm flex-shrink-0">
-                <img src={qrUrl} alt="UPI QR Code" className="w-[56px] h-[56px]" />
-                <div className="text-[6px] text-slate-455 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
+            <div className="flex justify-end gap-4 items-center">
+              {upiPaymentId && qrUrl && (
+                <div className="flex flex-col items-center justify-center p-1 border border-slate-100 rounded-md bg-white shadow-sm flex-shrink-0">
+                  <img src={qrUrl} alt="UPI QR Code" className="w-[56px] h-[56px]" />
+                  <div className="text-[6px] text-slate-455 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
+                </div>
+              )}
+              <div className="text-right">
+                <div className="text-[10px] text-slate-505">For {company.name}</div>
+                <div className="h-[40px]" />
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
               </div>
-            )}
-            <div className="text-right">
-              <div className="text-[10px] text-slate-505">For {company.name}</div>
-              <div className="h-[40px]" />
-              <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }
