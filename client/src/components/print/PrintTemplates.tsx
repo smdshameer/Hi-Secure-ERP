@@ -139,22 +139,22 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
       
       {/* Top Content Area */}
       <div className="flex-grow flex flex-col">
-        {/* Header Info */}
+        {/* Header Info Banner */}
         <div className="flex justify-between items-center text-[10px] text-slate-400 mb-4 border-b border-slate-100 pb-2">
           <div className="font-semibold uppercase tracking-wider">{invoice.title || 'TAX INVOICE'}</div>
           <div className="italic">{invoice.copy_type || 'Original Copy'}</div>
         </div>
 
-        {/* Company Info */}
+        {/* Company Identity Header */}
         <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-slate-200">
-          <div>
+          <div className="flex items-center">
             {company.logo_url && (logoSize || 'medium') !== 'hidden' ? (
               <img src={company.logo_url} alt={company.name} className={`object-contain ${(logoSize || 'medium') === 'small' ? 'max-h-[35px]' : (logoSize || 'medium') === 'large' ? 'max-h-[70px]' : 'max-h-[50px]'}`} />
             ) : (
               <div className="text-[20px] font-bold text-slate-900 tracking-tight">{company.name}</div>
             )}
           </div>
-          <div className="text-right text-[11px] text-slate-600 px-1">
+          <div className="text-right text-[11px] text-slate-650 px-1">
             <div className="text-[14px] font-bold text-slate-900 leading-tight">{company.name}</div>
             <div className="mt-1">{company.address}</div>
             <div>Phone: {company.phone} · Email: {company.email}</div>
@@ -167,14 +167,14 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
           </div>
         </div>
 
-        {/* Billing & Meta Grid */}
+        {/* Billing & Metadata Block */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Billed To</div>
-            <div className="text-[13px] font-bold text-slate-905">{customer.name}</div>
-            {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+          <div className="bg-slate-50/50 rounded-lg p-4 border border-slate-200/60">
+            <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Billed To</div>
+            <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+            {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
             <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
-            <div className="text-[11px] text-slate-505 mt-2">
+            <div className="text-[11px] text-slate-500 mt-2">
               {customer.phone && `Phone: ${customer.phone}`}
               {customer.email && ` · Email: ${customer.email}`}
               {customer.state && ` · State: ${customer.state}`}
@@ -184,19 +184,19 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
 
           <div className="flex flex-col justify-between pl-6 text-right pr-1">
             <div className="space-y-1.5 text-[11px]">
-              <div><span className="text-slate-400">Invoice No:</span> <span className="font-bold text-slate-955">{invoice.number}</span></div>
-              <div><span className="text-slate-400">Date:</span> <span className="font-medium text-slate-955">{invoice.date}</span></div>
-              {invoice.due_date && <div><span className="text-slate-400">Due Date:</span> <span className="font-medium text-slate-955">{invoice.due_date}</span></div>}
-              {invoice.place_of_supply && <div><span className="text-slate-400">Place of Supply:</span> <span className="text-slate-955">{invoice.place_of_supply}</span></div>}
-              {invoice.reverse_charge && <div><span className="text-slate-400">Reverse Charge:</span> <span className="text-slate-955">{invoice.reverse_charge}</span></div>}
+              <div><span className="text-slate-400">Invoice No:</span> <span className="font-bold text-slate-900">{invoice.number}</span></div>
+              <div><span className="text-slate-400">Date:</span> <span className="font-medium text-slate-900">{invoice.date}</span></div>
+              {invoice.due_date && <div><span className="text-slate-400">Due Date:</span> <span className="font-medium text-slate-900">{invoice.due_date}</span></div>}
+              {invoice.place_of_supply && <div><span className="text-slate-400">Place of Supply:</span> <span className="text-slate-900">{invoice.place_of_supply}</span></div>}
+              {invoice.reverse_charge && <div><span className="text-slate-400">Reverse Charge:</span> <span className="text-slate-900">{invoice.reverse_charge}</span></div>}
             </div>
           </div>
         </div>
 
-        {/* Table */}
+        {/* Corporate Table Grid */}
         <table className="w-full text-[11px] border-collapse mb-6 flex-grow">
           <thead>
-            <tr className="bg-slate-100/75 border-y border-slate-200 text-slate-700">
+            <tr className="bg-slate-100 text-slate-700 border-y border-slate-200">
               <th className="py-3 px-3 text-center font-semibold w-[6%]">S.No.</th>
               <th className="py-3 px-3 text-left font-semibold w-[44%]">Particulars</th>
               <th className="py-3 px-3 text-center font-semibold w-[12%]">HSN/SAC</th>
@@ -208,8 +208,8 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((item, idx) => (
-              <tr key={idx}>
-                <td className="py-3.5 px-3 text-center text-slate-500">{item.sr || (idx + 1)}</td>
+              <tr key={idx} className="hover:bg-slate-50/50">
+                <td className="py-3.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                 <td className="py-3.5 px-3 text-left font-semibold text-slate-900">
                   {item.description}
                   {item.model && <span className="font-normal text-slate-400 block text-[9px] mt-0.5">Model: {item.model}</span>}
@@ -217,21 +217,21 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
                 </td>
                 <td className="py-3.5 px-3 text-center text-slate-600">{item.hsn_sac || '—'}</td>
                 <td className="py-3.5 px-3 text-center font-medium">{item.qty} {item.unit || 'NOS'}</td>
-                <td className="py-3.5 px-3 text-right font-mono-premium text-slate-805">₹{fmt(item.rate)}</td>
+                <td className="py-3.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                 <td className="py-3.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Dynamic GST HSN Breakup Table */}
+        {/* GST HSN Summary */}
         {hsnSummaryList.length > 0 && (
           <div className="mb-6">
-            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">GST Tax Breakup Summary</div>
+            <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">GST Tax Breakup Summary</div>
             <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
               <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200 text-slate-700 font-semibold">
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
                   <th className="p-2 border-r border-slate-200">HSN/SAC</th>
                   <th className="p-2 border-r border-slate-200 text-right">Taxable Amount</th>
                   {!invoice.is_interstate ? (
@@ -250,7 +250,7 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
                   <th className="p-2 text-right">Total Tax</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-750">
                 {hsnSummaryList.map((row, idx) => {
                   const totalTax = !invoice.is_interstate ? (row.cgst + row.sgst) : row.igst;
                   return (
@@ -285,26 +285,26 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
         <div className="grid grid-cols-12 gap-6 mb-6">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Amount in Words</div>
-              <div className="text-[11px] font-semibold text-slate-808 italic">{summary.amount_in_words}</div>
+              <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Amount in Words</div>
+              <div className="text-[11px] font-semibold text-slate-805 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 text-[10px] text-slate-500 space-y-1">
-              <div className="font-bold text-slate-707 text-[11px] mb-1">Terms & Conditions:</div>
+            <div className="bg-slate-50 rounded-lg p-3 border border-slate-150 text-[10px] text-slate-500 space-y-1">
+              <div className="font-bold text-slate-700 text-[11px] mb-1">Terms & Conditions:</div>
               <div>• Guarantee/Warranty claims as per manufacturer terms.</div>
               <div>• Interest @18% p.m. will be charged for delayed payments.</div>
               <div>• All disputes subject to local jurisdiction only.</div>
             </div>
 
             {company.bank_name && (
-              <div className="grid grid-cols-2 gap-2 text-[10px] p-3 border border-slate-100 rounded-lg bg-slate-50/50">
+              <div className="grid grid-cols-2 gap-2 text-[10px] p-3 border border-slate-200 rounded-lg bg-slate-50/50">
                 <div><span className="font-medium text-slate-400">Bank:</span> {company.bank_name}</div>
                 <div><span className="font-medium text-slate-400">A/c No:</span> {company.bank_account}</div>
                 <div><span className="font-medium text-slate-400">IFSC:</span> {company.ifsc_code}</div>
@@ -345,14 +345,14 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
                 )}
                 <tr className="font-bold text-[13px] text-slate-900 border-t-2 border-slate-200">
                   <td className="py-2.5 text-left">Grand Total</td>
-                  <td className="py-2.5 font-mono-premium text-slate-955">₹{fmt(summary.grand_total)}</td>
+                  <td className="py-2.5 font-mono-premium text-slate-900">₹{fmt(summary.grand_total)}</td>
                 </tr>
               </tbody>
             </table>
 
             <div className="flex justify-end gap-4 items-center">
               {upiPaymentId && qrUrl && (
-                <div className="flex flex-col items-center justify-center p-1.5 border border-slate-100 rounded-md bg-white shadow-sm">
+                <div className="flex flex-col items-center justify-center p-1.5 border border-slate-200 rounded-md bg-white shadow-sm">
                   <img src={qrUrl} alt="UPI QR Code" className="w-[64px] h-[64px]" />
                   <div className="text-[7px] text-slate-400 mt-1 font-bold tracking-wider uppercase">Scan to Pay</div>
                 </div>
@@ -360,13 +360,13 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
               <div className="text-right">
                 <div className="text-[10px] text-slate-400">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-707 border-t border-slate-200 pt-1">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-between items-center text-[9px] text-slate-400 border-t border-slate-105 pt-2">
+        <div className="flex justify-between items-center text-[9px] text-slate-400 border-t border-slate-100 pt-2">
           <div>See backside for terms & conditions</div>
           <div>Powered by Hitech BillSoft</div>
         </div>
@@ -423,9 +423,9 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
             {/* Billing details grid */}
             <div className="grid grid-cols-2 gap-8 mb-6 pb-6 border-b border-slate-100">
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5">CLIENT DETAILS</div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1.5">CLIENT DETAILS</div>
                 <div className="text-[14px] font-bold text-slate-900">{customer.name}</div>
-                {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+                {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
                 <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
                 <div className="text-[11px] text-slate-500 mt-1">
                   {customer.phone && `Phone: ${customer.phone}`}
@@ -435,7 +435,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
                 {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
               </div>
               <div className="space-y-1.5 text-right text-[11px] text-slate-600 px-1">
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 text-right">BUSINESS IDENTITY</div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 text-right">BUSINESS IDENTITY</div>
                 {company.gstin && <div><span className="text-slate-400">GSTIN:</span> <span className="font-semibold text-slate-900">{company.gstin}</span></div>}
                 {company.pan && <div><span className="text-slate-400">PAN:</span> <span className="font-semibold text-slate-900">{company.pan}</span></div>}
                 <div><span className="text-slate-400">Email:</span> {company.email}</div>
@@ -472,7 +472,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
                     <td className="py-4 px-3 text-center font-semibold">{item.qty} {item.unit || 'NOS'}</td>
                     <td className="py-4 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                     <td className="py-4 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                    <td className="py-4 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                    <td className="py-4 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -481,7 +481,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
             {/* GST Breakup Table */}
             {hsnSummaryList.length > 0 && (
               <div className="mb-6">
-                <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-2">GST Tax Breakup Summary</div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">GST Tax Breakup Summary</div>
                 <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
@@ -540,20 +540,20 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
         <div className="grid grid-cols-12 gap-8 mb-4">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total in Words</div>
-              <div className="text-[11px] font-semibold text-slate-805 italic">{summary.amount_in_words}</div>
+              <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total in Words</div>
+              <div className="text-[12px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-4 border border-slate-100 rounded-lg bg-slate-50 space-y-1 text-[10px]">
-                <div className="font-bold text-slate-707 text-[11px] mb-1.5">BANK ACCOUNT LEDGER</div>
+              <div className="p-4 border border-slate-150 rounded-lg bg-slate-50 space-y-1 text-[10px]">
+                <div className="font-bold text-slate-700 text-[11px] mb-1.5">BANK ACCOUNT LEDGER</div>
                 <div className="grid grid-cols-2 gap-1.5 text-slate-600">
                   <div>Bank Name: {company.bank_name}</div>
                   <div>Account No: {company.bank_account}</div>
@@ -565,7 +565,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
           </div>
 
           <div className="col-span-5 text-right space-y-4 pr-1">
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-2">
+            <div className="bg-slate-50 p-4 rounded-lg border border-slate-150 space-y-2">
               <table className="w-full text-[11px] leading-relaxed">
                 <tbody>
                   <tr>
@@ -591,13 +591,13 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
                   )}
                   {Math.abs(summary.round_off) > 0.001 && (
                     <tr>
-                      <td className="text-slate-455 py-1 text-left">Round Off</td>
+                      <td className="text-slate-500 py-1 text-left">Round Off</td>
                       <td className="font-mono-premium text-slate-500 py-1">₹{fmt(summary.round_off)}</td>
                     </tr>
                   )}
                   <tr className="font-bold text-[14px] text-slate-900 border-t border-slate-200 pt-2">
-                    <td className="py-2 text-slate-955 font-bold text-left">Grand Total</td>
-                    <td className="py-2 font-mono-premium text-slate-955 text-[15px]">₹{fmt(summary.grand_total)}</td>
+                    <td className="py-2 text-slate-900 font-bold text-left">Grand Total</td>
+                    <td className="py-2 font-mono-premium text-slate-900 text-[15px]">₹{fmt(summary.grand_total)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -613,7 +613,7 @@ export function ThemeHiSecure({ company, invoice, customer, items, summary, logo
               <div className="text-right">
                 <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -649,10 +649,10 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
         <div>
           {/* Editorial Centered Header */}
           <div className="text-center mb-8 border-b-4 border-double border-slate-800 pb-6">
-            <div className="text-[24px] font-bold uppercase tracking-wider text-slate-955 font-serif-premium">{company.name}</div>
+            <div className="text-[24px] font-bold uppercase tracking-wider text-slate-900 font-serif-premium">{company.name}</div>
             <div className="text-[11px] italic text-slate-500 mt-1 max-w-[500px] mx-auto leading-relaxed">{company.address}</div>
             <div className="text-[11px] text-slate-500">Contact: {company.phone} · Email: {company.email}</div>
-            <div className="text-[11px] font-bold mt-1 text-slate-805">
+            <div className="text-[11px] font-bold mt-1 text-slate-800">
               {company.gstin && `GSTIN: ${company.gstin}`}
               {company.pan && ` · PAN: ${company.pan}`}
             </div>
@@ -662,25 +662,25 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
           {/* Invoice Title */}
           <div className="text-center mb-6">
             <span className="text-[16px] font-bold uppercase tracking-widest border-b border-slate-900 pb-1">{invoice.title || 'TAX INVOICE'}</span>
-            <div className="text-[11px] italic text-slate-550 mt-1.5">{invoice.copy_type || 'Original Copy'}</div>
+            <div className="text-[11px] italic text-slate-500 mt-1.5">{invoice.copy_type || 'Original Copy'}</div>
           </div>
 
           {/* Billing / Info Grid */}
           <div className="grid grid-cols-2 gap-8 mb-8 text-[12px]">
             <div>
-              <div className="font-bold border-b border-slate-900 uppercase text-[10px] tracking-wider mb-2 text-slate-600">INVOICE TO</div>
-              <div className="font-bold text-slate-955 text-[13px]">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+              <div className="font-bold border-b border-slate-900 uppercase text-[9px] tracking-wider mb-2 text-slate-600">INVOICE TO</div>
+              <div className="font-bold text-slate-900 text-[13px]">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="mt-1 whitespace-pre-line leading-relaxed text-slate-700">{customer.address || '—'}</div>
-              <div className="mt-1.5 text-slate-550">
+              <div className="mt-1.5 text-slate-500">
                 {customer.phone && `Phone: ${customer.phone}`}
                 {customer.email && ` · Email: ${customer.email}`}
               </div>
               {customer.state && <div className="text-[11px] text-slate-500">State: {customer.state}</div>}
               {customer.gstin && <div className="font-bold mt-0.5">GSTIN: {customer.gstin}</div>}
             </div>
-            <div className="pl-6 space-y-1.5 pr-1">
-              <div className="font-bold border-b border-slate-900 uppercase text-[10px] tracking-wider mb-2 text-slate-600">DOCUMENT METADATA</div>
+            <div className="pl-6 space-y-1.5 pr-1 text-right">
+              <div className="font-bold border-b border-slate-900 uppercase text-[9px] tracking-wider mb-2 text-slate-605 text-right">DOCUMENT METADATA</div>
               <div><span className="text-slate-400">Invoice Number:</span> <span className="font-bold">{invoice.number}</span></div>
               <div><span className="text-slate-400">Issue Date:</span> {invoice.date}</div>
               {invoice.due_date && <div><span className="text-slate-400">Due Date:</span> {invoice.due_date}</div>}
@@ -692,30 +692,30 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
           {/* Table */}
           <table className="w-full text-[11px] border-collapse mb-6 border-y-2 border-slate-800">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-955 uppercase tracking-wider text-[10px]">
-                <th className="py-2.5 px-3 text-center font-bold w-[6%]">Sr.</th>
-                <th className="py-2.5 px-3 text-left font-bold w-[44%]">Description of Services</th>
-                <th className="py-2.5 px-3 text-center font-bold w-[12%]">HSN/SAC</th>
-                <th className="py-2.5 px-3 text-center font-bold w-[8%]">Qty</th>
-                <th className="py-2.5 px-3 text-right font-bold w-[12%]">Rate</th>
-                <th className="py-2.5 px-3 text-center font-bold w-[8%]">GST</th>
-                <th className="py-2.5 px-3 text-right font-bold w-[12%]">Amount</th>
+              <tr className="border-b border-slate-800 text-slate-900 uppercase tracking-wider text-[9px] font-bold">
+                <th className="py-2.5 px-3 text-center w-[6%]">Sr.</th>
+                <th className="py-2.5 px-3 text-left w-[44%]">Description of Services</th>
+                <th className="py-2.5 px-3 text-center w-[12%]">HSN/SAC</th>
+                <th className="py-2.5 px-3 text-center w-[8%]">Qty</th>
+                <th className="py-2.5 px-3 text-right w-[12%]">Rate</th>
+                <th className="py-2.5 px-3 text-center w-[8%]">GST</th>
+                <th className="py-2.5 px-3 text-right w-[12%]">Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {items.map((item, idx) => (
                 <tr key={idx}>
                   <td className="py-3.5 px-3 text-center">{item.sr || (idx + 1)}</td>
-                  <td className="py-3.5 px-3 text-left font-bold text-slate-955">
+                  <td className="py-3.5 px-3 text-left font-bold text-slate-900">
                     {item.description}
                     {item.model && <span className="font-normal text-slate-500 block text-[9px] italic mt-0.5">Model: {item.model}</span>}
                     {item.warranty && <span className="font-normal text-slate-500 block text-[9px] italic">Warranty: {item.warranty}</span>}
                   </td>
                   <td className="py-3.5 px-3 text-center">{item.hsn_sac || '—'}</td>
                   <td className="py-3.5 px-3 text-center">{item.qty}</td>
-                  <td className="py-3.5 px-3 text-right font-mono-premium text-slate-707">₹{fmt(item.rate)}</td>
+                  <td className="py-3.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="py-3.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="py-3.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -724,10 +724,10 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
           {/* Classic GST Summary Table */}
           {hsnSummaryList.length > 0 && (
             <div className="mb-6 text-[10px]">
-              <div className="font-bold border-b border-slate-900 uppercase text-[10px] tracking-wider mb-2 text-slate-600">GST Tax Summary Breakup</div>
+              <div className="font-bold border-b border-slate-900 uppercase text-[9px] tracking-wider mb-2 text-slate-600">GST Tax Summary Breakup</div>
               <table className="w-full text-[10px] border border-slate-800 border-collapse text-center">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-855 text-slate-955 font-bold uppercase tracking-wider text-[9px]">
+                  <tr className="bg-slate-50 border-b border-slate-800 text-slate-900 font-bold uppercase tracking-wider text-[9px]">
                     <th className="p-2 border-r border-slate-800">HSN/SAC</th>
                     <th className="p-2 border-r border-slate-800 text-right">Taxable Value</th>
                     {!invoice.is_interstate ? (
@@ -782,20 +782,20 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
         <div className="grid grid-cols-12 gap-8 mb-6">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-1">Invoice Total in Words</div>
+              <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[12px] font-bold text-slate-900 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-455 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-3 border-t border-slate-200 text-[10px] text-slate-650 leading-relaxed bg-slate-50/50">
-                <div className="font-bold text-slate-808 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
+              <div className="p-3 border-t border-slate-200 text-[10px] text-slate-600 leading-relaxed bg-slate-50/50">
+                <div className="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
                 <div>Bank: {company.bank_name} · Account: {company.bank_account}</div>
                 <div>IFSC Code: {company.ifsc_code} · Branch: {company.branch || '—'}</div>
               </div>
@@ -806,7 +806,7 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
             <table className="w-full text-[11px] leading-relaxed">
               <tbody className="divide-y divide-slate-100">
                 <tr>
-                  <td className="py-1 text-slate-500 text-left">Taxable Net</td>
+                  <td className="py-1 text-slate-500 text-left font-medium">Taxable Net</td>
                   <td className="py-1 font-mono-premium font-semibold">₹{fmt(summary.taxable_total)}</td>
                 </tr>
                 {!invoice.is_interstate ? (
@@ -847,9 +847,9 @@ export function ThemeClassic({ company, invoice, customer, items, summary, logoS
                 </div>
               )}
               <div className="text-right">
-                <div className="text-[10px] text-slate-555">For {company.name}</div>
+                <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -896,7 +896,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
                 <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">Hi-Tech Business Solutions</div>
               </div>
             </div>
-            <div className="text-right text-[11px] text-slate-505 leading-relaxed pr-1">
+            <div className="text-right text-[11px] text-slate-500 leading-relaxed pr-1">
               <div className="text-[15px] font-bold text-slate-900">{company.name}</div>
               <div>{company.address}</div>
               <div>Contact: {company.phone} · Email: {company.email}</div>
@@ -917,7 +917,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
               <div className="text-[10px] text-blue-500 italic mt-0.5">{invoice.copy_type || 'Original Copy'}</div>
             </div>
             <div className="text-right pr-1">
-              <div className="text-[11px] text-slate-450 text-right">Invoice Number</div>
+              <div className="text-[11px] text-slate-400 text-right">Invoice Number</div>
               <div className="text-[15px] font-bold text-slate-900 font-mono-premium">{invoice.number}</div>
             </div>
           </div>
@@ -925,9 +925,9 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
           {/* Billing details cards */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div className="p-4 border border-slate-100 rounded-xl bg-white shadow-sm">
-              <div className="text-[10px] uppercase font-bold text-blue-600 tracking-wider mb-2">BILL TO CLIENT</div>
+              <div className="text-[9px] uppercase font-bold text-blue-600 tracking-wider mb-2">BILL TO CLIENT</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-600">Attn: {customer.contactPerson}</div>}
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-655 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
               <div className="text-[11px] text-slate-500 mt-2">
                 {customer.phone && `Contact: ${customer.phone}`}
@@ -937,29 +937,29 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
               {customer.gstin && <div className="text-[11px] font-bold text-slate-800 mt-1">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex flex-col justify-between">
-              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">METADATA SUMMARY</div>
+              <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">METADATA SUMMARY</div>
               <table className="w-full text-[11px] pr-1">
                 <tbody>
                   <tr>
                     <td className="text-slate-500 py-0.5 text-left font-medium">Date of Issue</td>
-                    <td className="text-right font-medium text-slate-955">{invoice.date}</td>
+                    <td className="text-right font-medium text-slate-900">{invoice.date}</td>
                   </tr>
                   {invoice.due_date && (
                     <tr>
                       <td className="text-slate-500 py-0.5 text-left font-medium">Due Date</td>
-                      <td className="text-right font-medium text-slate-955">{invoice.due_date}</td>
+                      <td className="text-right font-medium text-slate-900">{invoice.due_date}</td>
                     </tr>
                   )}
                   {invoice.place_of_supply && (
                     <tr>
-                      <td className="text-slate-505 py-0.5 text-left font-medium">Place of Supply</td>
-                      <td className="text-right text-slate-955">{invoice.place_of_supply}</td>
+                      <td className="text-slate-500 py-0.5 text-left font-medium">Place of Supply</td>
+                      <td className="text-right text-slate-900">{invoice.place_of_supply}</td>
                     </tr>
                   )}
                   {invoice.reverse_charge && (
                     <tr>
-                      <td className="text-slate-505 py-0.5 text-left font-medium">Reverse Charge</td>
-                      <td className="text-right text-slate-955">{invoice.reverse_charge}</td>
+                      <td className="text-slate-500 py-0.5 text-left font-medium">Reverse Charge</td>
+                      <td className="text-right text-slate-900">{invoice.reverse_charge}</td>
                     </tr>
                   )}
                 </tbody>
@@ -967,7 +967,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
             </div>
           </div>
 
-          {/* Items Table - padding increased */}
+          {/* Items Table */}
           <table className="w-full text-[11px] border-collapse mb-6">
             <thead>
               <tr className="bg-blue-600 text-white rounded-lg overflow-hidden">
@@ -982,18 +982,18 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
-                <tr key={idx} className="even:bg-blue-50/10">
+                <tr key={idx} className="even:bg-blue-50/10 hover:bg-slate-55/40">
                   <td className="p-2.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                   <td className="p-2.5 px-3 text-left font-semibold text-slate-900">
                     {item.description}
                     {item.model && <span className="font-normal text-slate-400 block text-[9px] mt-0.5">Model: {item.model}</span>}
                     {item.warranty && <span className="font-normal text-blue-600 block text-[9px]">Warranty: {item.warranty}</span>}
                   </td>
-                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-600">{item.hsn_sac || '—'}</td>
                   <td className="p-2.5 px-3 text-center font-medium">{item.qty} {item.unit || 'NOS'}</td>
                   <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -1002,7 +1002,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
           {/* Modern Blue GST Summary Breakup */}
           {hsnSummaryList.length > 0 && (
             <div className="mb-6">
-              <div className="text-[10px] uppercase font-bold text-blue-600 tracking-wider mb-2">GST Tax Summary Breakup</div>
+              <div className="text-[9px] uppercase font-bold text-blue-600 tracking-wider mb-2">GST Tax Summary Breakup</div>
               <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
                 <thead>
                   <tr className="bg-blue-50/50 border-b-2 border-blue-600 text-slate-800 font-semibold">
@@ -1060,19 +1060,19 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
         <div className="grid grid-cols-12 gap-8 mb-4">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Invoice Total in Words</div>
-              <div className="text-[11px] font-semibold text-slate-805 italic">{summary.amount_in_words}</div>
+              <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Invoice Total in Words</div>
+              <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-blue-600 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-blue-600 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-3 border border-slate-100 bg-slate-50/50 rounded-xl space-y-1 text-[10px] text-slate-600">
+              <div className="p-3 border border-slate-150 bg-slate-50/50 rounded-xl space-y-1 text-[10px] text-slate-600">
                 <div className="font-bold text-blue-700 text-[10px] uppercase tracking-wider mb-1">BANK TRANSFER LEDGER</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>Bank Name: {company.bank_name}</div>
@@ -1116,7 +1116,7 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
                 )}
                 <tr className="font-bold text-[14px] text-blue-700 border-t border-slate-200">
                   <td className="py-2.5 text-left">NET AMOUNT DUE</td>
-                  <td className="py-2.5 font-mono-premium text-[15px]">₹{fmt(summary.grand_total)}</td>
+                  <td className="py-2.5 font-mono-premium text-blue-700 text-[15px]">₹{fmt(summary.grand_total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -1129,9 +1129,9 @@ export function ThemeModernBlue({ company, invoice, customer, items, summary, lo
                 </div>
               )}
               <div className="text-right">
-                <div className="text-[10px] text-slate-455">For {company.name}</div>
+                <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-707 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -1187,10 +1187,10 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
           <div className="grid grid-cols-2 gap-8 mb-8 pb-6 border-b border-slate-100">
             <div>
               <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-1.5">BILLED TO</div>
-              <div className="text-[13px] font-bold text-slate-955">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+              <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line">{customer.address || '—'}</div>
-              <div className="text-[11px] text-slate-505 mt-2">
+              <div className="text-[11px] text-slate-500 mt-2">
                 {customer.phone && `Phone: ${customer.phone}`}
                 {customer.email && ` · Email: ${customer.email}`}
               </div>
@@ -1209,10 +1209,10 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
             </div>
           </div>
 
-          {/* Minimal Table - padding increased */}
+          {/* Minimal Table */}
           <table className="w-full text-[11px] border-collapse mb-8">
             <thead>
-              <tr className="border-b-2 border-slate-900 text-slate-955 uppercase tracking-widest text-[9px] font-bold">
+              <tr className="border-b-2 border-slate-900 text-slate-900 uppercase tracking-widest text-[9px] font-bold">
                 <th className="py-2.5 px-3 text-center w-[6%]">S.No.</th>
                 <th className="py-2.5 px-3 text-left w-[44%]">Description</th>
                 <th className="py-2.5 px-3 text-center w-[12%]">HSN</th>
@@ -1224,7 +1224,7 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
-                <tr key={idx}>
+                <tr key={idx} className="hover:bg-slate-50/30">
                   <td className="py-4 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                   <td className="py-4 px-3 text-left font-medium text-slate-900">
                     {item.description}
@@ -1248,19 +1248,19 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
           <div className="col-span-7 space-y-4">
             <div>
               <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">IN WORDS</div>
-              <div className="text-[11px] font-semibold text-slate-808 italic">{summary.amount_in_words}</div>
+              <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
                 <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1">Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="text-[10px] text-slate-550 space-y-0.5 border-t border-slate-100 pt-3">
-                <div className="font-bold text-slate-707 text-[10px] uppercase tracking-wider mb-1">BANK REMITTANCE</div>
+              <div className="text-[10px] text-slate-500 space-y-0.5 border-t border-slate-100 pt-3">
+                <div className="font-bold text-slate-700 text-[10px] uppercase tracking-wider mb-1">BANK REMITTANCE</div>
                 <div>Bank Name: {company.bank_name} · A/c No: {company.bank_account}</div>
                 <div>IFSC Code: {company.ifsc_code} · Branch: {company.branch || '—'}</div>
               </div>
@@ -1278,26 +1278,26 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
                   <>
                     <tr>
                       <td className="py-1 text-slate-500 text-left font-medium">CGST Total</td>
-                      <td className="py-1 font-mono-premium text-slate-705">₹{fmt(summary.cgst_total)}</td>
+                      <td className="py-1 font-mono-premium text-slate-700">₹{fmt(summary.cgst_total)}</td>
                     </tr>
                     <tr>
-                      <td className="py-1 text-slate-505 text-left font-medium">SGST Total</td>
-                      <td className="py-1 font-mono-premium text-slate-705">₹{fmt(summary.sgst_total)}</td>
+                      <td className="py-1 text-slate-500 text-left font-medium">SGST Total</td>
+                      <td className="py-1 font-mono-premium text-slate-700">₹{fmt(summary.sgst_total)}</td>
                     </tr>
                   </>
                 ) : (
                   <tr>
-                    <td className="py-1 text-slate-505 text-left font-medium">IGST Total</td>
-                    <td className="py-1 font-mono-premium text-slate-705">₹{fmt(summary.igst_total)}</td>
+                    <td className="py-1 text-slate-500 text-left font-medium">IGST Total</td>
+                    <td className="py-1 font-mono-premium text-slate-700">₹{fmt(summary.igst_total)}</td>
                   </tr>
                 )}
                 {Math.abs(summary.round_off) > 0.001 && (
                   <tr>
                     <td className="py-1 text-slate-400 text-left font-medium">Round Off</td>
-                    <td className="py-1 font-mono-premium text-slate-555">₹{fmt(summary.round_off)}</td>
+                    <td className="py-1 font-mono-premium text-slate-500">₹{fmt(summary.round_off)}</td>
                   </tr>
                 )}
-                <tr className="font-bold text-[14px] text-slate-955 border-t-2 border-slate-900">
+                <tr className="font-bold text-[14px] text-slate-900 border-t-2 border-slate-900">
                   <td className="py-2 text-left">Grand Total</td>
                   <td className="py-2 font-mono-premium text-[15px]">₹{fmt(summary.grand_total)}</td>
                 </tr>
@@ -1306,15 +1306,15 @@ export function ThemeMinimal({ company, invoice, customer, items, summary, logoS
 
             <div className="flex justify-end gap-4 items-center">
               {upiPaymentId && qrUrl && (
-                <div className="flex flex-col items-center justify-center p-1 border border-slate-100 rounded-md bg-white shadow-sm flex-shrink-0">
+                <div className="flex flex-col items-center justify-center p-1 border border-slate-200 rounded-md bg-white shadow-sm flex-shrink-0">
                   <img src={qrUrl} alt="UPI QR Code" className="w-[56px] h-[56px]" />
-                  <div className="text-[6px] text-slate-455 font-bold uppercase tracking-wider mt-0.5">UPI Pay</div>
+                  <div className="text-[6px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">UPI Pay</div>
                 </div>
               )}
               <div className="text-right">
                 <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-707 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -1363,9 +1363,9 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
               ) : (
                 <div className="text-[20px] font-bold text-orange-600 tracking-tight">{company.name}</div>
               )}
-              <div className="text-[11px] text-slate-505 mt-2 max-w-[320px]">{company.address}</div>
+              <div className="text-[11px] text-slate-500 mt-2 max-w-[320px]">{company.address}</div>
             </div>
-            <div className="text-right text-[11px] text-slate-605 leading-relaxed pr-1">
+            <div className="text-right text-[11px] text-slate-600 leading-relaxed pr-1">
               <div className="text-[18px] font-bold text-orange-600 uppercase">{invoice.title || 'TAX INVOICE'}</div>
               <div className="text-[10px] italic text-slate-500 mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div>Invoice No: <span className="font-bold text-slate-900">{invoice.number}</span></div>
@@ -1381,28 +1381,28 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
           {/* Billing section */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div className="p-4 border-l-4 border-orange-500 bg-orange-50/30 rounded-r-lg">
-              <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">BILL TO:</div>
+              <div className="text-[9px] uppercase font-bold text-orange-600 tracking-wider mb-1">BILL TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
               <div className="text-[11px] text-slate-500 mt-1">
                 {customer.phone && `Phone: ${customer.phone}`}
                 {customer.email && ` · Email: ${customer.email}`}
               </div>
               {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
-              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-805">GSTIN: {customer.gstin}</div>}
+              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-800">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border-l-4 border-green-600 bg-green-50/20 rounded-r-lg flex flex-col justify-between">
-              <div className="text-[10px] uppercase font-bold text-green-700 tracking-wider mb-1">PAYMENT DETAILS:</div>
-              <div className="text-[11px] text-slate-655 font-medium">
-                {invoice.due_date && <div>Due Date: <span className="font-semibold">{invoice.due_date}</span></div>}
+              <div className="text-[9px] uppercase font-bold text-green-700 tracking-wider mb-1">PAYMENT DETAILS:</div>
+              <div className="text-[11px] text-slate-600 font-medium">
+                {invoice.due_date && <div>Due Date: <span className="font-semibold text-slate-900">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
                 {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
               </div>
             </div>
           </div>
 
-          {/* Table - expanded heights */}
+          {/* Table */}
           <table className="w-full text-[11px] border-collapse mb-6">
             <thead>
               <tr className="bg-orange-500 text-white rounded-lg">
@@ -1417,17 +1417,17 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
-                <tr key={idx} className="even:bg-slate-50/50">
+                <tr key={idx} className="even:bg-slate-50/50 hover:bg-slate-100/40">
                   <td className="p-2.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                   <td className="p-2.5 px-3 text-left font-semibold text-slate-900">
                     {item.description}
                     {item.model && <span className="font-normal text-slate-400 block text-[9px] mt-0.5">Model: {item.model}</span>}
                   </td>
-                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-600">{item.hsn_sac || '—'}</td>
                   <td className="p-2.5 px-3 text-center font-semibold">{item.qty} {item.unit || 'NOS'}</td>
-                  <td className="p-2.5 px-3 text-right font-mono-premium text-slate-707">₹{fmt(item.rate)}</td>
+                  <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -1436,7 +1436,7 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
           {/* Saffron GST Summary Table */}
           {hsnSummaryList.length > 0 && (
             <div className="mb-6">
-              <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-2">GST Tax Summary Breakup</div>
+              <div className="text-[9px] uppercase font-bold text-orange-600 tracking-wider mb-2">GST Tax Summary Breakup</div>
               <table className="w-full text-[10px] border border-orange-200 border-collapse text-center">
                 <thead>
                   <tr className="bg-orange-50 border-b border-orange-300 text-slate-800 font-semibold">
@@ -1494,19 +1494,19 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
         <div className="grid grid-cols-12 gap-8 mb-4">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">Invoice Total in Words</div>
+              <div className="text-[9px] uppercase font-bold text-orange-600 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-orange-600 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-orange-600 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-3 border-l-2 border-green-600 bg-green-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-655">
+              <div className="p-3 border-l-2 border-green-600 bg-green-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-600">
                 <div className="font-bold text-green-700 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>Bank Name: {company.bank_name}</div>
@@ -1528,17 +1528,17 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
                 {!invoice.is_interstate ? (
                   <>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">CGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">CGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.cgst_total)}</td>
                     </tr>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">SGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">SGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.sgst_total)}</td>
                     </tr>
                   </>
                 ) : (
                   <tr>
-                    <td className="py-1.5 text-slate-550 text-left font-medium">IGST Total</td>
+                    <td className="py-1.5 text-slate-500 text-left font-medium">IGST Total</td>
                     <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.igst_total)}</td>
                   </tr>
                 )}
@@ -1550,7 +1550,7 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
                 )}
                 <tr className="font-bold text-[14px] text-orange-600 border-t border-slate-200">
                   <td className="py-2.5 text-left">GRAND TOTAL DUE</td>
-                  <td className="py-2.5 font-mono-premium text-[15px]">₹{fmt(summary.grand_total)}</td>
+                  <td className="py-2.5 font-mono-premium text-orange-600 text-[15px]">₹{fmt(summary.grand_total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -1565,7 +1565,7 @@ export function ThemeSaffron({ company, invoice, customer, items, summary, logoS
               <div className="text-right">
                 <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -1645,7 +1645,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
                 <div className="font-bold">{invoice.due_date || '—'}</div>
               </div>
               <div className="p-2">
-                <div className="text-[8px] text-gray-555 uppercase">Place of Supply</div>
+                <div className="text-[8px] text-gray-500 uppercase">Place of Supply</div>
                 <div className="font-bold">{invoice.place_of_supply || '—'}</div>
               </div>
               <div className="p-2">
@@ -1676,7 +1676,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
             </thead>
             <tbody className="divide-y divide-black/30">
               {items.map((item, idx) => (
-                <tr key={idx} className="align-top">
+                <tr key={idx} className="align-top hover:bg-slate-50/20">
                   <td className="py-3 px-3 border-r border-black text-center">{item.sr || (idx + 1)}</td>
                   <td className="py-3 px-3 border-r border-black text-left font-bold">
                     {item.description}
@@ -1684,7 +1684,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
                     {item.warranty && <span className="font-normal block text-[8px]">Warranty: {item.warranty}</span>}
                   </td>
                   <td className="py-3 px-3 border-r border-black text-center">{item.hsn_sac || '—'}</td>
-                  <td className="py-3 px-3 border-r border-black text-center font-bold">{item.qty} NOS</td>
+                  <td className="py-3 px-3 border-r border-black text-center font-bold">{item.qty} {item.unit || 'NOS'}</td>
                   <td className="py-3 px-3 border-r border-black text-right">₹{fmt(item.rate)}</td>
                   <td className="py-3 px-3 border-r border-black text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
                   <td className="py-3 px-3 text-right font-bold">₹{fmt(item.total)}</td>
@@ -1820,7 +1820,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
                 )}
                 {Math.abs(summary.round_off) > 0.001 && (
                   <tr>
-                    <td className="p-1.5 text-gray-650 text-left">Round Off</td>
+                    <td className="p-1.5 text-gray-600 text-left">Round Off</td>
                     <td className="p-1.5 text-right">₹{fmt(summary.round_off)}</td>
                   </tr>
                 )}
@@ -1850,7 +1850,7 @@ export function ThemeTally({ company, invoice, customer, items, summary, logoSiz
           <div className="col-span-6 text-right">
             <div className="text-[10px]">For <span className="font-bold">{company.name}</span></div>
             <div className="h-[40px]" />
-            <div className="text-[9px] uppercase font-bold border-t border-black pt-1 inline-block text-center w-[200px]">Authorized Signatory</div>
+            <div className="text-[9px] uppercase font-bold border-t border-black pt-1 inline-block text-center w-[160px]">Authorized Signatory</div>
           </div>
         </div>
 
@@ -1898,14 +1898,14 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
               ) : (
                 <div className="text-[20px] font-bold text-emerald-800 tracking-tight">{company.name}</div>
               )}
-              <div className="text-[11px] text-slate-505 mt-2 max-w-[320px]">{company.address}</div>
+              <div className="text-[11px] text-slate-500 mt-2 max-w-[320px]">{company.address}</div>
             </div>
-            <div className="text-right text-[11px] text-slate-650 leading-relaxed pr-1">
+            <div className="text-right text-[11px] text-slate-600 leading-relaxed pr-1">
               <div className="text-[18px] font-bold text-emerald-800 uppercase">{invoice.title || 'TAX INVOICE'}</div>
               <div className="text-[10px] italic text-slate-500 mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div>Invoice No: <span className="font-bold text-slate-900">{invoice.number}</span></div>
               <div>Date: {invoice.date}</div>
-              <div className="mt-1 font-semibold text-emerald-850">
+              <div className="mt-1 font-semibold text-emerald-800">
                 {company.gstin && `GSTIN: ${company.gstin}`}
                 {company.pan && ` · PAN: ${company.pan}`}
               </div>
@@ -1916,9 +1916,9 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
           {/* Billing Info */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div className="p-4 border-l-4 border-emerald-700 bg-emerald-50/20 rounded-r-lg">
-              <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">BILL TO:</div>
+              <div className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider mb-1">BILL TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
               <div className="text-[11px] text-slate-500 mt-1">
                 {customer.phone && `Phone: ${customer.phone}`}
@@ -1928,16 +1928,16 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
               {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-800">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border-l-4 border-emerald-700 bg-emerald-50/10 rounded-r-lg flex flex-col justify-between">
-              <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">DOCUMENT METADATA:</div>
-              <div className="text-[11px] text-slate-655 font-medium">
-                {invoice.due_date && <div>Due Date: <span className="font-semibold text-slate-955">{invoice.due_date}</span></div>}
+              <div className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider mb-1">DOCUMENT METADATA:</div>
+              <div className="text-[11px] text-slate-600 font-medium">
+                {invoice.due_date && <div>Due Date: <span className="font-semibold text-slate-900">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
                 {invoice.reverse_charge && <div>Reverse Charge: {invoice.reverse_charge}</div>}
               </div>
             </div>
           </div>
 
-          {/* Table - expanded padding */}
+          {/* Table */}
           <table className="w-full text-[11px] border-collapse mb-6">
             <thead>
               <tr className="bg-emerald-700 text-white rounded-lg">
@@ -1952,17 +1952,17 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
-                <tr key={idx} className="even:bg-slate-50/50">
+                <tr key={idx} className="even:bg-slate-50/50 hover:bg-slate-100/40">
                   <td className="p-2.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                   <td className="p-2.5 px-3 text-left font-semibold text-slate-900">
                     {item.description}
-                    {item.model && <span className="font-normal text-slate-450 block text-[9px] mt-0.5">Model: {item.model}</span>}
+                    {item.model && <span className="font-normal text-slate-400 block text-[9px] mt-0.5">Model: {item.model}</span>}
                   </td>
-                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-600">{item.hsn_sac || '—'}</td>
                   <td className="p-2.5 px-3 text-center font-semibold">{item.qty} {item.unit || 'NOS'}</td>
                   <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -1971,23 +1971,23 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
           {/* Emerald GST Summary Table */}
           {hsnSummaryList.length > 0 && (
             <div className="mb-6">
-              <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-2">GST Tax Summary Breakup</div>
-              <table className="w-full text-[10px] border border-emerald-250 border-collapse text-center">
+              <div className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider mb-2">GST Tax Summary Breakup</div>
+              <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
                 <thead>
                   <tr className="bg-emerald-50 border-b-2 border-emerald-700 text-slate-800 font-semibold">
-                    <th className="p-2 border-r border-emerald-200">HSN/SAC</th>
-                    <th className="p-2 border-r border-emerald-200 text-right">Taxable Amount</th>
+                    <th className="p-2 border-r border-slate-200">HSN/SAC</th>
+                    <th className="p-2 border-r border-slate-200 text-right">Taxable Amount</th>
                     {!invoice.is_interstate ? (
                       <>
-                        <th className="p-2 border-r border-emerald-200">CGST Rate</th>
-                        <th className="p-2 border-r border-emerald-200 text-right">CGST Amt</th>
-                        <th className="p-2 border-r border-emerald-200">SGST Rate</th>
-                        <th className="p-2 border-r border-emerald-200 text-right">SGST Amt</th>
+                        <th className="p-2 border-r border-slate-200">CGST Rate</th>
+                        <th className="p-2 border-r border-slate-200 text-right">CGST Amt</th>
+                        <th className="p-2 border-r border-slate-200">SGST Rate</th>
+                        <th className="p-2 border-r border-slate-200 text-right">SGST Amt</th>
                       </>
                     ) : (
                       <>
-                        <th className="p-2 border-r border-emerald-200">IGST Rate</th>
-                        <th className="p-2 border-r border-emerald-200 text-right">IGST Amt</th>
+                        <th className="p-2 border-r border-slate-200">IGST Rate</th>
+                        <th className="p-2 border-r border-slate-200 text-right">IGST Amt</th>
                       </>
                     )}
                     <th className="p-2 text-right">Total Tax</th>
@@ -1998,19 +1998,19 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
                     const totalTax = !invoice.is_interstate ? (row.cgst + row.sgst) : row.igst;
                     return (
                       <tr key={idx}>
-                        <td className="p-2 border-r border-emerald-200 font-medium">{row.hsn}</td>
-                        <td className="p-2 border-r border-emerald-200 text-right font-mono-premium">₹{fmt(row.taxable)}</td>
+                        <td className="p-2 border-r border-slate-200 font-medium">{row.hsn}</td>
+                        <td className="p-2 border-r border-slate-200 text-right font-mono-premium">₹{fmt(row.taxable)}</td>
                         {!invoice.is_interstate ? (
                           <>
-                            <td className="p-2 border-r border-emerald-200">{(row.rate / 2)}%</td>
-                            <td className="p-2 border-r border-emerald-200 text-right font-mono-premium">₹{fmt(row.cgst)}</td>
-                            <td className="p-2 border-r border-emerald-200">{(row.rate / 2)}%</td>
-                            <td className="p-2 border-r border-emerald-200 text-right font-mono-premium">₹{fmt(row.sgst)}</td>
+                            <td className="p-2 border-r border-slate-200">{(row.rate / 2)}%</td>
+                            <td className="p-2 border-r border-slate-200 text-right font-mono-premium">₹{fmt(row.cgst)}</td>
+                            <td className="p-2 border-r border-slate-200">{(row.rate / 2)}%</td>
+                            <td className="p-2 border-r border-slate-200 text-right font-mono-premium">₹{fmt(row.sgst)}</td>
                           </>
                         ) : (
                           <>
-                            <td className="p-2 border-r border-emerald-200">{row.rate}%</td>
-                            <td className="p-2 border-r border-emerald-200 text-right font-mono-premium">₹{fmt(row.igst)}</td>
+                            <td className="p-2 border-r border-slate-200">{row.rate}%</td>
+                            <td className="p-2 border-r border-slate-200 text-right font-mono-premium">₹{fmt(row.igst)}</td>
                           </>
                         )}
                         <td className="p-2 text-right font-bold font-mono-premium text-slate-900">₹{fmt(totalTax)}</td>
@@ -2029,19 +2029,19 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
         <div className="grid grid-cols-12 gap-8 mb-4">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Invoice Total in Words</div>
+              <div className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-3 border-l-2 border-emerald-700 bg-emerald-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-655">
+              <div className="p-3 border-l-2 border-emerald-700 bg-emerald-50/10 rounded-r-lg space-y-1 text-[10px] text-slate-600">
                 <div className="font-bold text-emerald-800 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>Bank Name: {company.bank_name}</div>
@@ -2063,29 +2063,29 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
                 {!invoice.is_interstate ? (
                   <>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">CGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">CGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.cgst_total)}</td>
                     </tr>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">SGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">SGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.sgst_total)}</td>
                     </tr>
                   </>
                 ) : (
                   <tr>
-                    <td className="py-1.5 text-slate-550 text-left font-medium">IGST Total</td>
+                    <td className="py-1.5 text-slate-500 text-left font-medium">IGST Total</td>
                     <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.igst_total)}</td>
                   </tr>
                 )}
                 {Math.abs(summary.round_off) > 0.001 && (
                   <tr>
-                    <td className="py-1.5 text-slate-450 text-left font-medium">Round Off</td>
+                    <td className="py-1.5 text-slate-400 text-left font-medium">Round Off</td>
                     <td className="py-1.5 font-mono-premium text-slate-500">₹{fmt(summary.round_off)}</td>
                   </tr>
                 )}
                 <tr className="font-bold text-[14px] text-emerald-800 border-t border-slate-200">
                   <td className="py-2.5 text-left font-medium">GRAND TOTAL DUE</td>
-                  <td className="py-2.5 font-mono-premium text-[15px]">₹{fmt(summary.grand_total)}</td>
+                  <td className="py-2.5 font-mono-premium text-emerald-800 text-[15px]">₹{fmt(summary.grand_total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -2094,13 +2094,13 @@ export function ThemeEmerald({ company, invoice, customer, items, summary, logoS
               {upiPaymentId && qrUrl && (
                 <div className="flex flex-col items-center justify-center p-1 border border-slate-100 rounded-md bg-white shadow-sm flex-shrink-0">
                   <img src={qrUrl} alt="UPI QR Code" className="w-[56px] h-[56px]" />
-                  <div className="text-[6px] text-slate-450 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
+                  <div className="text-[6px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
                 </div>
               )}
               <div className="text-right">
                 <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -2135,39 +2135,39 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
       <div className="flex-grow flex flex-col justify-between">
         <div>
           {/* Charcoal Header Banner */}
-          <div className="bg-slate-800 text-white rounded-xl p-6 mb-8 flex justify-between items-center bg-slate-800">
+          <div className="bg-slate-800 text-white rounded-xl p-6 mb-8 flex justify-between items-center">
             <div>
               {company.logo_url && (logoSize || 'medium') !== 'hidden' ? (
                 <img src={company.logo_url} alt={company.name} className="max-h-[45px] object-contain filter brightness-0 invert" />
               ) : (
                 <div className="text-[20px] font-bold tracking-tight">{company.name}</div>
               )}
-              <div className="text-[10px] text-slate-355 mt-1 max-w-[280px] leading-relaxed">{company.address}</div>
+              <div className="text-[10px] text-slate-300 mt-1 max-w-[280px] leading-relaxed">{company.address}</div>
             </div>
             <div className="text-right pr-1">
               <div className="text-[18px] font-bold uppercase tracking-wider text-slate-200">{invoice.title || 'TAX INVOICE'}</div>
               <div className="text-[11px] text-slate-300 italic mb-1">{invoice.copy_type || 'Original Copy'}</div>
               <div className="text-[11px] font-mono-premium text-slate-300"># {invoice.number}</div>
-              <div className="text-[11px] text-slate-355">Date: {invoice.date}</div>
+              <div className="text-[11px] text-slate-300">Date: {invoice.date}</div>
             </div>
           </div>
 
           {/* Bill details */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">BILLED TO:</div>
+              <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2">BILLED TO:</div>
               <div className="text-[13px] font-bold text-slate-900">{customer.name}</div>
-              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700">Attn: {customer.contactPerson}</div>}
+              {customer.contactPerson && <div className="text-[10px] font-semibold text-slate-700 mt-0.5">Attn: {customer.contactPerson}</div>}
               <div className="text-[11px] text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{customer.address || '—'}</div>
               <div className="text-[11px] text-slate-500 mt-1">
                 {customer.phone && `Phone: ${customer.phone}`}
                 {customer.email && ` · Email: ${customer.email}`}
               </div>
               {customer.state && <div className="text-[10px] text-slate-500">State: {customer.state}</div>}
-              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-850">GSTIN: {customer.gstin}</div>}
+              {customer.gstin && <div className="text-[11px] font-bold mt-1 text-slate-800">GSTIN: {customer.gstin}</div>}
             </div>
             <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex flex-col justify-between">
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">SUMMARY:</div>
+              <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2">SUMMARY:</div>
               <div className="text-[11px] text-slate-600 leading-relaxed">
                 {invoice.due_date && <div>Due Date: <span className="font-semibold">{invoice.due_date}</span></div>}
                 {invoice.place_of_supply && <div>Place of Supply: {invoice.place_of_supply}</div>}
@@ -2181,7 +2181,7 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
             </div>
           </div>
 
-          {/* Table - expanded spacing */}
+          {/* Table */}
           <table className="w-full text-[11px] border-collapse mb-6">
             <thead>
               <tr className="bg-slate-800 text-white rounded-lg">
@@ -2196,17 +2196,17 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((item, idx) => (
-                <tr key={idx} className="even:bg-slate-50/50">
+                <tr key={idx} className="even:bg-slate-50/50 hover:bg-slate-100/40">
                   <td className="p-2.5 px-3 text-center text-slate-400">{item.sr || (idx + 1)}</td>
                   <td className="p-2.5 px-3 text-left font-semibold text-slate-900">
                     {item.description}
                     {item.model && <span className="font-normal text-slate-450 block text-[9px] mt-0.5">Model: {item.model}</span>}
                   </td>
-                  <td className="p-2.5 px-3 text-center text-slate-655">{item.hsn_sac || '—'}</td>
+                  <td className="p-2.5 px-3 text-center text-slate-600">{item.hsn_sac || '—'}</td>
                   <td className="p-2.5 px-3 text-center font-semibold">{item.qty} {item.unit || 'NOS'}</td>
                   <td className="p-2.5 px-3 text-right font-mono-premium text-slate-700">₹{fmt(item.rate)}</td>
                   <td className="p-2.5 px-3 text-center">{(item.cgst_rate + item.sgst_rate + item.igst_rate)}%</td>
-                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-955">₹{fmt(item.total)}</td>
+                  <td className="p-2.5 px-3 text-right font-bold font-mono-premium text-slate-900">₹{fmt(item.total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -2215,7 +2215,7 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
           {/* Charcoal GST Summary Breakup Table */}
           {hsnSummaryList.length > 0 && (
             <div className="mb-6">
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">GST Tax Summary Breakup</div>
+              <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2">GST Tax Summary Breakup</div>
               <table className="w-full text-[10px] border border-slate-200 border-collapse text-center">
                 <thead>
                   <tr className="bg-slate-50 border-b-2 border-slate-800 text-slate-800 font-semibold">
@@ -2273,19 +2273,19 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
         <div className="grid grid-cols-12 gap-8 mb-4">
           <div className="col-span-7 space-y-4">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">Invoice Total in Words</div>
+              <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-1">Invoice Total in Words</div>
               <div className="text-[11px] font-semibold text-slate-800 italic">{summary.amount_in_words}</div>
             </div>
 
             {invoice.notes && (
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">Notes / Remarks</div>
-                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
+                <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-1">Notes / Remarks</div>
+                <div className="text-[11px] text-slate-700 bg-slate-50 border border-slate-150 rounded-lg p-2.5 whitespace-pre-line italic">{invoice.notes}</div>
               </div>
             )}
 
             {company.bank_name && (
-              <div className="p-3 border border-slate-100 bg-slate-50 rounded-xl space-y-1 text-[10px] text-slate-655">
+              <div className="p-3 border border-slate-150 bg-slate-50 rounded-xl space-y-1 text-[10px] text-slate-600">
                 <div className="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-1">REMITTANCE LEDGER</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>Bank Name: {company.bank_name}</div>
@@ -2307,29 +2307,29 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
                 {!invoice.is_interstate ? (
                   <>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">CGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">CGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.cgst_total)}</td>
                     </tr>
                     <tr>
-                      <td className="py-1.5 text-slate-505 text-left font-medium">SGST Total</td>
+                      <td className="py-1.5 text-slate-500 text-left font-medium">SGST Total</td>
                       <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.sgst_total)}</td>
                     </tr>
                   </>
                 ) : (
                   <tr>
-                    <td className="py-1.5 text-slate-550 text-left font-medium">IGST Total</td>
+                    <td className="py-1.5 text-slate-500 text-left font-medium">IGST Total</td>
                     <td className="py-1.5 font-mono-premium text-slate-700">₹{fmt(summary.igst_total)}</td>
                   </tr>
                 )}
                 {Math.abs(summary.round_off) > 0.001 && (
                   <tr>
-                    <td className="py-1.5 text-slate-455 text-left font-medium">Round Off</td>
+                    <td className="py-1.5 text-slate-400 text-left font-medium">Round Off</td>
                     <td className="py-1.5 font-mono-premium text-slate-500">₹{fmt(summary.round_off)}</td>
                   </tr>
                 )}
                 <tr className="font-bold text-[14px] text-slate-800 border-t border-slate-200">
                   <td className="py-2.5 text-left font-medium">GRAND TOTAL DUE</td>
-                  <td className="py-2.5 font-mono-premium text-[15px]">₹{fmt(summary.grand_total)}</td>
+                  <td className="py-2.5 font-mono-premium text-slate-800 text-[15px]">₹{fmt(summary.grand_total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -2338,13 +2338,13 @@ export function ThemeCharcoal({ company, invoice, customer, items, summary, logo
               {upiPaymentId && qrUrl && (
                 <div className="flex flex-col items-center justify-center p-1 border border-slate-100 rounded-md bg-white shadow-sm flex-shrink-0">
                   <img src={qrUrl} alt="UPI QR Code" className="w-[56px] h-[56px]" />
-                  <div className="text-[6px] text-slate-455 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
+                  <div className="text-[6px] text-slate-405 font-bold uppercase tracking-wider mt-0.5">UPI PAY</div>
                 </div>
               )}
               <div className="text-right">
-                <div className="text-[10px] text-slate-505">For {company.name}</div>
+                <div className="text-[10px] text-slate-500">For {company.name}</div>
                 <div className="h-[40px]" />
-                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-705 border-t border-slate-200 pt-1.5">Authorized Signatory</div>
+                <div className="text-[9px] uppercase tracking-wider font-bold text-slate-700 border-t border-slate-200 pt-1.5 inline-block text-center w-[160px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
