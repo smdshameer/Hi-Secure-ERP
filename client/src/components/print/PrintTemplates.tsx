@@ -1,4 +1,5 @@
 import React from 'react';
+import QRCode from 'qrcode';
 
 export interface PrintTemplateProps {
   company: {
@@ -75,6 +76,19 @@ export interface PrintTemplateProps {
 // ─────────────────────────────────────────────────────────────────
 export function ThemeDefault({ company, invoice, customer, items, summary, logoSize, upiPaymentId }: PrintTemplateProps) {
   const totalQty = items.reduce((sum, item) => sum + (item.qty || 0), 0);
+  const [qrUrl, setQrUrl] = React.useState<string>('');
+
+  React.useEffect(() => {
+    if (upiPaymentId) {
+      const upiLink = `upi://pay?pa=${upiPaymentId}&pn=${encodeURIComponent(company.name)}&am=${summary.grand_total}&cu=INR`;
+      QRCode.toDataURL(upiLink, { width: 150, margin: 1 }, (err, url) => {
+        if (!err) {
+          setQrUrl(url);
+        }
+      });
+    }
+  }, [upiPaymentId, company.name, summary.grand_total]);
+
   return (
     <div className="def-wrap p-4 text-[12px] leading-relaxed text-[#212121] border border-gray-400 font-sans" style={{ boxSizing: 'border-box' }}>
       
@@ -226,10 +240,10 @@ export function ThemeDefault({ company, invoice, customer, items, summary, logoS
                 </div>
 
                 {/* QR Code Container */}
-                {upiPaymentId && (
+                {upiPaymentId && qrUrl && (
                   <div className="flex flex-col items-center justify-center p-1 border border-gray-200 rounded bg-white shadow-sm self-center mr-2">
                     <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=75x75&data=${encodeURIComponent(`upi://pay?pa=${upiPaymentId}&pn=${encodeURIComponent(company.name)}&am=${summary.grand_total}&cu=INR`)}`} 
+                      src={qrUrl} 
                       alt="UPI QR Code" 
                       className="w-[70px] h-[70px]"
                     />
