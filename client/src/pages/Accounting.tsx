@@ -54,6 +54,8 @@ export default function Accounting() {
   const [loading, setLoading]     = useState(true);
   const [dateFrom, setDateFrom]   = useState('');
   const [dateTo, setDateTo]       = useState('');
+  const [fromType, setFromType]   = useState('text');
+  const [toType, setToType]       = useState('text');
 
   useEffect(() => {
     setLoading(true);
@@ -90,7 +92,7 @@ export default function Accounting() {
   ] as const;
 
   return (
-    <div className="max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
+    <div className="page-accounting max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
       <style>{`
 
         .no-scrollbar::-webkit-scrollbar {
@@ -170,11 +172,25 @@ export default function Accounting() {
           {/* Date filters */}
           <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:py-0 sm:ml-auto">
             <IconCalendar size={14} className="text-gray-400" />
-            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]" />
+            <input
+              type={fromType}
+              placeholder="From Date"
+              onFocus={() => setFromType('date')}
+              onBlur={() => { if (!dateFrom) setFromType('text'); }}
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]"
+            />
             <span className="text-gray-400 text-[12px]">to</span>
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]" />
+            <input
+              type={toType}
+              placeholder="To Date"
+              onFocus={() => setToType('date')}
+              onBlur={() => { if (!dateTo) setToType('text'); }}
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="border border-gray-200 rounded-lg px-2 h-[30px] text-[12px] outline-none flex-1 min-w-[120px]"
+            />
             {tab !== 'trial' && (
               <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 h-[30px] w-full sm:w-[180px]">
                 <IconSearch size={13} className="text-gray-400 flex-shrink-0" />

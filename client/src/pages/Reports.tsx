@@ -111,17 +111,14 @@ export default function Reports() {
       {/* Range filter */}
       <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar scroll-container w-full">
         <IconCalendar size={15} className="text-gray-400 flex-shrink-0" />
-        <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control flex-1">
+        <div data-tabs="4" className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0 segment-control flex-1">
           {RANGES.map(r => (
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={[
-                'px-3 py-1.5 text-[12px] font-medium transition-all cursor-pointer capitalize flex-1 text-center',
-                range === r.value
-                  ? 'bg-[#1a3480] text-white border-[#1a3480]'
-                  : 'bg-white text-gray-600 hover:bg-gray-50',
-              ].join(' ')}
+              className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
+                range === r.value ? 'bg-[#1a3480] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
+              }`}
             >
               {r.label}
             </button>

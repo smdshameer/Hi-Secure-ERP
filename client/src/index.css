@@ -50,6 +50,17 @@ body {
 .nav-active  { background: rgba(255,255,255,0.18) !important; }
 .nav-hover:hover { background: rgba(255,255,255,0.10); }
 
+/* ── Sidebar Header Style ── */
+.sidebar-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 11px !important;
+  padding: 12px 12px 12px 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-bottom: 8px !important;
+  box-sizing: border-box !important;
+}
+
 /* ── Status pills ── */
 .pill { display:inline-flex; align-items:center; padding:2px 10px; border-radius:9999px; font-size:11px; font-weight:500; white-space:nowrap; }
 .pill-blue     { background:#dbeafe; color:#1e40af; }
@@ -756,13 +767,48 @@ body {
 .print-document {
   background: #ffffff;
   color: #000000;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   margin: 0 auto;
   padding: 15mm;
   font-size: 10pt;
   line-height: 1.4;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* Screen Sizing Rules for Preview Fit */
+@media screen {
+  .print-document.size-a4 {
+    width: 210mm;
+    max-width: 100%;
+    min-height: 297mm;
+  }
+  .print-document.size-a5 {
+    width: 148mm;
+    max-width: 100%;
+    min-height: 210mm;
+  }
+  .print-document.size-letter {
+    width: 216mm;
+    max-width: 100%;
+    min-height: 279mm;
+  }
+  .print-document.size-legal {
+    width: 216mm;
+    max-width: 100%;
+    min-height: 356mm;
+  }
+  .print-document.size-thermal-80mm {
+    width: 80mm;
+    max-width: 100%;
+    min-height: 200mm;
+  }
+  .print-document.size-thermal-58mm {
+    width: 58mm;
+    max-width: 100%;
+    min-height: 150mm;
+  }
 }
 
 @media print {
@@ -772,6 +818,8 @@ body {
     padding: 0 !important;
     margin: 0 !important;
     border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
@@ -1574,10 +1622,70 @@ body {
 .settings-import-log-line:last-child { border-bottom: none; }
 .settings-import-log-ok { background: #fff; color: #0f172a; }
 .settings-import-log-warn { background: #fffbeb; color: #92400e; }
-.settings-import-log-scrollable {
-  max-height: 160px;
-  overflow-y: auto;
+
+/* ═══════════════════════════════════════════════════════════════
+   UNIFORM SEGMENT CONTROL STYLES (GLOBAL OVERRIDES)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Segment Control Container Style */
+.segment-control {
+  background-color: #f1f5f9 !important; /* light gray container */
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important; /* ensure active tab card shadow is visible */
 }
+
+/* Base button style (inactive state) */
+.segment-control button {
+  flex: 1 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #64748b !important;
+  transition: all 0.15s ease-in-out !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 12px !important;
+  cursor: pointer !important;
+}
+
+/* Active button style (White card with dark blue text) */
+.segment-control button.active,
+.segment-control button[class*="bg-[#1a3480]"],
+.segment-control button.bg-\[\#1a3480\],
+.segment-control.bg-slate-100\/85 button.bg-white,
+.segment-control[class*="bg-slate-100"] button.bg-white,
+.segment-control[class*="bg-white\/5"] button[class*="bg-[#1a3480]"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1a3480 !important;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+/* Hover state for inactive buttons */
+.segment-control button:hover:not(.active):not([class*="bg-[#1a3480]"]):not(.bg-\[\#1a3480\]):not(.bg-white) {
+  color: #1e293b !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Quick Actions Grid columns equality globally */
+.quick-actions-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
 
 /* ── Mobile & Tablet Collapsible Drawer Sidebar Responsiveness ── */
 @media (max-width: 1023px) {
@@ -1749,7 +1857,7 @@ body {
     transform: translateX(-100%) !important;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2) !important;
-    overflow-y: auto !important; /* scrolling function enabled */
+    overflow: hidden !important; /* disabled global scroll */
     display: flex !important;
     flex-direction: column !important;
     -webkit-overflow-scrolling: touch !important;
@@ -1760,6 +1868,12 @@ body {
   }
   .sidebar-nav .sidebar-label {
     display: inline !important;
+  }
+  .sidebar-nav .sidebar-header {
+    padding: 20px 12px 8px 8px !important;
+    gap: 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 8px !important;
   }
   /* Note: Keep scrollbar visible for scroll indicator clarity */
   .sidebar-nav a {
@@ -1929,7 +2043,7 @@ body {
   }
 
   /* Force Quick Actions into a stable 2x5 column-first grid on mobile with equal sized columns */
-  .page-dashboard .quick-actions-grid.grid-cols-2 {
+  .content-area .page-dashboard .quick-actions-grid.grid-cols-2 {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* equal width columns */
     grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
@@ -1937,7 +2051,7 @@ body {
     gap: 8px !important;
     width: 100% !important;
   }
-  .page-dashboard .quick-actions-grid.grid-cols-2 .action-btn {
+  .content-area .page-dashboard .quick-actions-grid.grid-cols-2 .action-btn {
     width: 100% !important;
     height: 34px !important;
     font-size: 12px !important;
@@ -2182,53 +2296,109 @@ body {
     flex: 1 1 auto !important;
   }
 
-  /* ─ Segment control tab styling ─ */
+  /* ═══════════════════════════════════════════════════════════════
+     UNIFIED MOBILE SEGMENT TABS — Settings-style Compact Horizontal Scroll
+     Applied to all sections on mobile:
+       • Scrollable horizontally (overflow-x: auto)
+       • Compact size (height: 32px, font-size: 12px)
+       • Natural width (width: auto, flex: 0 0 auto)
+       • Settings sidebar theme (transparent inactive, #e8edf8 active)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Base: all segment-controls on mobile ── */
   .segment-control {
-    background-color: #f1f5f9 !important; /* light gray control container */
-    border: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    background-color: #f1f5f9 !important; /* light gray bg */
+    border: 1px solid #e2e8f0 !important;
+    padding: 3px !important;
     border-radius: 8px !important;
-    padding: 2.5px !important;
-    display: flex !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    gap: 4px !important;
+    align-self: flex-start !important;
+  }
+  .segment-control::-webkit-scrollbar {
+    display: none !important;
   }
   .segment-control button {
-    flex: 1 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
     height: 32px !important;
     min-height: 32px !important;
     font-size: 12px !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
+    padding: 0 12px !important;
     border-radius: 6px !important;
-    color: #475569 !important;
-    background: transparent !important;
-    transition: all 0.15s ease !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
     border: none !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 8px !important;
-    cursor: pointer !important;
-  }
-  /* White card highlight for active segment button */
-  .segment-control button.active,
-  .segment-control button[class*="bg-[#1a3480]"] {
-    background-color: #ffffff !important;
-    color: #1a3480 !important;
-    box-shadow: 0 1.5px 4px rgba(0,0,0,0.08) !important;
-    font-weight: 700 !important;
+    transition: all 0.15s ease !important;
+    background: transparent !important;
+    color: #64748b !important;
+    box-shadow: none !important;
   }
 
-  /* Dark mode specific segment control overrides (e.g. Audit Trail page) */
+  /* Active state styling (Settings style) */
+  .segment-control button[class*="bg-[#1a3480]"],
+  .segment-control button.bg-\[\#1a3480\],
+  .segment-control button[class*="text-white"],
+  .segment-control button.text-white {
+    background: #e8edf8 !important;
+    color: #1a3480 !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+  }
+
+  /* ── Dashboard exception — keep original compact layout but apply Settings colors ── */
+  .page-dashboard .segment-control {
+    width: auto !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    padding: 3px !important;
+    border-radius: 8px !important;
+    overflow-x: hidden !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .page-dashboard .segment-control button {
+    flex: 1 !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    font-size: 12px !important;
+    padding: 0 12px !important;
+    min-width: unset !important;
+    white-space: normal !important;
+    border-radius: 6px !important;
+  }
+
+  /* ── Audit Dashboard (dark theme) segment control ── */
+  .page-admin-audit .segment-control,
   .bg-\[\#0b0f1a\] .segment-control {
     background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-radius: 10px !important;
     padding: 3px !important;
+    overflow-x: hidden !important;
   }
+  .page-admin-audit .segment-control button,
   .bg-\[\#0b0f1a\] .segment-control button {
     border-radius: 7px !important;
     color: #94a3b8 !important;
+    font-size: 12px !important;
+    background: transparent !important;
   }
-  .bg-\[\#0b0f1a\] .segment-control button[class*="bg-[#1a3480]"] {
+  .page-admin-audit .segment-control button[class*="bg-[#1a3480]"],
+  .page-admin-audit .segment-control button.bg-\[\#1a3480\],
+  .bg-\[\#0b0f1a\] .segment-control button[class*="bg-[#1a3480]"],
+  .bg-\[\#0b0f1a\] .segment-control button.bg-\[\#1a3480\] {
     background-color: #1a3480 !important;
     color: #ffffff !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
@@ -2281,11 +2451,20 @@ body {
     border-radius: 6px !important;
   }
 
-  /* ─ Form Container Padding ─ */
+  /* ─ Form/List Container Padding & Sizing on Mobile ─ */
   div[class*="max-w-"] {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    padding-bottom: 12px !important;
+  }
+  div[class*="max-w-"]:has(form) {
     padding-left: 12px !important;
     padding-right: 12px !important;
     padding-bottom: 84px !important; /* Extra bottom padding to clear the sticky action bar */
+  }
+  /* ─ Increase list page container box height on mobile ─ */
+  div[class*="max-w-"]:not(:has(form)) > div.bg-white.rounded-xl.border:not(.flex-wrap):not(.items-center) {
+    min-height: 72vh !important;
   }
 
   /* ─ Full-Width Stacked Form Action Buttons on Mobile ─ */
@@ -2400,9 +2579,8 @@ body {
     padding: 14px !important;
   }
 
-  /* ─ Invoices Custom Segment Control Override ─ */
-  .segment-control.bg-slate-100\/85,
-  div[class*="bg-slate-100"].segment-control {
+  /* ─ Uniform Segment Control Mobile Styles ─ */
+  .segment-control {
     background-color: #f1f5f9 !important;
     border: none !important;
     border-radius: 8px !important;
@@ -2410,9 +2588,9 @@ body {
     width: 100% !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
+    display: flex !important;
   }
-  .segment-control.bg-slate-100\/85 button,
-  div[class*="bg-slate-100"].segment-control button {
+  .segment-control button {
     flex: 1 !important;
     height: 32px !important;
     min-height: 32px !important;
@@ -2456,15 +2634,18 @@ body {
 
 
 /* Sidebar Nav Scrollbar styling - global */
-.sidebar-nav::-webkit-scrollbar {
+.sidebar-nav::-webkit-scrollbar,
+.custom-sidebar-scrollbar::-webkit-scrollbar {
   width: 5px !important;
   display: block !important;
 }
-.sidebar-nav::-webkit-scrollbar-thumb {
+.sidebar-nav::-webkit-scrollbar-thumb,
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2) !important;
   border-radius: 4px !important;
 }
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
+.sidebar-nav::-webkit-scrollbar-thumb:hover,
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35) !important;
 }
 
@@ -2485,3 +2666,993 @@ body {
     transform: translateX(5px) !important;
   }
 }
+
+/* ─ Login Input Spacing & Background Fix ─ */
+.login-input-fix {
+  padding-left: 36px !important;
+  padding-right: 14px !important;
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.login-input-fix:focus {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15) !important;
+  background-color: rgba(8, 10, 20, 0.8) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE VIEW ERP RESPONSIVENESS UPGRADES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* --- TABLET MEDIA QUERY (max-width: 1023px) --- */
+@media (max-width: 1023px) {
+  /* Settings page sidebar to horizontal list styling */
+  .settings-layout {
+    flex-direction: column !important;
+    min-height: unset !important;
+    border-radius: 8px !important;
+  }
+  .settings-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e9eef5 !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important; /* Firefox */
+  }
+  .settings-sidebar::-webkit-scrollbar {
+    display: none !important; /* Safari/Chrome */
+  }
+  .settings-sidebar-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+  }
+  .settings-sidebar-group-label {
+    display: none !important; /* Hide headings on mobile scroll */
+  }
+  .settings-sidebar-item {
+    padding: 6px 12px !important;
+    width: auto !important;
+    font-size: 12px !important;
+    min-height: 32px !important;
+    border-radius: 6px !important;
+  }
+  .settings-sidebar-item span {
+    display: inline !important;
+  }
+  .settings-sidebar-item svg + span {
+    margin-left: 2px !important;
+  }
+  .settings-sidebar-item .tabler-icon-chevron-right,
+  .settings-sidebar-item svg:last-child {
+    display: none !important; /* hide indicator arrows */
+  }
+  .settings-content {
+    padding: 14px !important;
+  }
+  .settings-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  /* GST Returns export tab layout fix for tablet/mobile */
+  .page-gst-returns .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+  .page-gst-returns .grid.grid-cols-1.lg\:grid-cols-3 > .col-span-2 {
+    grid-column: span 1 / span 1 !important;
+  }
+}
+
+/* --- MOBILE PORTRAIT MEDIA QUERY (max-width: 639px) --- */
+@media (max-width: 639px) {
+  /* 1. Print Document / Preview Page Overrides */
+  .print-document {
+    padding: 12px 10px !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+  }
+  .theme-legacy.print-document {
+    padding: 10px 8px !important;
+  }
+  
+  /* Stack the document header info */
+  .print-document > .flex.justify-between.items-start {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .print-document > .flex.justify-between.items-start > .text-right {
+    text-align: left !important;
+  }
+  
+  /* Center business identity header details */
+  .print-document > .flex.justify-between.items-start > .flex.gap-4.items-start {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  .print-document > .flex.justify-between.items-start > .flex.gap-4.items-start > div:last-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .print-document > .flex.justify-between.items-start > .flex.gap-4.items-start p {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Wrap items tables in a scrollable div and set min-width to avoid squeezed columns */
+  .print-document table {
+    display: table !important;
+  }
+  .print-document div:has(> table) {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    margin-bottom: 12px !important;
+  }
+  /* Set A4 items table a stable minimum width so columns are readable */
+  .print-document table:not(.summary-box):not(.signatory-box):not(:has(th.w-1\/2)) {
+    min-width: 680px !important;
+  }
+
+  /* Stack w-1/2 tables (Billed To / Shipped To tables) */
+  .print-document table:has(th.w-1\/2) thead tr,
+  .print-document table:has(th.w-1\/2) tbody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .print-document table:has(th.w-1\/2) th.w-1\/2,
+  .print-document table:has(th.w-1\/2) td {
+    width: 100% !important;
+    border-right: none !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  .print-document table:has(th.w-1\/2) th:first-child,
+  .print-document table:has(th.w-1\/2) td:first-child {
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .print-document table:has(th.w-1\/2) td {
+    border-right: none !important;
+  }
+
+  /* Overrides for summary boxes and signature boxes */
+  .print-document .summary-box {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+  .print-document .print-section .grid.grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  /* 2. Customer & Supplier detail view components */
+  .card-wrapper .px-5.py-3.border-b.border-slate-200 > div.flex.items-center.gap-1 {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    max-width: 100% !important;
+    scrollbar-width: none !important;
+  }
+  .card-wrapper .px-5.py-3.border-b.border-slate-200 > div.flex.items-center.gap-1::-webkit-scrollbar {
+    display: none !important;
+  }
+  .card-wrapper .px-5.py-3.border-b.border-slate-200 > div.flex.items-center.gap-1 button {
+    flex: none !important;
+  }
+  /* Table th column width reduction */
+  .card-wrapper table th[class*="w-[120px]"],
+  .card-wrapper table th.w-\[120px\] {
+    width: 90px !important;
+    min-width: 90px !important;
+  }
+  /* Stats grid card stacking */
+  .card-wrapper .grid.grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* 3. GST Returns page toolbar and layout upgrades */
+  .page-gst-returns {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .page-gst-returns .flex.flex-wrap.items-center.justify-between.gap-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .page-gst-returns .flex.flex-wrap.items-center.justify-between.gap-4 > div {
+    width: 100% !important;
+  }
+  .page-gst-returns .flex.items-center.gap-3 {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto 1fr !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  @media (max-width: 480px) {
+    .page-gst-returns .flex.items-center.gap-3 {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+    }
+    .page-gst-returns .flex.items-center.gap-3 > div:first-child {
+      grid-column: span 2 !important;
+    }
+    .page-gst-returns .flex.items-center.gap-3 > span {
+      display: none !important;
+    }
+    .page-gst-returns .flex.items-center.gap-3 input[type="date"] {
+      width: 100% !important;
+    }
+  }
+  .page-gst-returns .relative.w-64 {
+    width: 100% !important;
+  }
+  /* Scrollable tab bar fix */
+  .page-gst-returns div.flex.border-b.border-gray-200 {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding-bottom: 1px !important;
+  }
+  .page-gst-returns div.flex.border-b.border-gray-200::-webkit-scrollbar {
+    display: none !important;
+  }
+  .page-gst-returns div.flex.border-b.border-gray-200 button {
+    flex: none !important;
+  }
+  /* Net payable estimation banner wrap */
+  .page-gst-returns .bg-blue-50.border-blue-200 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    text-align: left !important;
+  }
+  .page-gst-returns .bg-blue-50.border-blue-200 > div {
+    text-align: left !important;
+  }
+  /* Enforce horizontal scrolling for register tables */
+  .page-gst-returns table {
+    min-width: 950px !important;
+  }
+
+  /* ── Quotation Section Mobile Corrections (Only in Mobile View) ── */
+  .page-quotations .bg-white.rounded-xl.border.border-gray-200 > .flex.items-center.justify-between {
+    gap: 6px !important;
+    padding: 8px 12px !important;
+  }
+  .page-quotations .segment-control {
+    height: 36px !important;
+    margin-bottom: 0 !important;
+  }
+  .page-quotations .segment-control button {
+    height: 30px !important;
+    font-size: 13px !important;
+    padding: 0 14px !important;
+  }
+
+  /* Individual status-colored active buttons for Quotations on mobile */
+  .page-quotations .segment-control button:nth-child(1)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(1).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(1)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(1).text-white {
+    background: #e8edf8 !important;
+    color: #1a3480 !important;
+  }
+  .page-quotations .segment-control button:nth-child(2)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(2).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(2)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(2).text-white {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+  }
+  .page-quotations .segment-control button:nth-child(3)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(3).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(3)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(3).text-white {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+  }
+  .page-quotations .segment-control button:nth-child(4)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(4).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(4)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(4).text-white {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+  }
+  .page-quotations .segment-control button:nth-child(5)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(5).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(5)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(5).text-white {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+  }
+  .page-quotations .segment-control button:nth-child(6)[class*="bg-[#1a3480]"],
+  .page-quotations .segment-control button:nth-child(6).bg-\[\#1a3480\],
+  .page-quotations .segment-control button:nth-child(6)[class*="text-white"],
+  .page-quotations .segment-control button:nth-child(6).text-white {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+  }
+
+  /* Compact search bar below segment tab on mobile */
+  /* Compact search bar below segment tab on mobile for all list pages */
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\],
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\] input {
+    width: 100% !important;
+    max-width: 100% !important;
+    align-self: stretch !important;
+    height: 32px !important;
+  }
+  .bg-white.rounded-xl.border.border-gray-200 .flex.items-center.gap-2.border.border-gray-200.rounded-lg.px-3.h-\[34px\] input {
+    font-size: 12.5px !important;
+  }
+
+  /* Table Headers in theme-color for all modules on mobile */
+  .bg-white.rounded-xl.border.border-gray-200 table thead th,
+  .overflow-x-auto table thead th {
+    background-color: #1a3480 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 10.5px !important;
+  }
+
+  /* Reduce table cell content size and set line height to 1.25x for all modules on mobile */
+  .bg-white.rounded-xl.border.border-gray-200 table td,
+  .overflow-x-auto table td {
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Reduce table action icons size and button padding on mobile for all modules */
+  .bg-white.rounded-xl.border.border-gray-200 table td svg,
+  .overflow-x-auto table td svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  .bg-white.rounded-xl.border.border-gray-200 table td button,
+  .bg-white.rounded-xl.border.border-gray-200 table td a,
+  .overflow-x-auto table td button,
+  .overflow-x-auto table td a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Reduce padding height on mobile and prevent text wrapping for all modules */
+  .bg-white.rounded-xl.border.border-gray-200 table th,
+  .bg-white.rounded-xl.border.border-gray-200 table td,
+  .overflow-x-auto table th,
+  .overflow-x-auto table td {
+    padding: 6px 12px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Enforce stable minimum width with table-layout auto to prevent long IDs (like INV-OVERDUE-...) from colliding */
+  .page-quotations table,
+  .page-invoices table {
+    min-width: 820px !important;
+    table-layout: auto !important;
+    width: 100% !important;
+  }
+
+  /* Set specific column minimum widths and alignments for quotations and invoices tables on mobile */
+  .page-quotations table th:nth-child(1),
+  .page-quotations table td:nth-child(1),
+  .page-invoices table th:nth-child(1),
+  .page-invoices table td:nth-child(1) {
+    min-width: 175px !important; /* Generous width for long Invoice/Quotation numbers */
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 4px !important;
+  }
+  .page-quotations table th:nth-child(2),
+  .page-quotations table td:nth-child(2),
+  .page-invoices table th:nth-child(2),
+  .page-invoices table td:nth-child(2) {
+    min-width: 150px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 4px !important;
+  }
+  .page-quotations table th:nth-child(3),
+  .page-quotations table td:nth-child(3),
+  .page-invoices table th:nth-child(3),
+  .page-invoices table td:nth-child(3) {
+    min-width: 90px !important;
+    text-align: center !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .page-quotations table th:nth-child(4),
+  .page-quotations table td:nth-child(4),
+  .page-invoices table th:nth-child(4),
+  .page-invoices table td:nth-child(4) {
+    min-width: 90px !important;
+    text-align: center !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .page-quotations table th:nth-child(5),
+  .page-quotations table td:nth-child(5),
+  .page-invoices table th:nth-child(5),
+  .page-invoices table td:nth-child(5) {
+    min-width: 95px !important;
+    text-align: right !important;
+    padding-left: 4px !important;
+    padding-right: 12px !important;
+  }
+  .page-quotations table th:nth-child(6),
+  .page-quotations table td:nth-child(6),
+  .page-invoices table th:nth-child(6),
+  .page-invoices table td:nth-child(6) {
+    min-width: 80px !important;
+    text-align: center !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .page-quotations table th:nth-child(7),
+  .page-quotations table td:nth-child(7),
+  .page-invoices table th:nth-child(7),
+  .page-invoices table td:nth-child(7) {
+    min-width: 140px !important;
+    text-align: left !important;
+    padding-left: 8px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Enforce stable minimum width for all OTHER mobile tables using table-layout auto */
+  .bg-white.rounded-xl.border.border-gray-200 table:not(.page-quotations table):not(.page-invoices table),
+  .overflow-x-auto table:not(.page-quotations table):not(.page-invoices table) {
+    min-width: 720px !important;
+    table-layout: auto !important;
+  }
+
+  /* Ensure number links display correctly and don't overlap vertically */
+  .bg-white.rounded-xl.border.border-gray-200 table td.font-bold a,
+  .overflow-x-auto table td.font-bold a {
+    display: inline-block !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Enable scrollbars for horizontal tables on mobile even if they have no-scrollbar class for all modules */
+  .no-scrollbar {
+    scrollbar-width: thin !important;
+    -ms-overflow-style: auto !important;
+    overflow-x: auto !important;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    height: 6px !important;
+    display: block !important;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(26, 52, 128, 0.3) !important;
+    border-radius: 4px !important;
+  }
+  .no-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Align Action column on mobile and eliminate extra spaces globally */
+  .bg-white.rounded-xl.border.border-gray-200 table td:last-child,
+  .overflow-x-auto table td:last-child {
+    text-align: left !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  .bg-white.rounded-xl.border.border-gray-200 table td:last-child > div,
+  .overflow-x-auto table td:last-child > div {
+    justify-content: flex-start !important;
+    gap: 4px !important;
+  }
+
+  /* Banner buttons size for all modules */
+  .banner-actions a,
+  .banner-actions button,
+  .page-banner a,
+  .page-banner button {
+    flex: 1 !important;
+    width: auto !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    padding: 0 10px !important;
+    border-radius: 6px !important;
+  }
+
+  /* ── Accounting Section Mobile Date Filters ── */
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+  }
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 > svg {
+    display: none !important; /* Hide calendar icon on mobile to save space */
+  }
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 > input {
+    height: 38px !important;
+    font-size: 13.5px !important;
+    padding: 0 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    color: #1e293b !important; /* Force dark text color to prevent white-on-white in dark mode */
+  }
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 span {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+  }
+  /* Search input in accounting tab on mobile */
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 .flex.items-center.gap-2.border {
+    grid-column: span 3 !important; /* Spans full width on its own line */
+    width: 100% !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    margin-top: 4px !important;
+    padding: 0 12px !important;
+  }
+  .page-accounting .flex.flex-wrap.items-center.gap-2.px-4.py-2 .flex.items-center.gap-2.border input {
+    font-size: 13.5px !important;
+    height: 100% !important;
+    color: #1e293b !important; /* Force dark text color to prevent white-on-white in dark mode */
+  }
+}
+
+/* Override select box style for audit filter dropdowns to prevent white-on-white text */
+.content-area select.audit-select-filter {
+  background-color: #1f293d !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  height: 32px !important;
+  font-size: 12px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+.audit-select-filter option {
+  background-color: #1f293d !important;
+  color: #ffffff !important;
+}
+
+/* ================================================================
+   print-themes.css — All 5 Invoice Print Themes
+   Hi Secure Solutions ERP
+   ================================================================ */
+
+/* ── GLOBAL PRINT SETUP ──────────────────────────────────────── */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm 8mm 10mm;
+}
+
+@media print {
+  html, body { width: 210mm; margin: 0; padding: 0; background: #fff; }
+  #print-area { box-shadow: none !important; padding: 0 !important; width: 100% !important; }
+  .no-print, .no-print-bar { display: none !important; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+}
+
+/* ── SHARED UTILITIES ────────────────────────────────────────── */
+.rupee { font-family: 'Arial Unicode MS', Arial, sans-serif; }
+
+/* ================================================================
+   THEME 1: HISECURE CLASSIC (#1565C0 blue, pixel-perfect replica)
+   ================================================================ */
+.theme-hisecure .hs-wrap {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  color: #212121;
+  width: 100%;
+}
+.theme-hisecure table { width: 100%; border-collapse: collapse; }
+
+/* Top bar */
+.theme-hisecure .hs-topbar { border-bottom: 1px solid #BDBDBD; margin-bottom: 4px; }
+.theme-hisecure .hs-topbar-center { text-align: center; font-size: 11pt; font-weight: bold; padding: 3px 0; }
+.theme-hisecure .hs-topbar-right { text-align: right; font-size: 8pt; padding: 3px 0; color: #555; }
+
+/* Company header */
+.theme-hisecure .hs-header { margin-bottom: 6px; }
+.theme-hisecure .hs-logo-cell { width: 38%; vertical-align: middle; padding: 4px 6px 4px 0; }
+.theme-hisecure .hs-logo { max-height: 60px; max-width: 160px; }
+.theme-hisecure .hs-logo-text { font-size: 16pt; font-weight: bold; color: #1565C0; }
+.theme-hisecure .hs-tagline { font-size: 7pt; color: #888; font-style: italic; margin-top: 2px; }
+.theme-hisecure .hs-company-cell { width: 62%; vertical-align: top; text-align: right; padding: 4px 0; }
+.theme-hisecure .hs-company-name { font-size: 15pt; font-weight: bold; color: #212121; line-height: 1.2; }
+.theme-hisecure .hs-company-addr { font-size: 8.5pt; color: #444; line-height: 1.5; }
+.theme-hisecure .hs-gstin { font-size: 8.5pt; color: #212121; font-weight: bold; margin-top: 3px; }
+
+/* Bill To + Invoice Details */
+.theme-hisecure .hs-billrow { border: 1px solid #BDBDBD; margin-bottom: 0; }
+.theme-hisecure .hs-billto-cell { border-right: 1px solid #BDBDBD; padding: 0 0 6px 0; vertical-align: top; }
+.theme-hisecure .hs-invdetail-cell { padding: 6px 8px; vertical-align: top; }
+.theme-hisecure .hs-section-bar { background: #1565C0; color: #fff; font-size: 9.5pt; font-weight: bold; padding: 4px 8px; margin-bottom: 5px; }
+.theme-hisecure .hs-customer-name { font-size: 12pt; font-weight: bold; padding: 0 8px; line-height: 1.4; }
+.theme-hisecure .hs-customer-addr { font-size: 8.5pt; padding: 1px 8px; color: #333; }
+.theme-hisecure .hs-customer-meta { font-size: 8pt; padding: 2px 8px; color: #444; }
+.theme-hisecure .hs-invmeta { width: 100%; }
+.theme-hisecure .hs-meta-label { font-size: 8.5pt; color: #666; padding: 3px 2px; white-space: nowrap; }
+.theme-hisecure .hs-meta-colon { font-size: 8.5pt; padding: 3px 4px; color: #666; }
+.theme-hisecure .hs-meta-value { font-size: 8.5pt; padding: 3px 2px; }
+.theme-hisecure .hs-meta-value-bold { font-size: 8.5pt; font-weight: bold; padding: 3px 2px; }
+
+/* Items table */
+.theme-hisecure .hs-items { border-collapse: collapse; width: 100%; border: 1px solid #BDBDBD; }
+.theme-hisecure .hs-items th, .theme-hisecure .hs-items td { border: 1px solid #BDBDBD; padding: 4px 4px; }
+.theme-hisecure .hs-items-head th { background: #1565C0; color: #fff; font-size: 8.5pt; font-weight: bold; text-align: center; }
+.theme-hisecure .hs-item-row td { font-size: 8.5pt; vertical-align: top; }
+.theme-hisecure .hs-item-name { font-weight: bold; }
+.theme-hisecure .hs-item-sub { font-size: 7.5pt; color: #555; }
+.theme-hisecure .hs-td-center { text-align: center; vertical-align: middle !important; }
+.theme-hisecure .hs-td-left { text-align: left; }
+.theme-hisecure .hs-td-right { text-align: right; }
+
+/* Summary row */
+.theme-hisecure .hs-summary-row { border: 1px solid #BDBDBD; border-top: none; }
+.theme-hisecure .hs-delivery-cell { padding: 5px 8px; border-right: 1px solid #BDBDBD; font-size: 8.5pt; }
+.theme-hisecure .hs-delivery-label { font-weight: bold; }
+.theme-hisecure .hs-qty-right { float: right; font-size: 8pt; }
+.theme-hisecure .hs-subtotal-cell { padding: 4px 8px; vertical-align: top; }
+.theme-hisecure .hs-subtotal-table { width: 100%; }
+.theme-hisecure .hs-st-label { font-size: 8.5pt; color: #333; padding: 2px 0; }
+.theme-hisecure .hs-st-value { font-size: 8.5pt; text-align: right; padding: 2px 0; }
+
+/* Blue bar */
+.theme-hisecure .hs-blue-bar { background: #1565C0; color: #fff; font-size: 9pt; font-weight: bold; padding: 5px 8px; }
+
+/* Words row */
+.theme-hisecure .hs-words-row { border: 1px solid #BDBDBD; border-top: none; }
+.theme-hisecure .hs-words-cell { padding: 6px 8px; border-right: 1px solid #BDBDBD; }
+.theme-hisecure .hs-words-text { font-size: 8.5pt; }
+.theme-hisecure .hs-bank-cell { padding: 5px 8px; }
+.theme-hisecure .hs-bank-detail { font-size: 7.5pt; color: #333; line-height: 1.6; }
+
+/* Footer bars */
+.theme-hisecure .hs-footer-bars { }
+.theme-hisecure .hs-blue-bar-cell { background: #1565C0; color: #fff; font-size: 9pt; font-weight: bold; padding: 5px 8px; border-right: 1px solid #1565C0; }
+.theme-hisecure .hs-blue-bar-total { background: #1565C0; color: #fff; font-size: 10pt; font-weight: bold; padding: 5px 8px; text-align: right; }
+
+/* Footer content */
+.theme-hisecure .hs-footer-content { border: 1px solid #BDBDBD; border-top: none; }
+.theme-hisecure .hs-terms-cell { border-right: 1px solid #BDBDBD; padding: 6px 8px; }
+.theme-hisecure .hs-terms-text { font-size: 7.5pt; color: #333; line-height: 1.5; }
+.theme-hisecure .hs-footer-bottom { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 6px; }
+.theme-hisecure .hs-qr { width: 60px; height: 60px; }
+.theme-hisecure .hs-computer-gen { font-size: 7pt; color: #888; font-style: italic; }
+.theme-hisecure .hs-payment-cell { padding: 6px 8px; }
+.theme-hisecure .hs-payment-table { width: 100%; }
+.theme-hisecure .hs-pay-label { font-size: 8.5pt; color: #333; padding: 3px 0; }
+.theme-hisecure .hs-pay-value { font-size: 9pt; font-weight: bold; text-align: right; padding: 3px 0; }
+.theme-hisecure .hs-signatory { margin-top: 16px; text-align: right; }
+.theme-hisecure .hs-signatory-line { border-top: 1px dashed #888; margin-bottom: 3px; }
+.theme-hisecure .hs-signatory-text { font-size: 8pt; color: #444; }
+.theme-hisecure .hs-signatory-co { font-size: 8pt; font-weight: bold; }
+
+/* ================================================================
+   THEME 2: CLASSIC (B&W, Times New Roman, Traditional ledger)
+   ================================================================ */
+.theme-classic .cl-wrap {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 9pt;
+  color: #111;
+  width: 100%;
+}
+.theme-classic table { width: 100%; border-collapse: collapse; }
+
+.theme-classic .cl-topbar { margin-bottom: 6px; }
+.theme-classic .cl-topbar-left { vertical-align: bottom; }
+.theme-classic .cl-topbar-right { text-align: right; vertical-align: middle; }
+.theme-classic .cl-logo { max-height: 55px; max-width: 150px; }
+.theme-classic .cl-title { font-size: 16pt; font-weight: bold; letter-spacing: 2px; }
+.theme-classic .cl-copy-type { font-size: 8pt; color: #555; }
+
+.theme-classic .cl-company-block { border-top: 2px solid #111; border-bottom: 1px solid #888; padding: 5px 0; margin-bottom: 6px; }
+.theme-classic .cl-company-block td { padding: 2px 0; }
+.theme-classic .cl-company-name { font-size: 14pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+.theme-classic .cl-company-meta { font-size: 8pt; color: #333; line-height: 1.6; }
+
+.theme-classic .cl-divider-table td { border-top: 1px solid #333; height: 1px; padding: 0; }
+
+.theme-classic .cl-billrow { border: 1px solid #555; margin-bottom: 0; }
+.theme-classic .cl-billto { border-right: 1px solid #555; padding: 6px 8px; }
+.theme-classic .cl-invmeta { padding: 6px 8px; }
+.theme-classic .cl-section-head { font-size: 9pt; font-weight: bold; text-decoration: underline; margin-bottom: 3px; }
+.theme-classic .cl-customer-name { font-size: 11pt; font-weight: bold; }
+.theme-classic .cl-customer-addr { font-size: 8pt; line-height: 1.5; }
+.theme-classic .cl-ml { font-size: 8pt; color: #444; white-space: nowrap; padding: 2px 2px; }
+.theme-classic .cl-mc { padding: 2px 4px; }
+.theme-classic .cl-mv { font-size: 8.5pt; font-weight: bold; padding: 2px 2px; }
+
+.theme-classic .cl-items { border: 1px solid #333; margin-top: 6px; }
+.theme-classic .cl-items th, .theme-classic .cl-items td { border: 1px solid #555; padding: 4px 4px; }
+.theme-classic .cl-items-head th { background: #e8e8e8; font-size: 8.5pt; font-weight: bold; text-align: center; font-family: 'Times New Roman', Times, serif; }
+.theme-classic .cl-c { text-align: center; font-size: 8.5pt; vertical-align: middle; }
+.theme-classic .cl-l { text-align: left; font-size: 8.5pt; }
+.theme-classic .cl-r { text-align: right; font-size: 8.5pt; }
+.theme-classic .cl-sub { font-size: 7.5pt; color: #555; }
+
+.theme-classic .cl-summary { border: 1px solid #555; border-top: none; }
+.theme-classic .cl-left-summary { border-right: 1px solid #555; padding: 6px 8px; vertical-align: top; }
+.theme-classic .cl-right-summary { padding: 4px 8px; vertical-align: top; }
+.theme-classic .cl-qty { font-size: 8pt; margin-bottom: 8px; }
+.theme-classic .cl-words-head { font-size: 8.5pt; font-weight: bold; text-decoration: underline; margin-bottom: 3px; }
+.theme-classic .cl-words { font-size: 8.5pt; }
+.theme-classic .cl-totals { width: 100%; }
+.theme-classic .cl-totals td { padding: 2px 4px; border: none; border-bottom: 1px dotted #aaa; }
+.theme-classic .cl-tl { font-size: 8.5pt; }
+.theme-classic .cl-tr { font-size: 8.5pt; text-align: right; }
+.theme-classic .cl-grand td { border-top: 2px solid #111 !important; border-bottom: 2px solid #111 !important; font-weight: bold; font-size: 10pt; }
+
+.theme-classic .cl-footer { border: 1px solid #555; border-top: 1px solid #333; margin-top: 0; }
+.theme-classic .cl-terms-foot { font-size: 7.5pt; border-right: 1px solid #555; }
+.theme-classic .cl-terms-text { color: #333; line-height: 1.5; }
+.theme-classic .cl-bank { margin-top: 6px; font-size: 7.5pt; }
+.theme-classic .cl-compgen { margin-top: 8px; font-size: 7pt; color: #888; font-style: italic; }
+.theme-classic .cl-sign-foot { padding: 8px; }
+.theme-classic .cl-sig-box { font-size: 8pt; }
+.theme-classic .cl-sig-line { color: #666; letter-spacing: 1px; }
+.theme-classic .cl-sig-label { font-weight: bold; margin-top: 2px; }
+.theme-classic .cl-sig-co { color: #444; }
+.theme-classic .cl-qr { width: 55px; height: 55px; }
+
+/* ================================================================
+   THEME 3: MODERN BLUE (Navy #1a237e, alternating rows)
+   ================================================================ */
+.theme-modern-blue .mb-wrap {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  color: #1a1a2e;
+  width: 100%;
+}
+.theme-modern-blue table { width: 100%; border-collapse: collapse; }
+
+.theme-modern-blue .mb-header { margin-bottom: 0; }
+.theme-modern-blue .mb-logo-cell { padding: 6px 8px 6px 0; vertical-align: middle; }
+.theme-modern-blue .mb-logo { max-height: 58px; max-width: 160px; }
+.theme-modern-blue .mb-tagline { font-size: 7pt; color: #888; font-style: italic; margin-top: 2px; }
+.theme-modern-blue .mb-co-cell { text-align: right; padding: 6px 0; vertical-align: top; }
+.theme-modern-blue .mb-co-name { font-size: 15pt; font-weight: bold; color: #1a237e; }
+.theme-modern-blue .mb-co-addr { font-size: 8pt; color: #444; line-height: 1.5; }
+.theme-modern-blue .mb-gstin { font-size: 8pt; color: #1a237e; font-weight: bold; margin-top: 2px; }
+
+.theme-modern-blue .mb-navy-bar { background: #1a237e; color: #fff; font-size: 9pt; font-weight: bold; padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; }
+.theme-modern-blue .mb-invoice-title { font-size: 11pt; font-weight: bold; letter-spacing: 1px; }
+.theme-modern-blue .mb-copy-type { font-size: 8pt; font-weight: normal; }
+
+.theme-modern-blue .mb-billrow { border: 1px solid #c5cae9; }
+.theme-modern-blue .mb-billto { border-right: 1px solid #c5cae9; padding: 0 0 6px 0; vertical-align: top; }
+.theme-modern-blue .mb-invmeta { padding: 6px 8px; vertical-align: top; }
+.theme-modern-blue .mb-bill-head { background: #e8eaf6; color: #1a237e; font-size: 8.5pt; font-weight: bold; padding: 4px 8px; border-left: 4px solid #1565c0; margin-bottom: 5px; }
+.theme-modern-blue .mb-cust-name { font-size: 12pt; font-weight: bold; padding: 0 8px; line-height: 1.4; color: #1a237e; }
+.theme-modern-blue .mb-cust-addr { font-size: 8.5pt; padding: 1px 8px; color: #333; }
+.theme-modern-blue .mb-cust-meta { font-size: 8pt; padding: 2px 8px; color: #555; }
+.theme-modern-blue .mb-ml { font-size: 8pt; color: #666; padding: 2px 2px; }
+.theme-modern-blue .mb-mc { padding: 2px 4px; }
+.theme-modern-blue .mb-mv { font-size: 8.5pt; font-weight: bold; color: #1a237e; padding: 2px 2px; }
+
+.theme-modern-blue .mb-items { border: 1px solid #c5cae9; margin-top: 0; }
+.theme-modern-blue .mb-items th, .theme-modern-blue .mb-items td { border: 1px solid #c5cae9; padding: 4px 4px; }
+.theme-modern-blue .mb-thead th { background: #1a237e; color: #fff; font-size: 8.5pt; font-weight: bold; text-align: center; }
+.theme-modern-blue .mb-row td { font-size: 8.5pt; vertical-align: top; }
+.theme-modern-blue .mb-row-even { background: #fff; }
+.theme-modern-blue .mb-row-odd { background: #f5f8ff; }
+.theme-modern-blue .mb-c { text-align: center; vertical-align: middle !important; }
+.theme-modern-blue .mb-l { text-align: left; }
+.theme-modern-blue .mb-r { text-align: right; }
+.theme-modern-blue .mb-sub { font-size: 7.5pt; color: #666; }
+
+.theme-modern-blue .mb-footer-top { border: 1px solid #c5cae9; border-top: none; }
+.theme-modern-blue .mb-del { padding: 5px 8px; border-right: 1px solid #c5cae9; font-size: 8.5pt; color: #444; }
+.theme-modern-blue .mb-subtotals { padding: 4px 8px; }
+.theme-modern-blue .mb-sl { font-size: 8.5pt; color: #444; padding: 2px 2px; }
+.theme-modern-blue .mb-sv { font-size: 8.5pt; text-align: right; padding: 2px 2px; }
+.theme-modern-blue .mb-grand-row td { background: #e8eaf6; font-weight: bold; font-size: 10pt; color: #1a237e; border-top: 2px solid #1a237e; }
+.theme-modern-blue .grand { color: #1a237e; }
+
+.theme-modern-blue .mb-words-bar { margin-top: 0; }
+.theme-modern-blue .mb-words { font-size: 8.5pt; padding: 5px 8px; border: 1px solid #c5cae9; border-top: none; }
+
+.theme-modern-blue .mb-final { border: 1px solid #c5cae9; border-top: none; }
+.theme-modern-blue .mb-terms-cell { border-right: 1px solid #c5cae9; padding: 6px 8px; }
+.theme-modern-blue .mb-terms-head { font-size: 8.5pt; font-weight: bold; color: #1a237e; margin-bottom: 3px; }
+.theme-modern-blue .mb-terms-text { font-size: 7.5pt; color: #333; line-height: 1.5; }
+.theme-modern-blue .mb-bank { font-size: 7.5pt; color: #333; margin-top: 4px; }
+.theme-modern-blue .mb-compgen { font-size: 7pt; color: #888; margin-top: 6px; font-style: italic; }
+.theme-modern-blue .mb-pay-cell { padding: 6px 8px; }
+.theme-modern-blue .mb-pl { font-size: 8.5pt; color: #444; padding: 3px 2px; }
+.theme-modern-blue .mb-pv { font-size: 9pt; font-weight: bold; text-align: right; padding: 3px 2px; }
+.theme-modern-blue .mb-signatory { margin-top: 14px; display: flex; align-items: flex-end; justify-content: space-between; }
+.theme-modern-blue .mb-qr { width: 55px; height: 55px; }
+.theme-modern-blue .mb-sign-area { text-align: right; border-top: 1px dashed #888; padding-top: 3px; }
+.theme-modern-blue .mb-sign-label { font-size: 8pt; color: #444; }
+.theme-modern-blue .mb-sign-co { font-size: 8pt; font-weight: bold; color: #1a237e; }
+
+/* ================================================================
+   THEME 4: MINIMAL (Ultra clean, typography only, no colored bars)
+   ================================================================ */
+.theme-minimal .mn-wrap {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 9pt;
+  color: #222;
+  width: 100%;
+}
+.theme-minimal table { width: 100%; border-collapse: collapse; }
+
+.theme-minimal .mn-header { margin-bottom: 12px; }
+.theme-minimal .mn-logo-cell { vertical-align: middle; }
+.theme-minimal .mn-logo { max-height: 52px; max-width: 150px; }
+.theme-minimal .mn-co-name-big { font-size: 18pt; font-weight: bold; color: #111; letter-spacing: 0.5px; }
+.theme-minimal .mn-title-cell { text-align: right; }
+.theme-minimal .mn-invoice-word { font-size: 22pt; font-weight: 300; color: #888; letter-spacing: 3px; line-height: 1; }
+.theme-minimal .mn-inv-number { font-size: 11pt; font-weight: bold; color: #222; margin-top: 3px; }
+.theme-minimal .mn-inv-date { font-size: 8.5pt; color: #666; margin-top: 2px; }
+.theme-minimal .mn-inv-due { font-size: 8pt; color: #888; }
+
+.theme-minimal .mn-divider { border: none; border-top: 1px solid #e0e0e0; margin: 10px 0; }
+
+.theme-minimal .mn-parties { }
+.theme-minimal .mn-from, .theme-minimal .mn-to { vertical-align: top; }
+.theme-minimal .mn-party-head { font-size: 7.5pt; font-weight: bold; color: #aaa; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; font-family: Arial, sans-serif; }
+.theme-minimal .mn-party-name { font-size: 11pt; font-weight: bold; margin-bottom: 3px; }
+.theme-minimal .mn-party-addr { font-size: 8pt; color: #555; line-height: 1.6; }
+
+.theme-minimal .mn-meta-row td { font-size: 7.5pt; color: #777; padding: 2px 8px 2px 0; }
+
+.theme-minimal .mn-items { }
+.theme-minimal .mn-thead { border-bottom: 2px solid #333; }
+.theme-minimal .mn-th-c, .theme-minimal .mn-th-l, .theme-minimal .mn-th-r { font-size: 7.5pt; font-weight: bold; color: #888; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 4px; font-family: Arial, sans-serif; }
+.theme-minimal .mn-th-c { text-align: center; }
+.theme-minimal .mn-th-l { text-align: left; }
+.theme-minimal .mn-th-r { text-align: right; }
+.theme-minimal .mn-row { border-bottom: 1px solid #e8e8e8; }
+.theme-minimal .mn-c { text-align: center; font-size: 8.5pt; padding: 5px 4px; vertical-align: middle; }
+.theme-minimal .mn-l { text-align: left; font-size: 8.5pt; padding: 5px 4px; }
+.theme-minimal .mn-r { text-align: right; font-size: 8.5pt; padding: 5px 4px; }
+.theme-minimal .mn-sub { font-size: 7.5pt; color: #888; }
+
+.theme-minimal .mn-totals-section { margin-top: 6px; }
+.theme-minimal .mn-totals td { padding: 2px 4px; border: none; }
+.theme-minimal .mn-tl { font-size: 8.5pt; color: #555; }
+.theme-minimal .mn-tr { font-size: 8.5pt; text-align: right; }
+.theme-minimal .mn-grand td { border-top: 2px solid #222; border-bottom: 2px solid #222; font-weight: bold; font-size: 11pt; color: #111; padding: 4px 4px; }
+
+.theme-minimal .mn-words-label { font-size: 7.5pt; color: #aaa; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; margin-bottom: 3px; }
+.theme-minimal .mn-words { font-size: 8.5pt; color: #444; }
+
+.theme-minimal .mn-footer { margin-top: 6px; }
+.theme-minimal .mn-terms-head { font-size: 7.5pt; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: Arial, sans-serif; }
+.theme-minimal .mn-terms-text { font-size: 7.5pt; color: #555; line-height: 1.6; }
+.theme-minimal .mn-bank { font-size: 7.5pt; color: #555; margin-top: 4px; }
+.theme-minimal .mn-sig { border-top: 1px solid #aaa; padding-top: 4px; display: inline-block; min-width: 140px; }
+.theme-minimal .mn-sig-line { border: none; }
+.theme-minimal .mn-sig-label { font-size: 8pt; color: #666; }
+.theme-minimal .mn-sig-co { font-size: 8pt; font-weight: bold; }
+.theme-minimal .mn-qr { width: 55px; height: 55px; margin-bottom: 6px; }
+.theme-minimal .mn-compgen { font-size: 7pt; color: #aaa; text-align: center; margin-top: 12px; font-style: italic; }
+
+/* ================================================================
+   THEME 5: PROFESSIONAL SAFFRON (Indian patriotic)
+   Saffron: #FF6F00, Green: #1B5E20
+   ================================================================ */
+.theme-saffron .sf-wrap {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  color: #212121;
+  width: 100%;
+}
+.theme-saffron table { width: 100%; border-collapse: collapse; }
+
+.theme-saffron .sf-tricolor { display: flex; flex-direction: column; margin-bottom: 0; }
+.theme-saffron .sf-stripe-saffron { background: #FF6F00; height: 4px; }
+.theme-saffron .sf-stripe-white { background: #fff; height: 2px; border-top: 0.5px solid #eee; border-bottom: 0.5px solid #eee; }
+.theme-saffron .sf-stripe-green { background: #1B5E20; height: 4px; }
+
+.theme-saffron .sf-header { margin-bottom: 4px; border-bottom: 1px solid #FF6F00; padding-bottom: 6px; }
+.theme-saffron .sf-logo-td { padding: 6px 8px 6px 0; }
+.theme-saffron .sf-logo { max-height: 55px; max-width: 120px; }
+.theme-saffron .sf-co-td { text-align: center; }
+.theme-saffron .sf-co-name { font-size: 16pt; font-weight: bold; color: #FF6F00; letter-spacing: 0.5px; line-height: 1.2; }
+.theme-saffron .sf-tagline { font-size: 7.5pt; color: #888; font-style: italic; margin: 2px 0; }
+.theme-saffron .sf-co-addr { font-size: 8pt; color: #333; line-height: 1.5; }
+.theme-saffron .sf-gstin { font-size: 8.5pt; font-weight: bold; color: #1B5E20; margin-top: 2px; }
+
+.theme-saffron .sf-invoice-divider { text-align: center; font-size: 11pt; font-weight: bold; color: #1B5E20; padding: 4px 0; border-top: 1px solid #FF6F00; border-bottom: 1px solid #FF6F00; margin: 4px 0; letter-spacing: 2px; }
+
+.theme-saffron .sf-billrow { border: 1px solid #BDBDBD; }
+.theme-saffron .sf-billto { border-right: 1px solid #BDBDBD; padding: 0 0 6px 0; vertical-align: top; }
+.theme-saffron .sf-invmeta { padding: 0 0 6px 0; vertical-align: top; }
+.theme-saffron .sf-saffron-bar { background: #FF6F00; color: #fff; font-size: 9pt; font-weight: bold; padding: 4px 8px; margin-bottom: 4px; }
+.theme-saffron .sf-cust-name { font-size: 12pt; font-weight: bold; padding: 0 8px; color: #212121; }
+.theme-saffron .sf-cust-addr { font-size: 8.5pt; padding: 1px 8px; color: #333; }
+.theme-saffron .sf-cust-meta { font-size: 8pt; padding: 2px 8px; color: #555; }
+.theme-saffron .sf-ml { font-size: 8pt; color: #555; padding: 2px 8px; white-space: nowrap; }
+.theme-saffron .sf-mc { padding: 2px 2px; }
+.theme-saffron .sf-mv { font-size: 8.5pt; font-weight: bold; padding: 2px 4px; }
+
+/* Items with watermark */
+.theme-saffron .sf-items-container { position: relative; }
+.theme-saffron .sf-watermark {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(-40deg);
+  font-size: 40pt;
+  font-weight: bold;
+  color: #FF6F00;
+  opacity: 0.05;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 0;
+  font-family: Arial, sans-serif;
+  letter-spacing: 3px;
+}
+.theme-saffron .sf-items { border: 1px solid #BDBDBD; position: relative; z-index: 1; }
+.theme-saffron .sf-items th, .theme-saffron .sf-items td { border: 1px solid #BDBDBD; padding: 4px 4px; }
+.theme-saffron .sf-thead th { background: #1B5E20; color: #fff; font-size: 8.5pt; font-weight: bold; text-align: center; }
+.theme-saffron .sf-row td { font-size: 8.5pt; vertical-align: top; }
+.theme-saffron .sf-c { text-align: center; vertical-align: middle !important; }
+.theme-saffron .sf-l { text-align: left; }
+.theme-saffron .sf-r { text-align: right; }
+.theme-saffron .sf-sub { font-size: 7.5pt; color: #666; }
+
+.theme-saffron .sf-summary { border: 1px solid #BDBDBD; border-top: none; }
+.theme-saffron .sf-del { padding: 5px 8px; border-right: 1px solid #BDBDBD; font-size: 8.5pt; }
+.theme-saffron .sf-subtotals { padding: 4px 8px; }
+.theme-saffron .sf-sl { font-size: 8.5pt; color: #444; padding: 2px 2px; }
+.theme-saffron .sf-sv { font-size: 8.5pt; text-align: right; padding: 2px 2px; }
+.theme-saffron .sf-grand td { background: #FFF3E0; font-weight: bold; font-size: 10pt; color: #E65100; border-top: 2px solid #FF6F00; }
+
+.theme-saffron .sf-words-bar { margin-top: 0; }
+.theme-saffron .sf-words { font-size: 8.5pt; padding: 5px 8px; border: 1px solid #BDBDBD; border-top: none; }
+
+.theme-saffron .sf-footer { border: 1px solid #BDBDBD; border-top: none; }
+.theme-saffron .sf-terms-cell { border-right: 1px solid #BDBDBD; padding: 0 0 6px 0; vertical-align: top; }
+.theme-saffron .sf-pay-cell { padding: 0 0 6px 0; vertical-align: top; }
+.theme-saffron .sf-foot-bar { margin-bottom: 4px; }
+.theme-saffron .sf-terms-text { font-size: 7.5pt; color: #333; line-height: 1.5; padding: 0 8px; }
+.theme-saffron .sf-bank { font-size: 7.5pt; color: #333; padding: 1px 8px; margin-top: 3px; }
+.theme-saffron .sf-compgen { font-size: 7pt; color: #888; font-style: italic; padding: 4px 8px; margin-top: 4px; }
+.theme-saffron .sf-qr { width: 55px; height: 55px; margin: 6px 8px; }
+.theme-saffron .sf-pl { font-size: 8.5pt; color: #333; padding: 3px 8px; }
+.theme-saffron .sf-pv { font-size: 9pt; font-weight: bold; text-align: right; padding: 3px 8px; }
+.theme-saffron .sf-signatory { margin: 14px 8px 0 8px; border-top: 1px dashed #888; padding-top: 4px; }
+.theme-saffron .sf-sign-blank { height: 22px; }
+.theme-saffron .sf-sign-label { font-size: 8pt; color: #444; }
+.theme-saffron .sf-sign-co { font-size: 8pt; font-weight: bold; color: #1B5E20; }

@@ -11,6 +11,7 @@ if (!JWT_SECRET) {
 export interface AuthRequest extends Request {
   userId?: number;
   userRole?: string;
+  saasTenantId?: string | null;
   requestId?: string; // Correlation ID placeholder
 }
 
@@ -20,7 +21,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, nextFn: Ne
     return res.status(401).json({ error: 'Unauthorized' });
   }
   try {
-    const decoded = jwt.verify(auth.slice(7), JWT_SECRET) as unknown as { user_id: number; role: string; jti?: string };
+    const decoded = jwt.verify(auth.slice(7), JWT_SECRET) as unknown as { user_id: number; role: string; saasTenantId?: string | null; jti?: string };
 
     // Revocation Blacklist Check
     if (decoded.jti) {
@@ -37,6 +38,55 @@ export async function authMiddleware(req: AuthRequest, res: Response, nextFn: Ne
       prisma.tokenBlacklist.deleteMany({
         where: { expires_at: { lt: new Date() } }
       }).catch(err => console.error('Blacklist cleanup error:', err));
+    }
+
+    // ─── SaaS Subscription & Grace Period Check ───
+    if (decoded.saasTenantId) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: decoded.saasTenantId }
+      });
+
+      if (!tenant) {
+        return res.status(403).json({ error: 'TENANT_NOT_FOUND', message: 'Tenant company not found.' });
+      }
+
+      if (tenant.status === 'SUSPENDED') {
+        return res.status(403).json({ error: 'TENANT_SUSPENDED', message: 'Your company account has been suspended by the administrator.' });
+      }
+
+      const now = new Date();
+      const expiresAt = new Date(tenant.expiresAt);
+      const graceExpiresAt = new Date(expiresAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 5-day grace period
+
+      if (now > graceExpiresAt) {
+        if (tenant.status !== 'EXPIRED') {
+          await prisma.tenant.update({
+            where: { id: tenant.id },
+            data: { status: 'EXPIRED' }
+          }).catch(() => {});
+        }
+        return res.status(403).json({
+          error: 'SUBSCRIPTION_EXPIRED',
+          message: 'Your subscription and the 5-day grace period have expired. Please renew your subscription to regain access. Your data is safe with us.',
+          expired: true
+        });
+      }
+
+      req.saasTenantId = tenant.id;
+      (req as any).saasTenant = {
+        id: tenant.id,
+        name: tenant.name,
+        plan: tenant.plan,
+        expiresAt: tenant.expiresAt,
+        inGracePeriod: now > expiresAt,
+        graceDaysRemaining: Math.max(0, Math.ceil((graceExpiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
+      };
+
+      // Keep active device session alive (non-blocking)
+      prisma.activeDevice.updateMany({
+        where: { userId: decoded.user_id, tenantId: tenant.id, ipAddress: req.ip || 'Unknown' },
+        data: { lastActiveAt: new Date() }
+      }).catch(() => {});
     }
 
     req.userId = decoded.user_id;

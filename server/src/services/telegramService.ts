@@ -5,10 +5,10 @@ export async function getTelegramConfig() {
   if (!row || !row.value) return null;
   const v = row.value as any;
   return {
-    bot_token: v.bot_token || '',
-    chat_id: v.chat_id || '',
+    bot_token: (v.bot_token || '').trim(),
+    chat_id: (v.chat_id || '').trim(),
     enabled: v.enabled === true || v.enabled === 'true',
-    api_base_url: v.api_base_url || '',
+    api_base_url: (v.api_base_url || '').trim(),
   };
 }
 
@@ -26,8 +26,8 @@ export async function sendTelegram(
       return { success: false, error: 'Telegram is disabled in Settings.' };
     }
 
-    const chatId = chatIdOverride || cfg.chat_id;
-    if (!chatId) {
+    const chatIds = (chatIdOverride || cfg.chat_id).split(',').map((id: string) => id.trim()).filter(Boolean);
+    if (chatIds.length === 0) {
       return { success: false, error: 'No Telegram Chat ID configured.' };
     }
 
@@ -42,53 +42,70 @@ export async function sendTelegram(
     };
 
     const sanitizedMessage = sanitizeTelegramMarkdown(message);
-
     const telegramBaseUrl = cfg.api_base_url || process.env.TELEGRAM_API_BASE_URL || 'https://api.telegram.org';
-    const res = await fetch(
-      `${telegramBaseUrl}/bot${cfg.bot_token}/sendMessage`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: sanitizedMessage,
-          parse_mode: 'Markdown',
-          reply_markup: replyMarkupOverride !== undefined ? replyMarkupOverride : defaultKeyboard,
-        }),
-      }
-    );
+    
+    let anySuccess = false;
+    let lastError = '';
 
-    const data = await res.json() as any;
-    if (!res.ok || !data.ok) {
-      const isParseError = data?.description && (
-        data.description.includes("can't parse") ||
-        data.description.includes("entity") ||
-        data.description.includes("parse_mode") ||
-        data.description.includes("markdown")
-      );
-      if (isParseError) {
-        console.warn(`[telegramService] Telegram Markdown parsing failed. Retrying in plain text. Error: ${data.description}`);
-        const fallbackRes = await fetch(
+    for (const singleChatId of chatIds) {
+      try {
+        const res = await fetch(
           `${telegramBaseUrl}/bot${cfg.bot_token}/sendMessage`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              chat_id: chatId,
-              text: message,
+              chat_id: singleChatId,
+              text: sanitizedMessage,
+              parse_mode: 'Markdown',
               reply_markup: replyMarkupOverride !== undefined ? replyMarkupOverride : defaultKeyboard,
             }),
           }
         );
-        const fallbackData = await fallbackRes.json() as any;
-        if (fallbackRes.ok && fallbackData.ok) {
-          return { success: true };
+
+        const data = await res.json() as any;
+        if (res.ok && data.ok) {
+          anySuccess = true;
+        } else {
+          const isParseError = data?.description && (
+            data.description.includes("can't parse") ||
+            data.description.includes("entity") ||
+            data.description.includes("parse_mode") ||
+            data.description.includes("markdown")
+          );
+          if (isParseError) {
+            console.warn(`[telegramService] Telegram Markdown parsing failed for ${singleChatId}. Retrying in plain text. Error: ${data.description}`);
+            const fallbackRes = await fetch(
+              `${telegramBaseUrl}/bot${cfg.bot_token}/sendMessage`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: singleChatId,
+                  text: message,
+                  reply_markup: replyMarkupOverride !== undefined ? replyMarkupOverride : defaultKeyboard,
+                }),
+              }
+            );
+            const fallbackData = await fallbackRes.json() as any;
+            if (fallbackRes.ok && fallbackData.ok) {
+              anySuccess = true;
+            } else {
+              lastError = fallbackData?.description || 'Fallback Telegram API error';
+            }
+          } else {
+            lastError = data?.description || 'Telegram API error';
+          }
         }
-        return { success: false, error: fallbackData?.description || 'Fallback Telegram API error' };
+      } catch (err: any) {
+        lastError = err.message || 'Network error';
       }
-      return { success: false, error: data?.description || 'Telegram API error' };
     }
-    return { success: true };
+
+    if (anySuccess) {
+      return { success: true };
+    }
+    return { success: false, error: lastError || 'Failed to send Telegram message to any recipient' };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to send Telegram message' };
   }

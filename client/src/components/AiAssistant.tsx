@@ -339,7 +339,7 @@ export default function AiAssistant() {
           transform: `translate(${btnPosition.x}px, ${btnPosition.y}px) ${isOpen ? 'rotate(90deg)' : 'none'}`,
           touchAction: 'none'
         }}
-        className="hover:scale-105"
+        className="hover:scale-105 no-print"
         title="Hi-Secure AI Assistant"
       >
         {isOpen ? <IconX size={24} /> : <IconMessage size={24} />}
@@ -348,6 +348,7 @@ export default function AiAssistant() {
       {/* ── Chat Panel ── */}
       {isOpen && (
         <div
+          className="no-print"
           style={{
             position: 'fixed',
             bottom: isMobile ? '80px' : '96px',

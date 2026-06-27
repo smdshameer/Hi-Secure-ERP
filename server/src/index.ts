@@ -56,6 +56,7 @@ import { amcRouter } from './routes/amc';
 import { techRouter } from './routes/tech';
 import { portalRouter } from './routes/portal';
 import { auditRouter } from './routes/audit';
+import { saasRouter } from './routes/saas';
 
 export const prisma = new PrismaClient().$extends({
   query: {
@@ -202,6 +203,7 @@ app.use('/api/health', healthRouter);
 
 // Mount all module routers
 app.use('/api/auth', authRouter);
+app.use('/api/saas', saasRouter);
 app.use('/api/dashboard', authMiddleware, dashboardRouter);
 app.use('/api/repairs', authMiddleware, repairsRouter);
 app.use('/api/customers', authMiddleware, customersRouter);

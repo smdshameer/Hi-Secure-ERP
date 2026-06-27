@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { IconChevronLeft, IconPrinter } from '@tabler/icons-react';
+import { IconChevronLeft, IconPrinter, IconCheck, IconFileInvoice } from '@tabler/icons-react';
 import api from '../services/api';
 import { toRupeesInWords } from '../utils/numberToWords';
+import { ThemeHiSecure, ThemeClassic, ThemeModernBlue, ThemeMinimal, ThemeSaffron, ThemeDefault, ThemeTally, ThemeEmerald, ThemeCharcoal } from '../components/print/PrintTemplates';
 
 interface QuotationItem {
   quote_item_id: number;
@@ -38,6 +39,13 @@ interface QuotationDetailType {
     gstin?: string;
     state?: string;
   };
+  _reference_no?: string;
+  _sales_executive?: string;
+  _contact_person?: string;
+  _mobile_number?: string;
+  _gstin?: string;
+  _billing_address?: string;
+  _shipping_address?: string;
 }
 
 export default function QuotationDetail() {
@@ -45,8 +53,36 @@ export default function QuotationDetail() {
   const location = useLocation();
   const [quotation, setQuotation] = useState<QuotationDetailType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<'tally' | 'classic' | 'modern-blue' | 'minimal' | 'saffron'>('classic');
+  const [theme, setTheme] = useState<'default' | 'tally' | 'hisecure' | 'classic' | 'modern-blue' | 'minimal' | 'saffron' | 'emerald' | 'charcoal'>('default');
   const [size, setSize] = useState<'a4' | 'a5' | 'letter' | 'legal' | 'thermal-80mm' | 'thermal-58mm'>('a4');
+  const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large' | 'hidden'>('medium');
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // test local sync
+  const handleAccept = async () => {
+    try {
+      setActionLoading(true);
+      await api.patch(`/quotations/${id}/status`, { status: 'accepted' });
+      const r = await api.get(`/quotations/${id}`);
+      setQuotation(r.data);
+    } catch (err) {
+      alert('Failed to accept quotation');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConvert = async () => {
+    try {
+      setActionLoading(true);
+      const res = await api.post(`/quotations/${id}/convert`);
+      window.location.href = `/sales/${res.data.invoiceId}`;
+    } catch {
+      alert('Failed to convert quotation to invoice');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const [company, setCompany] = useState({
     name: 'Hi Secure Solutions',
@@ -56,6 +92,7 @@ export default function QuotationDetail() {
     gstin: '07AAAAA1111A1Z1',
     pan: 'AAAAA1111A',
     state: 'Delhi',
+    logo_url: '',
   });
 
   useEffect(() => {
@@ -84,6 +121,51 @@ export default function QuotationDetail() {
               total: Number(i.total || 0),
             }));
           }
+
+          let notesCleaned = data.notes || '';
+          let reference_no = '';
+          let sales_executive = '';
+          let contact_person = '';
+          let mobile_number = data.customer?.phone || '';
+          let gstin = data.customer?.gstin || '';
+          let billing_address = data.customer?.address || '';
+          let shipping_address = data.customer?.address || '';
+
+          const metaIndex = notesCleaned.indexOf('\n\n--- METADATA ---');
+          if (metaIndex !== -1) {
+            const metaText = notesCleaned.substring(metaIndex);
+            notesCleaned = notesCleaned.substring(0, metaIndex);
+
+            const refMatch = metaText.match(/Reference No: (.*)/);
+            if (refMatch) reference_no = refMatch[1];
+
+            const execMatch = metaText.match(/Sales Executive: (.*)/);
+            if (execMatch) sales_executive = execMatch[1];
+
+            const contactMatch = metaText.match(/Contact Person: (.*)/);
+            if (contactMatch) contact_person = contactMatch[1];
+
+            const mobileMatch = metaText.match(/Mobile Number: (.*)/);
+            if (mobileMatch) mobile_number = mobileMatch[1];
+
+            const gstinMatch = metaText.match(/GSTIN: (.*)/);
+            if (gstinMatch) gstin = gstinMatch[1];
+
+            const billMatch = metaText.match(/Billing Address: (.*)/);
+            if (billMatch) billing_address = billMatch[1];
+
+            const shipMatch = metaText.match(/Shipping Address: (.*)/);
+            if (shipMatch) shipping_address = shipMatch[1];
+          }
+
+          data.notes = notesCleaned;
+          data._reference_no = reference_no;
+          data._sales_executive = sales_executive;
+          data._contact_person = contact_person;
+          data._mobile_number = mobile_number;
+          data._gstin = gstin;
+          data._billing_address = billing_address;
+          data._shipping_address = shipping_address;
         }
         setQuotation(data);
       })
@@ -107,6 +189,7 @@ export default function QuotationDetail() {
             gstin: settings.gstin || prev.gstin,
             pan: settings.pan || prev.pan,
             state: settings.state || prev.state,
+            logo_url: settings.logo_url || settings.logo_path || '',
           }));
         }
       })
@@ -177,11 +260,15 @@ export default function QuotationDetail() {
               onChange={(e) => setTheme(e.target.value as any)}
               className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
             >
+              <option value="default">Hi Secure Default</option>
               <option value="tally">Tally (Monospace)</option>
+              <option value="hisecure">HiSecure Premium</option>
               <option value="classic">Classic (Serif B&W)</option>
               <option value="modern-blue">Modern Blue</option>
               <option value="minimal">Minimalist</option>
               <option value="saffron">Saffron (Tricolor)</option>
+              <option value="emerald">Emerald Green</option>
+              <option value="charcoal">Charcoal Sleek</option>
             </select>
           </div>
 
@@ -202,6 +289,39 @@ export default function QuotationDetail() {
             </select>
           </div>
 
+          {/* Logo Size Selector */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12px] font-medium text-gray-500">Logo Size:</span>
+            <select 
+              value={logoSize} 
+              onChange={(e) => setLogoSize(e.target.value as any)}
+              className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+              <option value="hidden">Hide Logo</option>
+            </select>
+          </div>
+
+          {(quotation.status === 'draft' || quotation.status === 'sent') && (
+            <button 
+              onClick={handleAccept}
+              disabled={actionLoading}
+              className="flex items-center gap-1.5 bg-green-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              <IconCheck size={16} /> Accept Quotation
+            </button>
+          )}
+          {quotation.status === 'accepted' && (
+            <button 
+              onClick={handleConvert}
+              disabled={actionLoading}
+              className="flex items-center gap-1.5 bg-emerald-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              <IconFileInvoice size={16} /> Convert to Invoice
+            </button>
+          )}
           <button 
             onClick={handlePrint}
             className="flex items-center gap-1.5 bg-[#1a3480] text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-blue-800 transition-colors"
@@ -212,164 +332,564 @@ export default function QuotationDetail() {
       </div>
 
       {/* Document Canvas */}
-      <div className={`print-document theme-${theme} size-${size}`}>
-        {theme === 'saffron' && <div className="tricolor-line mb-3" />}
+      <div className={`print-document theme-${theme} size-${size} flex flex-col`}>
+        {theme === 'default' && (
+          <ThemeDefault
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Header */}
-        <div className="flex justify-between items-start border-b border-gray-200 pb-4 mb-4">
-          <div>
-            <h1 className={`text-2xl font-bold uppercase ${theme === 'saffron' ? 'saffron-text' : 'text-gray-800'}`}>
-              {company.name}
-            </h1>
-            <p className="text-[11px] text-gray-500 max-w-sm whitespace-pre-line leading-relaxed">
-              {company.address}
-            </p>
-            <div className="text-[11px] text-gray-500 mt-1">
-              <span className="font-semibold">Ph:</span> {company.phone} · <span className="font-semibold">Email:</span> {company.email}
-            </div>
-            <div className="text-[11px] text-gray-600 mt-0.5">
-              <span className="font-semibold">GSTIN:</span> {company.gstin} · <span className="font-semibold">PAN:</span> {company.pan}
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <div className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded border uppercase mb-2 ${theme === 'saffron' ? 'saffron-bg border-transparent' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
-              Quotation
-            </div>
-            <div className="text-[11px] text-gray-600">
-              <div className="mb-0.5"><span className="font-semibold">Quote No:</span> <span className="font-bold">{quotation.quote_number}</span></div>
-              <div className="mb-0.5"><span className="font-semibold">Date:</span> {new Date(quotation.quote_date).toLocaleDateString('en-IN')}</div>
-              <div><span className="font-semibold">Valid Until:</span> {new Date(quotation.valid_until).toLocaleDateString('en-IN')}</div>
-            </div>
-          </div>
-        </div>
+        {theme === 'hisecure' && (
+          <ThemeHiSecure
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Bill To */}
-        <div className="mb-5 p-3 border border-gray-100 rounded-lg billto-box max-w-md">
-          <h3 className={`text-[12px] font-bold uppercase mb-2 ${theme === 'saffron' ? 'saffron-text' : 'text-gray-700'}`}>
-            Quotation For (Customer)
-          </h3>
-          {quotation.customer ? (
-            <div className="text-[11px] text-gray-600 leading-relaxed">
-              <div className="font-bold text-[13px] text-gray-800 mb-0.5">{quotation.customer.name}</div>
-              {quotation.customer.address && <div className="mb-1">{quotation.customer.address}</div>}
-              <div><span className="font-semibold">Mobile:</span> {quotation.customer.phone}</div>
-              {quotation.customer.email && <div><span className="font-semibold">Email:</span> {quotation.customer.email}</div>}
-              {quotation.customer.gstin && <div className="font-semibold text-gray-700 mt-1">GSTIN: {quotation.customer.gstin}</div>}
-            </div>
-          ) : (
-            <div className="text-[11px] text-gray-400 italic">No customer linked</div>
-          )}
-        </div>
+        {theme === 'classic' && (
+          <ThemeClassic
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Items Table */}
-        <div className="mb-4">
-          <table className="w-full text-[11px]">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="text-center py-1.5" style={{ width: '5%' }}>#</th>
-                <th className="text-left py-1.5" style={{ width: '40%' }}>Description of Parts/Services</th>
-                <th className="text-center py-1.5" style={{ width: '12%' }}>HSN/SAC</th>
-                <th className="text-center py-1.5" style={{ width: '8%' }}>Qty</th>
-                <th className="text-right py-1.5" style={{ width: '12%' }}>Unit Price</th>
-                <th className="text-center py-1.5" style={{ width: '10%' }}>Disc %</th>
-                <th className="text-center py-1.5" style={{ width: '8%' }}>Tax %</th>
-                <th className="text-right py-1.5" style={{ width: '15%' }}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr key={item.quote_item_id || idx} className="border-b border-gray-100">
-                  <td className="text-center py-2">{idx + 1}</td>
-                  <td className="py-2">
-                    <span className="font-bold text-[12px] block text-gray-800">{item.part.name}</span>
-                  </td>
-                  <td className="text-center py-2">{item.part.hsn_code || '998729'}</td>
-                  <td className="text-center py-2">{item.quantity}</td>
-                  <td className="text-right py-2">₹{item.unit_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="text-center py-2">{item.discount_percent}%</td>
-                  <td className="text-center py-2">{item.tax_rate}%</td>
-                  <td className="text-right py-2 font-semibold">₹{item.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {theme === 'modern-blue' && (
+          <ThemeModernBlue
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Summary row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="text-[11px] text-gray-500">
-            <div className="font-bold mb-1 uppercase text-gray-700">Total in words:</div>
-            <div className="italic font-semibold bg-gray-50 p-2 rounded border border-gray-100 text-gray-700">
-              {toRupeesInWords(Number(quotation.total_amount))}
-            </div>
-            
-            {quotation.notes && (
-              <div className="mt-3">
-                <span className="font-bold text-gray-700 block mb-0.5">Notes:</span>
-                <span className="text-[11px] text-gray-600 block">{quotation.notes}</span>
-              </div>
-            )}
-          </div>
+        {theme === 'minimal' && (
+          <ThemeMinimal
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-          <div className="flex justify-end">
-            <table className="w-[80%] text-[11px] border-none summary-box">
-              <tbody>
-                <tr className="border-b border-gray-100">
-                  <td className="py-1 text-gray-600">Subtotal</td>
-                  <td className="text-right py-1">₹{Number(quotation.subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-                <tr className="border-b border-gray-100 text-red-600">
-                  <td className="py-1">Total Discount</td>
-                  <td className="text-right py-1 font-semibold">-₹{Number(quotation.total_discount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-1 text-gray-600">GST Tax Amount</td>
-                  <td className="text-right py-1">₹{Number(quotation.total_tax).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-                <tr className={`font-bold text-[13px] ${theme === 'tally' ? 'tally-double-border' : 'text-gray-800'}`}>
-                  <td className="py-2">Grand Total</td>
-                  <td className="text-right py-2 text-[14px]">
-                    ₹{Number(quotation.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {theme === 'saffron' && (
+          <ThemeSaffron
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Terms and Signatures */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-4 print-section">
-          <div>
-            <div className="text-[9px] text-gray-400">
-              <span className="font-bold text-gray-500 block uppercase">Terms & Conditions:</span>
-              {quotation.terms ? (
-                <span className="whitespace-pre-line">{quotation.terms}</span>
-              ) : (
-                <>
-                  1. Prices quoted are valid for 30 days from the date of quote.
-                  <br />
-                  2. 50% advance along with confirmed PO, balance upon completion/delivery.
-                  <br />
-                  3. Delivery timelines will be confirmed upon receiving the order.
-                </>
-              )}
-            </div>
-          </div>
+        {theme === 'tally' && (
+          <ThemeTally
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-          <div className="flex flex-col justify-between items-end text-right">
-            <div className="text-[11px] text-gray-600">
-              For <span className="font-bold text-gray-800 uppercase">{company.name}</span>
-            </div>
-            
-            <div className="mt-12 w-[160px] text-center signatory-box">
-              <div className="h-[35px]" />
-              <div className="border-t border-gray-400 pt-1 text-[10px] font-semibold text-gray-600 uppercase">
-                Authorized Signatory
-              </div>
-            </div>
-          </div>
-        </div>
+        {theme === 'emerald' && (
+          <ThemeEmerald
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
+
+        {theme === 'charcoal' && (
+          <ThemeCharcoal
+            company={company}
+            invoice={{
+              number: quotation.quote_number,
+              date: new Date(quotation.quote_date).toLocaleDateString('en-IN'),
+              due_date: quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-IN') : undefined,
+              place_of_supply: quotation.customer?.state || '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Original Quotation',
+              grand_total: quotation.total_amount,
+              subtotal: quotation.subtotal,
+              tax_amount: quotation.total_tax,
+              notes: quotation.notes,
+              title: 'QUOTATION',
+            }}
+            customer={{
+              name: quotation.customer?.name || '—',
+              phone: quotation._mobile_number || quotation.customer?.phone || '—',
+              email: quotation.customer?.email,
+              address: quotation._billing_address || quotation.customer?.address || '—',
+              gstin: quotation._gstin || quotation.customer?.gstin,
+              state: quotation.customer?.state,
+              contactPerson: quotation._contact_person,
+            }}
+            items={items.map((item, idx) => {
+              const rawSubtotal = item.unit_price * item.quantity;
+              const discAmount = rawSubtotal * (item.discount_percent / 100);
+              const taxableVal = rawSubtotal - discAmount;
+              const taxAmount = taxableVal * (item.tax_rate / 100);
+              return {
+                sr: idx + 1,
+                description: item.part.name,
+                model: item.part.name,
+                warranty: undefined,
+                hsn_sac: item.part.hsn_code || '998729',
+                qty: item.quantity,
+                unit: 'NOS',
+                rate: item.unit_price,
+                cgst_rate: item.tax_rate / 2,
+                cgst_amount: taxAmount / 2,
+                sgst_rate: item.tax_rate / 2,
+                sgst_amount: taxAmount / 2,
+                igst_rate: item.tax_rate,
+                igst_amount: taxAmount,
+                total: item.total,
+              };
+            })}
+            summary={{
+              taxable_total: items.reduce((sum, item) => sum + (item.unit_price * item.quantity * (1 - item.discount_percent / 100)), 0),
+              cgst_total: quotation.total_tax / 2,
+              sgst_total: quotation.total_tax / 2,
+              igst_total: quotation.total_tax,
+              round_off: quotation.total_amount - (quotation.subtotal - quotation.total_discount + quotation.total_tax),
+              grand_total: quotation.total_amount,
+              amount_in_words: toRupeesInWords(quotation.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
       </div>
     </div>
   );

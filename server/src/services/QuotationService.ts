@@ -29,6 +29,33 @@ export class QuotationService {
 
   async createQuotation(data: any, userId?: number) {
     const { customer_id, quote_date, valid_until, terms, notes, items } = data;
+    
+    // Calculate totals
+    let subtotal = 0;
+    let totalDiscount = 0;
+    let totalTax = 0;
+    let totalAmount = 0;
+    
+    if (items && items.length) {
+      items.forEach((i: any) => {
+        const qty = Number(i.quantity || 1);
+        const price = Number(i.unit_price || 0);
+        const disc = Number(i.discount_percent || 0);
+        const taxRate = Number(i.tax_rate || 0);
+        
+        const lineSub = qty * price;
+        const lineDisc = lineSub * (disc / 100);
+        const lineTaxable = lineSub - lineDisc;
+        const lineTax = lineTaxable * (taxRate / 100);
+        const lineTotal = lineTaxable + lineTax;
+        
+        subtotal += lineSub;
+        totalDiscount += lineDisc;
+        totalTax += lineTax;
+        totalAmount += lineTotal;
+      });
+    }
+
     return prisma.$transaction(async (tx) => {
       const quoteNumber = data.quote_number || await DocumentSeriesService.generateNextNumber('Quotation', tx);
       return this.quoteRepo.create({
@@ -39,6 +66,10 @@ export class QuotationService {
         terms: terms || 'This quotation is valid for 30 days from the date of issue.',
         notes: notes || null,
         created_by: userId || null,
+        subtotal,
+        total_discount: totalDiscount,
+        total_tax: totalTax,
+        total_amount: totalAmount,
         items: items?.length ? {
           create: items.map((i: any) => ({
             part_id: Number(i.part_id),
@@ -135,34 +166,63 @@ export class QuotationService {
         throw new Error('Quotation already converted');
       }
 
+      // Fetch company state from settings
+      const settingsRow = await tx.setting.findFirst({
+        where: { key: 'company' }
+      });
+      let companyState = 'Delhi';
+      if (settingsRow && settingsRow.value) {
+        try {
+          const val = typeof settingsRow.value === 'string' ? JSON.parse(settingsRow.value) : settingsRow.value;
+          if (val.state) companyState = val.state;
+        } catch (e) {
+          console.error('Failed to parse company settings', e);
+        }
+      }
+
+      const supplyState = quotation.customer?.state || companyState;
+      const isIntrastate = supplyState.toLowerCase().includes(companyState.toLowerCase());
+
+      let totalTaxAmount = 0;
+      const itemsData = quotation.items.map(i => {
+        const qty = Number(i.quantity);
+        const rate = Number(i.unit_price);
+        const discPercent = Number(i.discount_percent || 0);
+        const taxRate = Number(i.tax_rate || 0);
+        
+        const discountedRate = rate * (1 - discPercent / 100);
+        const taxable = qty * discountedRate;
+        const tax = taxable * (taxRate / 100);
+        const total = taxable + tax;
+        
+        totalTaxAmount += tax;
+
+        return {
+          part_id: i.part_id,
+          quantity: qty,
+          unit_price: discountedRate,
+          tax_rate: taxRate,
+          tax_amount: tax,
+          total_amount: total
+        };
+      });
+
+      const cgst = isIntrastate ? totalTaxAmount / 2 : 0;
+      const sgst = isIntrastate ? totalTaxAmount / 2 : 0;
+      const igst = !isIntrastate ? totalTaxAmount : 0;
+
       const invoiceData = {
         customer_id: quotation.customer_id,
         invoice_date: new Date(),
         due_date: new Date(Date.now() + 15 * 86400000), // 15 days default
-        place_of_supply: quotation.customer?.state || null,
+        place_of_supply: supplyState,
         tax_type: 'gst',
         status: 'draft',
         notes: `Converted from Quotation: ${quotation.quote_number}`,
-        items: quotation.items.map(i => {
-          const qty = Number(i.quantity);
-          const rate = Number(i.unit_price);
-          const discPercent = Number(i.discount_percent || 0);
-          const taxRate = Number(i.tax_rate || 0);
-          
-          const discountedRate = rate * (1 - discPercent / 100);
-          const taxable = qty * discountedRate;
-          const tax = taxable * (taxRate / 100);
-          const total = taxable + tax;
-          
-          return {
-            part_id: i.part_id,
-            quantity: qty,
-            unit_price: discountedRate,
-            tax_rate: taxRate,
-            tax_amount: tax,
-            total_amount: total
-          };
-        })
+        cgst_amount: cgst,
+        sgst_amount: sgst,
+        igst_amount: igst,
+        items: itemsData
       };
 
       // Use InvoiceService as required, passing the transaction client tx

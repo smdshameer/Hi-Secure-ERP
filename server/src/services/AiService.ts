@@ -283,20 +283,29 @@ For general greetings, simple chit-chat, or introductions (such as "Hi", "Hello"
         for (const modelCandidate of modelsToTry) {
           try {
             console.log(`[Hi-Secure AI] Querying model ${modelCandidate}... (Iteration ${i + 1})`);
-            const fetchRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${config.nvidia_api_key}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                model: modelCandidate,
-                messages,
-                tools,
-                tool_choice: 'auto',
-                temperature: 0.2
-              })
-            });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            let fetchRes: any;
+            try {
+              fetchRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${config.nvidia_api_key}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  model: modelCandidate,
+                  messages,
+                  tools,
+                  tool_choice: 'auto',
+                  temperature: 0.2
+                }),
+                signal: controller.signal as any
+              });
+            } finally {
+              clearTimeout(timeoutId);
+            }
 
             const data = await fetchRes.json() as any;
             if (fetchRes.ok) {
@@ -321,6 +330,10 @@ For general greetings, simple chit-chat, or introductions (such as "Hi", "Hello"
             }
           } catch (fetchErr: any) {
             console.warn(`[Hi-Secure AI] Network error querying model ${modelCandidate}:`, fetchErr.message);
+            if (fetchErr.name === 'AbortError' || fetchErr.message?.includes('aborted')) {
+              console.log(`[Hi-Secure AI] Putting model ${modelCandidate} on 1-minute cooldown due to timeout.`);
+              this.modelCoolDowns.set(modelCandidate, Date.now() + 60000);
+            }
           }
         }
 
@@ -1881,18 +1894,27 @@ ${overallStatus} *Overall Status*
       if (!apiKey) {
         throw new Error('NVIDIA NIM API Key is required.');
       }
-      const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: modelId || 'stepfun-ai/step-3.7-flash',
-          messages: [{ role: 'user', content: 'Ping' }],
-          max_tokens: 1
-        })
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      let response: any;
+      try {
+        response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: modelId || 'stepfun-ai/step-3.7-flash',
+            messages: [{ role: 'user', content: 'Ping' }],
+            max_tokens: 1
+          }),
+          signal: controller.signal as any
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));

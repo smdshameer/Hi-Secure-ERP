@@ -11,6 +11,14 @@ from selenium.webdriver.support import expected_conditions as EC
 
 SCRATCH_DIR = os.environ.get("GST_SCRATCH_DIR", os.path.join(os.path.dirname(__file__), "_scratch"))
 
+def write_result(payload, ipc_key):
+    try:
+        res_file = os.path.join(SCRATCH_DIR, f"result_{ipc_key}.txt")
+        with open(res_file, "w") as f:
+            f.write(json.dumps(payload))
+    except Exception as e:
+        print(f"[ERROR] Failed to write IPC result: {e}", file=sys.stderr)
+
 def make_driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
@@ -64,10 +72,11 @@ def main(gstin, session_id=None):
     ipc_key = session_id if session_id else gstin
     code_file = os.path.join(SCRATCH_DIR, f"captcha_{ipc_key}.txt")
 
-    # Remove any old IPC file
-    if os.path.exists(code_file):
-        try: os.remove(code_file)
-        except: pass
+    # Remove any old IPC file and old result file
+    for fpath in [code_file, os.path.join(SCRATCH_DIR, f"result_{ipc_key}.txt")]:
+        if os.path.exists(fpath):
+            try: os.remove(fpath)
+            except: pass
 
     driver = None
     try:
@@ -92,8 +101,9 @@ def main(gstin, session_id=None):
         base64_data = fetch_captcha_base64_from_page(driver, wait)
 
         if not base64_data:
-            # Try screenshot as fallback
-            print(json.dumps({"success": False, "error": "Could not extract captcha image from page"}))
+            res_payload = {"success": False, "error": "Could not extract captcha image from page"}
+            print(json.dumps(res_payload))
+            write_result(res_payload, ipc_key)
             return
 
         # Step 5: Send captcha image to Node.js via stdout
@@ -113,7 +123,9 @@ def main(gstin, session_id=None):
             time.sleep(0.5)
 
         if not captcha_code:
-            print(json.dumps({"success": False, "error": "Timeout waiting for captcha input from user"}))
+            res_payload = {"success": False, "error": "Timeout waiting for captcha input from user"}
+            print(json.dumps(res_payload))
+            write_result(res_payload, ipc_key)
             return
 
         # Step 7: Enter the captcha code into the captcha input box
@@ -148,11 +160,15 @@ def main(gstin, session_id=None):
         import re
         page_src = driver.page_source
         if "Enter valid letters" in page_src or "Incorrect CAPTCHA" in page_src or "Invalid Captcha" in page_src or "Invalid captcha" in page_src:
-            print(json.dumps({"success": False, "error": "Incorrect CAPTCHA entered. Please try again."}))
+            res_payload = {"success": False, "error": "Incorrect CAPTCHA entered. Please try again."}
+            print(json.dumps(res_payload))
+            write_result(res_payload, ipc_key)
             return
 
         if "GSTIN / UIN not found" in page_src or "No record found" in page_src:
-            print(json.dumps({"success": False, "error": "GSTIN not found in GST portal records."}))
+            res_payload = {"success": False, "error": "GSTIN not found in GST portal records."}
+            print(json.dumps(res_payload))
+            write_result(res_payload, ipc_key)
             return
 
         # Step 11: Scrape taxpayer data from the results page
@@ -197,9 +213,11 @@ def main(gstin, session_id=None):
             # Last resort: try to get all visible text
             body_text = driver.find_element(By.TAG_NAME, "body").text
             if gstin in body_text or "Legal Name" in body_text or "Trade Name" in body_text:
-                print(json.dumps({"success": False, "error": "Taxpayer found but data could not be parsed. Please try again."}))
+                res_payload = {"success": False, "error": "Taxpayer found but data could not be parsed. Please try again."}
             else:
-                print(json.dumps({"success": False, "error": "No taxpayer data found. The GSTIN may be invalid or not registered."}))
+                res_payload = {"success": False, "error": "No taxpayer data found. The GSTIN may be invalid or not registered."}
+            print(json.dumps(res_payload))
+            write_result(res_payload, ipc_key)
             return
 
         # Build structured output
@@ -239,7 +257,7 @@ def main(gstin, session_id=None):
             city = addr_parts[-2] if (addr_parts[-1].isdigit() or (state.lower() in addr_parts[-1].lower())) else addr_parts[-1]
         city = city.strip()
 
-        print(json.dumps({
+        success_payload = {
             "success": True,
             "data": {
                 "name": display_name,
@@ -252,10 +270,14 @@ def main(gstin, session_id=None):
                 "status": (data.get("GSTIN / UIN Status") or data.get("Status") or
                            data.get("GST Status") or "Active")
             }
-        }))
+        }
+        print(json.dumps(success_payload))
+        write_result(success_payload, ipc_key)
 
     except Exception as e:
-        print(json.dumps({"success": False, "error": str(e)}))
+        err_payload = {"success": False, "error": str(e)}
+        print(json.dumps(err_payload))
+        write_result(err_payload, ipc_key)
     finally:
         if driver:
             try: driver.quit()

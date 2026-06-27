@@ -8,7 +8,7 @@
     "start": "npx expo-cli start"
   },
   "dependencies": {
-    "@hisecure/shared": "*",
+    "@hisecure/shared": "file:../shared",
     "@nozbe/watermelondb": "^0.27.0",
     "react": "^18.2.0",
     "react-native": "^0.72.0"

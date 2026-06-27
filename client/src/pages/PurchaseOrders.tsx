@@ -88,17 +88,15 @@ export default function PurchaseOrders() {
       />
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-gray-50 gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3.5 border-b border-gray-100 gap-4 bg-gray-50/40 shrink-0">
           <div className="overflow-x-auto no-scrollbar scroll-container w-full sm:w-auto">
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control min-w-max">
+            <div data-tabs="5" className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0 segment-control">
               {STATUS_FILTERS.map(f => (
                 <button key={f.value} onClick={() => setFilter(f.value)}
-                  className={[
-                    'px-3 py-1.5 text-[12px] font-medium transition-all cursor-pointer capitalize flex-1 text-center',
-                    filter === f.value
-                      ? 'bg-[#1a3480] text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50',
-                  ].join(' ')}>
+                  className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
+                    filter === f.value ? 'bg-[#1a3480] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
                   {f.label}
                 </button>
               ))}

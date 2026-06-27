@@ -19,7 +19,22 @@ class TelegramBotWorker {
   constructor() {
     // Start asynchronously after 1000ms, ensuring index.ts initialization finishes
     if (process.env.STANDALONE_SCRIPT !== 'true') {
-      setTimeout(() => this.start(), 1000);
+      const isProduction = process.env.NODE_ENV === 'production';
+      const isExplicitlyEnabled = process.env.TELEGRAM_BOT_ENABLED === 'true';
+
+      if (!isProduction && !isExplicitlyEnabled) {
+        console.log('[TelegramBotWorker] Disabled: Running in non-production environment without explicit TELEGRAM_BOT_ENABLED=true.');
+        this.status = 'disabled';
+        return;
+      }
+
+      const instanceId = process.env.NODE_APP_INSTANCE;
+      if (instanceId === undefined || instanceId === '0') {
+        setTimeout(() => this.start(), 1000);
+      } else {
+        console.log(`[TelegramBotWorker] Instance ${instanceId}: Telegram worker disabled to prevent 409 getUpdates conflicts.`);
+        this.status = 'disabled';
+      }
     }
   }
 
@@ -78,7 +93,7 @@ class TelegramBotWorker {
           continue;
         }
 
-        let token = envToken || '';
+        let token = (envToken || '').trim();
         let chatId = '';
         let telegramAiEnabled = true;
         let aiEnabled = true;
@@ -94,8 +109,8 @@ class TelegramBotWorker {
           aiEnabled = aiConfig.ai_enabled === true || aiConfig.ai_enabled === 'true';
 
           if (cfg) {
-            if (!token) token = cfg.bot_token || '';
-            chatId = cfg.chat_id || '';
+            if (!token) token = (cfg.bot_token || '').trim();
+            chatId = (cfg.chat_id || '').trim();
             // If DB config disables it, respect the user's choice in settings UI
             if (cfg.enabled === false) {
               this.setStatus('disabled', null, 'Disabled in database settings');
@@ -180,8 +195,9 @@ class TelegramBotWorker {
               const chatIdLoc = String(message.chat.id);
               const userText = message.text;
 
-              // Security check: Match sender's chat id
-              if (chatIdLoc !== String(chatId)) {
+              // Security check: Match sender's chat id (supports comma-separated list of authorized IDs)
+              const authorizedChatIds = chatId.split(',').map((id: string) => id.trim()).filter(Boolean);
+              if (!authorizedChatIds.includes(chatIdLoc)) {
                 console.warn(`[TelegramBotWorker] Unauthorized Chat ID ${chatIdLoc} tried to interact with the bot.`);
                 await sendTelegram(`❌ Unauthorized Access. You do not have permissions to query HiSecure ERP. Your Chat ID is ${chatIdLoc}.`, chatIdLoc);
                 continue;

@@ -6,6 +6,7 @@ import { body, validationResult } from 'express-validator';
 import crypto from 'crypto';
 import { prisma } from '../index';
 import { authMiddleware, requireRole } from '../middleware/auth';
+import { EmailService } from '../services/emailService';
 
 export const authRouter = Router();
 const userService = new UserService();
@@ -45,7 +46,7 @@ authRouter.post('/login', async (req, res) => {
     // Add UUID jti claim for revocation
     const jti = crypto.randomUUID();
     const token = jwt.sign(
-      { user_id: user.user_id, role: user.role, jti },
+      { user_id: user.user_id, role: user.role, saasTenantId: user.saasTenantId, jti },
       JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -58,7 +59,38 @@ authRouter.post('/login', async (req, res) => {
       description: `User ${user.username} logged in successfully.`
     });
 
-    res.json({ token, user: { user_id: user.user_id, username: user.username, full_name: user.full_name, role: user.role, email: user.email } });
+    // Log active device if user belongs to a tenant
+    if (user.saasTenantId) {
+      const uaString = req.headers['user-agent'] || '';
+      let os = 'Unknown OS';
+      let browser = 'Unknown Browser';
+      let deviceType = 'Desktop';
+
+      if (uaString.includes('Windows')) os = 'Windows';
+      else if (uaString.includes('Macintosh')) os = 'macOS';
+      else if (uaString.includes('Android')) { os = 'Android'; deviceType = 'Mobile'; }
+      else if (uaString.includes('iPhone') || uaString.includes('iPad')) { os = 'iOS'; deviceType = 'Mobile'; }
+      else if (uaString.includes('Linux')) os = 'Linux';
+
+      if (uaString.includes('Chrome')) browser = 'Chrome';
+      else if (uaString.includes('Safari')) browser = 'Safari';
+      else if (uaString.includes('Firefox')) browser = 'Firefox';
+      else if (uaString.includes('Edge')) browser = 'Edge';
+
+      await prisma.activeDevice.create({
+        data: {
+          tenantId: user.saasTenantId,
+          userId: user.user_id,
+          ipAddress: req.ip || 'Unknown',
+          userAgent: uaString.substring(0, 512),
+          deviceType,
+          os,
+          browser
+        }
+      }).catch(err => console.error('Failed to log active device:', err));
+    }
+
+    res.json({ token, user: { user_id: user.user_id, username: user.username, full_name: user.full_name, role: user.role, email: user.email, saasTenantId: user.saasTenantId } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Login failed' });
@@ -176,8 +208,8 @@ authRouter.post('/forgot-password', async (req, res) => {
       where: { email }
     });
     if (!user) {
-      // Return 200/Success to prevent user enumeration, but include token for validation verification
-      return res.json({ message: 'If the email is registered, a reset token has been sent.' });
+      // Return 200/Success to prevent user enumeration
+      return res.json({ message: 'If the email is registered, a reset link has been sent.' });
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -200,9 +232,14 @@ authRouter.post('/forgot-password', async (req, res) => {
       description: `Password reset requested for email: ${email}`
     });
 
+    // Send the password reset email
+    const clientUrl = process.env.CLIENT_URL || 'https://erp.hisecure.store';
+    const resetLink = `${clientUrl}/reset-password?token=${resetToken}`;
+    await EmailService.sendPasswordReset(user.email, user.full_name, resetLink);
+
     // We return the token directly in the response so the verification script can reset it.
     res.json({
-      message: 'Password reset token generated.',
+      message: 'Password reset token generated and email sent.',
       token: resetToken
     });
   } catch (err: any) {

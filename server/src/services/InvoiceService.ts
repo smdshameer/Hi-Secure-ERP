@@ -1,6 +1,7 @@
 import { InvoiceRepository } from '../repositories/InvoiceRepository';
 import { prisma } from '../index';
 import { GstService } from './GstService';
+import { DocumentSeriesService } from './DocumentSeriesService';
 
 export class InvoiceService {
   private invoiceRepo = new InvoiceRepository();
@@ -46,10 +47,16 @@ export class InvoiceService {
       }
       const grandTotal = totalAmount + calculatedTax;
 
+      // Generate invoice number if not provided or empty
+      let invoiceNumber = data.invoice_number;
+      if (!invoiceNumber || invoiceNumber.trim() === '') {
+        invoiceNumber = await DocumentSeriesService.generateNextNumber('Invoice', currentTx);
+      }
+
       const invoice = await currentTx.salesInvoice.create({
         data: {
           customer_id: Number(data.customer_id),
-          invoice_number: data.invoice_number || undefined,
+          invoice_number: invoiceNumber,
           invoice_date: data.invoice_date ? new Date(data.invoice_date) : new Date(),
           due_date: data.due_date ? new Date(data.due_date) : null,
           place_of_supply: data.place_of_supply || null,

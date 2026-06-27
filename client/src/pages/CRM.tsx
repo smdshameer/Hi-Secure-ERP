@@ -82,7 +82,7 @@ export default function CRM() {
   const totalValue = leads.filter(l => l.status === 'won').reduce((s, l) => s + l.value, 0);
 
   return (
-    <div className="max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
+    <div className="page-crm max-w-[1600px] w-full mx-auto px-4 relative flex-1 min-h-0 flex flex-col gap-4 pb-4 lg:pb-0">
       <style>{`
 
         .no-scrollbar::-webkit-scrollbar {
@@ -139,34 +139,38 @@ export default function CRM() {
       </div>
 
       {/* View toggle + filters */}
-      <div className="flex items-center justify-between mb-3 gap-4">
-        <div className="flex gap-2 flex-wrap">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3.5 flex flex-col lg:flex-row items-center justify-between gap-4 bg-gray-50/40 shrink-0 mb-3">
+        {/* Status filters segment control */}
+        <div data-tabs="7" className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0 segment-control w-full lg:w-auto">
           {STATUS_FILTERS.map(f => (
             <button key={f.value} onClick={() => setFilter(f.value)}
-              className={[
-                'px-3 py-1 rounded-full text-[12px] font-medium border transition-all',
-                filter === f.value
-                  ? 'bg-[#1a3480] text-white border-[#1a3480]'
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300',
-              ].join(' ')}>
+              className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
+                filter === f.value ? 'bg-[#1a3480] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
               {f.label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 h-[34px] w-[200px]">
+        
+        {/* Search & View toggle wrapper */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto justify-end">
+          {/* Search bar */}
+          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 bg-white h-[34px] w-full sm:w-[240px] shadow-sm hover:border-gray-300 focus-within:border-blue-400 focus-within:shadow-[0_0_0_2px_rgba(59,130,246,0.12)] transition-all duration-200">
             <IconSearch size={14} className="text-gray-400 flex-shrink-0" />
             <input type="text" placeholder="Search lead..."
               value={search} onChange={e => setSearch(e.target.value)}
-              className="outline-none border-none text-[13px] text-gray-700 placeholder:text-gray-400 w-full" />
+              className="outline-none border-none text-[12.5px] text-gray-700 placeholder:text-gray-400 w-full bg-transparent" />
           </div>
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden segment-control">
+          
+          {/* View switcher segment control */}
+          <div data-tabs="2" className="flex items-center bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50 overflow-x-auto no-scrollbar flex-nowrap max-w-full whitespace-nowrap shrink-0 segment-control w-full sm:w-auto">
             {(['list','pipeline'] as const).map(v => (
               <button key={v} onClick={() => setView(v)}
-                className={[
-                  'px-3 py-1.5 text-[12px] font-medium transition-colors capitalize',
-                  view === v ? 'bg-[#1a3480] text-white' : 'bg-white text-gray-600 hover:bg-gray-50',
-                ].join(' ')}>
+                className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 cursor-pointer active:scale-95 shrink-0 flex-1 sm:flex-initial ${
+                  view === v ? 'bg-[#1a3480] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
                 {v}
               </button>
             ))}

@@ -37,6 +37,11 @@ model User {
   // New relations for Phase 3C
   customer_id              Int?              @map("customer_id")
   customer                 Customer?         @relation(fields: [customer_id], references: [customer_id])
+
+  // SaaS Multitenancy
+  saasTenantId             String?           @map("saas_tenant_id")
+  saasTenant               Tenant?           @relation(fields: [saasTenantId], references: [id], onDelete: SetNull)
+  activeDevices            ActiveDevice[]
   leads                    Lead[]            @relation("LeadAssignee")
 
   // Phase 5A Relations
@@ -1861,5 +1866,53 @@ model TokenBlacklist {
   user          User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("token_blacklist")
+}
+
+enum SubscriptionPlan {
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+}
+
+model Tenant {
+  id              String           @id @default(uuid())
+  name            String           @db.VarChar(255)
+  subdomain       String           @unique @db.VarChar(100)
+  status          TenantStatus     @default(TRIAL)
+  plan            SubscriptionPlan @default(BASIC)
+  licenseKey      String           @unique @db.VarChar(255) @map("license_key")
+  expiresAt       DateTime         @map("expires_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  users           User[]
+  devices         ActiveDevice[]
+
+  @@map("saas_tenants")
+}
+
+model ActiveDevice {
+  id              String           @id @default(uuid())
+  tenantId        String           @map("tenant_id")
+  userId          Int              @map("user_id")
+  ipAddress       String           @db.VarChar(45) @map("ip_address")
+  userAgent       String           @db.VarChar(512) @map("user_agent")
+  deviceType      String           @db.VarChar(50) @map("device_type")
+  os              String           @db.VarChar(50)
+  browser         String           @db.VarChar(50)
+  lastActiveAt    DateTime         @default(now()) @map("last_active_at")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+
+  @@map("saas_active_devices")
 }
 

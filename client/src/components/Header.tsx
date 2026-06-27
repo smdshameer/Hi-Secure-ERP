@@ -84,9 +84,12 @@ export default function Header({ userName: propUserName, role: propRole, onMenuC
 
         {/* Logo */}
         <div className="flex items-center gap-1.5 md:gap-2 text-white select-none header-logo-wrap">
-          <IconShieldCheck size={20} stroke={1.5} className="hidden sm:inline-block" />
-          <span className="hidden lg:inline text-[15px] font-medium">Hi Secure Solutions</span>
-          <span className="hidden sm:inline lg:hidden text-[11px] font-bold tracking-tight">Hi-Secure ERP</span>
+          {/* PC Version Logo Image */}
+          <img src="/logo.jpg" alt="Hi-Secure Logo" className="hidden lg:block h-[34px] w-auto object-contain" />
+          
+          {/* Mobile/Tablet Version Text & Icon */}
+          <IconShieldCheck size={22} stroke={1.5} className="hidden sm:inline-block lg:hidden" />
+          <span className="hidden sm:inline lg:hidden text-[12px] font-bold tracking-tight">Hi-Secure ERP</span>
         </div>
       </div>
 

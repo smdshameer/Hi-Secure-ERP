@@ -85,7 +85,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
+    <div className="page-dashboard flex flex-col gap-4 lg:h-full lg:overflow-hidden">
       {/* Page header */}
       <div className="page-header flex-shrink-0 items-center !mb-0">
         <div>

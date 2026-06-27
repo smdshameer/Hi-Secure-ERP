@@ -143,7 +143,7 @@ export default function AuditDashboard() {
         />
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 mt-6 mb-6 bg-white/5 rounded-xl p-1 w-full md:w-fit segment-control">
+        <div data-tabs="3" className="flex gap-1 mt-6 mb-6 bg-white/5 rounded-xl p-1 w-full md:w-fit segment-control">
           {[
             { key: 'monitoring', label: 'System Monitoring', icon: IconServer },
             { key: 'audit', label: 'Audit Trail', icon: IconShieldCheck },
@@ -288,27 +288,54 @@ export default function AuditDashboard() {
             <div className="flex gap-3 items-center bg-white/5 rounded-xl p-3 border border-white/10">
               <IconFilter size={16} className="text-gray-400" />
               <select value={filters.severity} onChange={e => setFilters(f => ({ ...f, severity: e.target.value }))}
-                className="bg-white/10 border border-white/10 rounded-lg text-[12px] text-white px-3 py-1.5">
-                <option value="">All Severities</option>
-                <option value="critical">Critical</option>
-                <option value="warning">Warning</option>
+                className="bg-[#1f293d] border border-white/10 rounded-lg text-[12px] text-white px-3 py-1.5 focus:outline-none audit-select-filter">
+                <option value="" className="bg-[#1f293d] text-white">All Severities</option>
+                <option value="critical" className="bg-[#1f293d] text-white">Critical</option>
+                <option value="warning" className="bg-[#1f293d] text-white">Warning</option>
               </select>
               <select value={filters.module} onChange={e => setFilters(f => ({ ...f, module: e.target.value }))}
-                className="bg-white/10 border border-white/10 rounded-lg text-[12px] text-white px-3 py-1.5">
-                <option value="">All Modules</option>
-                <option value="AUTH">Authentication</option>
-                <option value="INVENTORY">Inventory</option>
-                <option value="ACCOUNTING">Accounting</option>
-                <option value="GST">GST</option>
-                <option value="CATALOG">Catalog</option>
-                <option value="SUPPLIER">Supplier</option>
-                <option value="SYSTEM">System</option>
+                className="bg-[#1f293d] border border-white/10 rounded-lg text-[12px] text-white px-3 py-1.5 focus:outline-none audit-select-filter">
+                <option value="" className="bg-[#1f293d] text-white">All Modules</option>
+                <option value="AUTH" className="bg-[#1f293d] text-white">Authentication</option>
+                <option value="INVENTORY" className="bg-[#1f293d] text-white">Inventory</option>
+                <option value="ACCOUNTING" className="bg-[#1f293d] text-white">Accounting</option>
+                <option value="GST" className="bg-[#1f293d] text-white">GST</option>
+                <option value="CATALOG" className="bg-[#1f293d] text-white">Catalog</option>
+                <option value="SUPPLIER" className="bg-[#1f293d] text-white">Supplier</option>
+                <option value="SYSTEM" className="bg-[#1f293d] text-white">System</option>
               </select>
             </div>
 
-            {/* Event Log Table */}
+            {/* Event Log Table/List */}
             <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
-              <div className="overflow-x-auto">
+              {/* Mobile View: Card List */}
+              <div className="block md:hidden divide-y divide-white/5">
+                {events.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-gray-500 text-[13px]">No audit events found</div>
+                ) : events.map(e => (
+                  <div key={e.event_id} className="p-4 space-y-2 text-[12px]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">{new Date(e.created_at).toLocaleString()}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        e.event_type?.includes('CRITICAL') || e.event_type?.includes('FAILED') ? 'bg-red-500/20 text-red-400' :
+                        e.event_type?.includes('WARNING') || e.event_type?.includes('DENIED') ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-blue-500/20 text-blue-400'
+                      }`}>
+                        {e.event_type}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-300">
+                      <span>User: {e.user?.full_name || e.user?.username || '—'}</span>
+                    </div>
+                    <div className="text-gray-400 bg-white/5 p-2 rounded text-[11.5px] break-all">
+                      {e.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop View: Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-[12px]">
                   <thead>
                     <tr className="border-b border-white/10 text-gray-400 text-left">

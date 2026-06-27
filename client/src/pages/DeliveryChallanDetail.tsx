@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import { IconChevronLeft, IconPrinter } from '@tabler/icons-react';
 import api from '../services/api';
 import { toRupeesInWords } from '../utils/numberToWords';
+import { ThemeHiSecure, ThemeClassic, ThemeModernBlue, ThemeMinimal, ThemeSaffron, ThemeDefault, ThemeTally, ThemeEmerald, ThemeCharcoal } from '../components/print/PrintTemplates';
 
 interface ChallanItem {
   challan_item_id: number;
@@ -59,8 +60,9 @@ export default function DeliveryChallanDetail() {
   const location = useLocation();
   const [challan, setChallan] = useState<ChallanDetailType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<'tally' | 'classic' | 'modern-blue' | 'minimal' | 'saffron'>('classic');
+  const [theme, setTheme] = useState<'default' | 'tally' | 'hisecure' | 'classic' | 'modern-blue' | 'minimal' | 'saffron' | 'emerald' | 'charcoal'>('default');
   const [size, setSize] = useState<'a4' | 'a5' | 'letter' | 'legal' | 'thermal-80mm' | 'thermal-58mm'>('a4');
+  const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large' | 'hidden'>('medium');
 
   const [company, setCompany] = useState({
     name: 'Hi Secure Solutions',
@@ -70,6 +72,7 @@ export default function DeliveryChallanDetail() {
     gstin: '07AAAAA1111A1Z1',
     pan: 'AAAAA1111A',
     state: 'Delhi',
+    logo_url: '',
   });
 
   useEffect(() => {
@@ -118,6 +121,7 @@ export default function DeliveryChallanDetail() {
             gstin: settings.gstin || prev.gstin,
             pan: settings.pan || prev.pan,
             state: settings.state || prev.state,
+            logo_url: settings.logo_url || settings.logo_path || '',
           }));
         }
       })
@@ -192,11 +196,15 @@ export default function DeliveryChallanDetail() {
               onChange={(e) => setTheme(e.target.value as any)}
               className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
             >
+              <option value="default">Hi Secure Default</option>
               <option value="tally">Tally (Monospace)</option>
+              <option value="hisecure">HiSecure Premium</option>
               <option value="classic">Classic (Serif B&W)</option>
               <option value="modern-blue">Modern Blue</option>
               <option value="minimal">Minimalist</option>
               <option value="saffron">Saffron (Tricolor)</option>
+              <option value="emerald">Emerald Green</option>
+              <option value="charcoal">Charcoal Sleek</option>
             </select>
           </div>
 
@@ -217,6 +225,21 @@ export default function DeliveryChallanDetail() {
             </select>
           </div>
 
+          {/* Logo Size Selector */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12px] font-medium text-gray-500">Logo Size:</span>
+            <select 
+              value={logoSize} 
+              onChange={(e) => setLogoSize(e.target.value as any)}
+              className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+              <option value="hidden">Hide Logo</option>
+            </select>
+          </div>
+
           <button 
             onClick={handlePrint}
             className="flex items-center gap-1.5 bg-[#1a3480] text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-blue-800 transition-colors"
@@ -227,174 +250,501 @@ export default function DeliveryChallanDetail() {
       </div>
 
       {/* Document Canvas */}
-      <div className={`print-document theme-${theme} size-${size}`}>
-        {theme === 'saffron' && <div className="tricolor-line mb-3" />}
+      <div className={`print-document theme-${theme} size-${size} flex flex-col`}>
+        {theme === 'default' && (
+          <ThemeDefault
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Header */}
-        <div className="flex justify-between items-start border-b border-gray-200 pb-4 mb-4">
-          <div>
-            <h1 className={`text-2xl font-bold uppercase ${theme === 'saffron' ? 'saffron-text' : 'text-gray-800'}`}>
-              {company.name}
-            </h1>
-            <p className="text-[11px] text-gray-500 max-w-sm whitespace-pre-line leading-relaxed">
-              {company.address}
-            </p>
-            <div className="text-[11px] text-gray-500 mt-1">
-              <span className="font-semibold">Ph:</span> {company.phone} · <span className="font-semibold">Email:</span> {company.email}
-            </div>
-            <div className="text-[11px] text-gray-600 mt-0.5">
-              <span className="font-semibold">GSTIN:</span> {company.gstin} · <span className="font-semibold">PAN:</span> {company.pan}
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <div className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded border uppercase mb-2 ${theme === 'saffron' ? 'saffron-bg border-transparent' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
-              Delivery Challan
-            </div>
-            <div className="text-[11px] text-gray-600">
-              <div className="mb-0.5"><span className="font-semibold">Challan No:</span> <span className="font-bold">{challan.challan_number}</span></div>
-              <div className="mb-0.5"><span className="font-semibold">Date:</span> {new Date(challan.challan_date).toLocaleDateString('en-IN')}</div>
-              {challan.purposes && <div><span className="font-semibold">Purpose:</span> <span className="font-semibold uppercase text-blue-600">{challan.purposes}</span></div>}
-            </div>
-          </div>
-        </div>
+        {theme === 'hisecure' && (
+          <ThemeHiSecure
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Dispatch & Transport Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-          <div className="p-3 border border-gray-100 rounded-lg billto-box">
-            <h3 className={`text-[12px] font-bold uppercase mb-2 ${theme === 'saffron' ? 'saffron-text' : 'text-gray-700'}`}>
-              Delivery Recipient
-            </h3>
-            <div className="text-[11px] text-gray-600 leading-relaxed">
-              <div className="font-bold text-[13px] text-gray-800 mb-0.5">{recipientName}</div>
-              {recipientAddress && <div className="mb-1">{recipientAddress}</div>}
-              {recipientPhone && <div><span className="font-semibold">Mobile:</span> {recipientPhone}</div>}
-              {recipientGstin && <div className="font-semibold text-gray-700 mt-1">GSTIN: {recipientGstin}</div>}
-            </div>
-          </div>
+        {theme === 'classic' && (
+          <ThemeClassic
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-          <div className="p-3 border border-gray-100 rounded-lg bg-gray-50/50">
-            <h3 className="text-[12px] font-bold text-gray-700 uppercase mb-2">Transportation & Dispatch</h3>
-            <div className="text-[11px] text-gray-600 space-y-0.5">
-              <div><span className="font-semibold">Vehicle Number:</span> {challan.vehicle_number || '—'}</div>
-              <div><span className="font-semibold">Driver Name:</span> {challan.driver_name || '—'}</div>
-              <div><span className="font-semibold">Transporter:</span> {challan.transporter_name || '—'}</div>
-              {challan.eway_bill_number && <div><span className="font-semibold">E-Way Bill:</span> <span className="font-bold">{challan.eway_bill_number}</span></div>}
-              {challan.fromLocation && <div><span className="font-semibold">From Branch:</span> {challan.fromLocation.name}</div>}
-              {challan.toLocation && <div><span className="font-semibold">To Branch:</span> {challan.toLocation.name}</div>}
-            </div>
-          </div>
-        </div>
+        {theme === 'modern-blue' && (
+          <ThemeModernBlue
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Challan Items Table */}
-        <div className="mb-4">
-          <table className="w-full text-[11px]">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="text-center py-1.5" style={{ width: '5%' }}>#</th>
-                <th className="text-left py-1.5" style={{ width: '45%' }}>Description of Goods / Components</th>
-                <th className="text-center py-1.5" style={{ width: '12%' }}>HSN/SAC</th>
-                <th className="text-center py-1.5" style={{ width: '10%' }}>Qty</th>
-                <th className="text-right py-1.5" style={{ width: '13%' }}>Value (Est.)</th>
-                <th className="text-right py-1.5" style={{ width: '15%' }}>Total Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => {
-                const price = Number(item.unit_price) || 0;
-                return (
-                  <tr key={item.challan_item_id || idx} className="border-b border-gray-100">
-                    <td className="text-center py-2">{idx + 1}</td>
-                    <td className="py-2">
-                      <span className="font-bold text-[12px] block text-gray-800">{item.part.name}</span>
-                      {item.batch_number && <span className="text-[9px] text-gray-400 block mt-0.5">Batch: {item.batch_number}</span>}
-                      {item.serial_numbers?.length > 0 && (
-                        <div className="text-[9px] text-gray-500 mt-1">
-                          <span className="font-semibold">Serial Nos:</span> {item.serial_numbers.join(', ')}
-                        </div>
-                      )}
-                      {item.remarks && <span className="text-[10px] text-gray-400 block italic">Remark: {item.remarks}</span>}
-                    </td>
-                    <td className="text-center py-2">{item.part.hsn_code || '998729'}</td>
-                    <td className="text-center py-2">{item.quantity}</td>
-                    <td className="text-right py-2">₹{price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                    <td className="text-right py-2 font-semibold">₹{(item.quantity * price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {theme === 'minimal' && (
+          <ThemeMinimal
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Summary Block */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="text-[11px] text-gray-500">
-            <div className="font-bold mb-1 uppercase text-gray-700">Valuation in words (For Transport):</div>
-            <div className="italic font-semibold bg-gray-50 p-2 rounded border border-gray-100 text-gray-700">
-              {toRupeesInWords(Number(challan.total_amount))}
-            </div>
-            
-            {challan.notes && (
-              <div className="mt-3">
-                <span className="font-bold text-gray-700 block mb-0.5">Notes / Terms:</span>
-                <span className="text-[11px] text-gray-600 block">{challan.notes}</span>
-              </div>
-            )}
-          </div>
+        {theme === 'saffron' && (
+          <ThemeSaffron
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-          <div className="flex justify-end">
-            <table className="w-[80%] text-[11px] border-none summary-box">
-              <tbody>
-                <tr className="border-b border-gray-100">
-                  <td className="py-1 text-gray-600">Total Quantity</td>
-                  <td className="text-right py-1 font-semibold">{challan.total_quantity} Unit(s)</td>
-                </tr>
-                <tr className={`font-bold text-[13px] ${theme === 'tally' ? 'tally-double-border' : 'text-gray-800'}`}>
-                  <td className="py-2">Declared Valuation</td>
-                  <td className="text-right py-2 text-[14px]">
-                    ₹{Number(challan.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {theme === 'tally' && (
+          <ThemeTally
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-        {/* Declarations & Double Signature Block */}
-        <div className="border-t border-gray-200 pt-4 mt-6 print-section">
-          <div className="text-[9px] text-gray-400 max-w-xl mb-6">
-            <span className="font-bold text-gray-500 block uppercase">Declaration:</span>
-            This Delivery Challan is issued for transportation of goods/materials under Rule 55 of CGST Rules, 2017. 
-            The goods listed herein are dispatched for purposes other than supply (e.g. branch transfer/job work/consignment) and do not represent a sale invoice. 
-            Receipt of goods in good condition is acknowledged.
-          </div>
+        {theme === 'emerald' && (
+          <ThemeEmerald
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-left">
-              <div className="text-[11px] text-gray-600">
-                Receiver's Signature & Stamp
-              </div>
-              <div className="mt-12 w-[160px] signatory-box">
-                <div className="h-[35px]" />
-                <div className="border-t border-gray-400 pt-1 text-[10px] font-semibold text-gray-600 uppercase">
-                  Received By
-                </div>
-              </div>
-            </div>
-
-            <div className="text-right flex flex-col items-end">
-              <div className="text-[11px] text-gray-600">
-                For <span className="font-bold text-gray-800 uppercase">{company.name}</span>
-              </div>
-              <div className="mt-12 w-[160px] text-center signatory-box">
-                <div className="h-[35px]" />
-                <div className="border-t border-gray-400 pt-1 text-[10px] font-semibold text-gray-600 uppercase">
-                  Authorized Signatory
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {theme === 'charcoal' && (
+          <ThemeCharcoal
+            company={company}
+            invoice={{
+              number: challan.challan_number,
+              date: new Date(challan.challan_date).toLocaleDateString('en-IN'),
+              place_of_supply: '',
+              reverse_charge: 'No',
+              is_interstate: false,
+              copy_type: 'Delivery Challan',
+              grand_total: challan.total_amount,
+              subtotal: challan.total_amount,
+              tax_amount: 0,
+              notes: challan.notes,
+              title: 'DELIVERY CHALLAN',
+            }}
+            customer={{
+              name: challan.customer?.name || '—',
+              phone: challan.customer?.phone || '—',
+              email: undefined,
+              address: challan.customer?.address || '—',
+              gstin: challan.customer?.gstin,
+              state: undefined,
+              contactPerson: undefined,
+            }}
+            items={items.map((item, idx) => ({
+              sr: idx + 1,
+              description: item.part.name,
+              model: item.part.name,
+              warranty: undefined,
+              hsn_sac: item.part.hsn_code || '998729',
+              qty: item.quantity,
+              unit: 'NOS',
+              rate: item.unit_price || 0,
+              cgst_rate: 0,
+              cgst_amount: 0,
+              sgst_rate: 0,
+              sgst_amount: 0,
+              igst_rate: 0,
+              igst_amount: 0,
+              total: (item.unit_price || 0) * item.quantity,
+            }))}
+            summary={{
+              taxable_total: challan.total_amount,
+              cgst_total: 0,
+              sgst_total: 0,
+              igst_total: 0,
+              round_off: 0,
+              grand_total: challan.total_amount,
+              amount_in_words: toRupeesInWords(challan.total_amount),
+            }}
+            logoSize={logoSize}
+          />
+        )}
       </div>
     </div>
   );

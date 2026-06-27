@@ -48,6 +48,9 @@ const PurchaseOrderDetail = lazy(() => import('./pages/PurchaseOrderDetail'));
 const Approvals = lazy(() => import('./pages/Approvals'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const AuditDashboard = lazy(() => import('./pages/AuditDashboard'));
+const GstReturns = lazy(() => import('./pages/GstReturns'));
+const SuperAdmin = lazy(() => import('./pages/SuperAdmin'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
 function PageLoader() {
   return (
@@ -123,6 +126,9 @@ export default function App() {
             <Route path="/companies/new" element={<CompaniesForm backPath="/companies" />} />
             <Route path="/companies/:id/edit" element={<CompaniesForm backPath="/companies" />} />
             <Route path="/admin/audit" element={<AuditDashboard />} />
+            <Route path="/gst-returns" element={<GstReturns />} />
+            <Route path="/super-admin" element={<SuperAdmin />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={
               <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-400">
                 <p className="text-6xl font-bold text-gray-200">404</p>

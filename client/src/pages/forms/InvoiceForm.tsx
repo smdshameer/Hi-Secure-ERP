@@ -435,7 +435,7 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
     }));
   };
 
-  // Fetch a new captcha image — uses direct img tag to bypass CORS/server IP blocking
+  // Fetch a new captcha image from backend proxy (Selenium session)
   const fetchGstCaptcha = async (gstinVal?: string | React.MouseEvent) => {
     let targetGstin = '';
     if (gstinVal && typeof gstinVal === 'string') {
@@ -457,21 +457,22 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
       return;
     }
 
-    // Generate a unique session ID for the captcha verification flow
-    const uniqueSessionId = `${targetGstin}_${Date.now()}`;
-    setCaptchaSessionId(uniqueSessionId);
-
-    // Use a direct image URL — the browser fetches from user's IP (not blocked)
-    // The GST portal serves captcha as a plain image at this endpoint
-    const rnd = Math.random();
-    const directCaptchaUrl = `https://services.gst.gov.in/services/captcha?rnd=${rnd}`;
-    setCaptchaImg(directCaptchaUrl);
-    setCaptchaLoading(false);
-
-    // Also notify the backend to start a Selenium session in the background
+    setCaptchaLoading(true);
     try {
-      api.get('/customers/captcha', { params: { gstin: targetGstin } }).catch(() => {});
-    } catch {}
+      const res = await api.get('/customers/captcha', { params: { gstin: targetGstin } });
+      if (res.data && res.data.success) {
+        setCaptchaImg(res.data.image);
+        setCaptchaSessionId(res.data.sessionId);
+      } else {
+        setCaptchaError(res.data?.error || 'Failed to load captcha image.');
+      }
+    } catch (err: any) {
+      console.error('[GST Captcha] Error fetching captcha:', err);
+      const errMsg = err.response?.data?.error || 'Could not connect to the captcha service. Please try again.';
+      setCaptchaError(errMsg);
+    } finally {
+      setCaptchaLoading(false);
+    }
   };
 
   // Submit the solved captcha to perform live look up of GSTIN details on the portal
@@ -1392,6 +1393,11 @@ export default function InvoiceForm({ backPath }: { backPath: string }) {
                           <div className="flex flex-col items-center justify-center p-3 space-y-1">
                             <span className="text-2xl opacity-30">🛒</span>
                             <p className="font-bold text-gray-600">No items added yet</p>
+                            {isEdit && (
+                              <p className="text-amber-700 font-semibold text-[11.5px] bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 mt-1.5 max-w-md">
+                                ⚠️ This invoice was converted from a quotation with no items. Please search and add at least one product above before saving.
+                              </p>
+                            )}
                             <small className="text-gray-400">Search for products above to start billing</small>
                           </div>
                         </td>

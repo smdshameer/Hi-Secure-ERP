@@ -37,40 +37,7 @@ customersRouter.get('/captcha', async (req, res) => {
     }
 
     const uniqueSessionId = `${gstin}_${Date.now()}`;
-
-    // ── Step 1: Fetch captcha image directly from GST portal (no Selenium) ──
-    const rnd = Math.random();
-    const captchaUrl = `https://services.gst.gov.in/services/captcha?rnd=${rnd}`;
-    let captchaB64 = '';
-
-    try {
-      const gstRes = await (fetch as any)(captchaUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Referer': 'https://services.gst.gov.in/services/searchtp',
-          'Accept': 'image/png,image/*',
-        },
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (gstRes.ok && gstRes.headers.get('content-type')?.includes('image')) {
-        const buf = Buffer.from(await gstRes.arrayBuffer());
-        captchaB64 = `data:image/png;base64,${buf.toString('base64')}`;
-        console.log(`[GST Captcha] Fetched real captcha image (${buf.length} bytes) for session ${uniqueSessionId}`);
-      } else {
-        console.warn(`[GST Captcha] Unexpected response from portal: ${gstRes.status} ${gstRes.headers.get('content-type')}`);
-      }
-    } catch (fetchErr: any) {
-      console.error('[GST Captcha] Direct fetch failed:', fetchErr.message);
-    }
-
-    if (!captchaB64) {
-      return res.status(503).json({ success: false, error: 'GST portal is temporarily unreachable. Please try again in a few seconds.' });
-    }
-
-    // ── Step 2: Spawn Selenium Python script in background to handle the full flow ──
-    // The script waits for the captcha code to be written to an IPC file by the
-    // /gstin/:gstin endpoint, then submits the form and scrapes the result.
+    // ── Step 1: Spawn Selenium Python script in background to handle the full flow ──
     const scriptPath = path.join(__dirname, 'get_gst_captcha.py');
     const env = { ...process.env, GST_SCRATCH_DIR: SCRATCH_DIR };
     const child = spawn('python', ['-u', scriptPath, gstin, uniqueSessionId], { env });
@@ -80,23 +47,60 @@ customersRouter.get('/captcha', async (req, res) => {
       console.error(`[GST Python STDERR ${uniqueSessionId}]:`, chunk.toString().trim());
     });
 
-    // Collect stdout for the verification step
     let pythonStdout = '';
+    let responded = false;
+
+    // Timeout if Python script takes too long to fetch the captcha (e.g. 25 seconds)
+    const timeoutId = setTimeout(() => {
+      if (!responded) {
+        responded = true;
+        try { child.kill(); } catch {}
+        activeProcesses.delete(uniqueSessionId);
+        res.status(504).json({ success: false, error: 'Timeout waiting for captcha from GST portal. Please try again.' });
+      }
+    }, 25000);
+
+    // Listen on stdout to capture the scraped Captcha image
     child.stdout.on('data', (chunk: any) => {
       const s = chunk.toString();
       pythonStdout += s;
+
+      if (!responded && pythonStdout.includes('__CAPTCHA_START__') && pythonStdout.includes('__CAPTCHA_END__')) {
+        responded = true;
+        clearTimeout(timeoutId);
+
+        const startIdx = pythonStdout.indexOf('__CAPTCHA_START__') + '__CAPTCHA_START__'.length;
+        const endIdx = pythonStdout.indexOf('__CAPTCHA_END__');
+        const captchaB64 = pythonStdout.substring(startIdx, endIdx).trim();
+
+        if (captchaB64 && captchaB64.startsWith('data:image')) {
+          console.log(`[GST Captcha] Successfully extracted Selenium captcha for session ${uniqueSessionId}`);
+          return res.json({ success: true, image: captchaB64, sessionId: uniqueSessionId });
+        } else {
+          try { child.kill(); } catch {}
+          activeProcesses.delete(uniqueSessionId);
+          return res.status(503).json({ success: false, error: 'Failed to extract captcha image from GST portal.' });
+        }
+      }
     });
 
-    // Kill the process after 90 seconds if still alive (user took too long)
+    child.on('close', (code) => {
+      if (!responded) {
+        responded = true;
+        clearTimeout(timeoutId);
+        activeProcesses.delete(uniqueSessionId);
+        console.warn(`[GST Captcha] Python script exited prematurely with code ${code} for session ${uniqueSessionId}`);
+        res.status(503).json({ success: false, error: 'GST verification script exited prematurely.' });
+      }
+    });
+
+    // Kill the process after 90 seconds if still alive (user took too long to input solved captcha)
     setTimeout(() => {
       if (activeProcesses.has(uniqueSessionId)) {
         try { activeProcesses.get(uniqueSessionId)?.kill(); } catch {}
         activeProcesses.delete(uniqueSessionId);
       }
     }, 90000);
-
-    // Return the real captcha image immediately — the Python process keeps running
-    return res.json({ success: true, image: captchaB64, sessionId: uniqueSessionId });
 
   } catch (err: any) {
     console.error('[GST Captcha] Unexpected error:', err);
@@ -116,76 +120,69 @@ customersRouter.get('/gstin/:gstin', async (req, res) => {
     const { captcha, session_id } = req.query;
 
     if (captcha && session_id) {
+      // Write captcha code to the IPC file so the Python script picks it up
+      const ipcFile = path.join(SCRATCH_DIR, `captcha_${session_id}.txt`);
+      
+      try {
+        fs.writeFileSync(ipcFile, String(captcha).trim());
+      } catch (err) {
+        console.error('Failed to write CAPTCHA IPC file:', err);
+      }
+
+      // Check if we have the local child process reference
       const child = activeProcesses.get(String(session_id));
 
-      if (child) {
-        // Write captcha code to the IPC file so the Python script picks it up
-        const ipcFile = path.join(SCRATCH_DIR, `captcha_${session_id}.txt`);
-        
-        try {
-          fs.writeFileSync(ipcFile, String(captcha).trim());
-        } catch (err) {
-          console.error('Failed to write CAPTCHA IPC file:', err);
-        }
+      // Wait for result file result_${session_id}.txt to appear in SCRATCH_DIR
+      const resultFile = path.join(SCRATCH_DIR, `result_${session_id}.txt`);
+      let results: any = null;
+      const startTime = Date.now();
+      const timeoutMs = 25000; // 25 seconds timeout
 
-        let stdoutData = '';
-        child.stdout.on('data', (chunk: any) => {
-          stdoutData += chunk.toString();
-        });
-
-        // Wait for child process to finish and scrape details
-        const results = await new Promise<any>((resolve) => {
-          child.on('close', () => {
-            // Find JSON lines in stdout
-            const lines = stdoutData.split('\n');
-            let parsedResult = null;
-            for (const line of lines) {
-              if (line.trim().startsWith('{')) {
-                try {
-                  parsedResult = JSON.parse(line.trim());
-                } catch {}
-              }
-            }
-            if (parsedResult) resolve(parsedResult);
-            else resolve({ success: false, error: 'Failed to parse scraper output' });
-          });
-        });
-
-        activeProcesses.delete(String(session_id));
-
-        if (results && results.success) {
-          const d = results.data;
-          
-          // Save or update in database using CustomerService
-          const existing = await customerService.getCustomerByGstin(gstin);
-
-          if (existing) {
-            await customerService.updateCustomer(existing.customer_id, {
-              name: d.name,
-              address: d.address,
-              city: d.city,
-              state: d.state,
-              pincode: d.pincode,
-              contact_person: d.legal_name || null
-            });
+      while (Date.now() - startTime < timeoutMs) {
+        if (fs.existsSync(resultFile)) {
+          try {
+            const fileContent = fs.readFileSync(resultFile, 'utf8');
+            results = JSON.parse(fileContent);
+            fs.unlinkSync(resultFile);
+          } catch (err) {
+            console.error('Error reading result IPC file:', err);
           }
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
 
-          return res.json({
-            success: true,
-            source: 'gst_portal_live',
-            data: d
-          });
-        } else {
-          return res.json({
-            success: false,
-            errorMsg: results?.error || 'CAPTCHA verification failed, please try again.'
+      // Clean up the local process reference if we had it
+      if (child) {
+        activeProcesses.delete(String(session_id));
+      }
+
+      if (results && results.success) {
+        const d = results.data;
+        
+        // Save or update in database using CustomerService
+        const existing = await customerService.getCustomerByGstin(gstin);
+
+        if (existing) {
+          await customerService.updateCustomer(existing.customer_id, {
+            name: d.name,
+            address: d.address,
+            city: d.city,
+            state: d.state,
+            pincode: d.pincode,
+            contact_person: d.legal_name || null
           });
         }
+
+        return res.json({
+          success: true,
+          source: 'gst_portal_live',
+          data: d
+        });
       } else {
-        // Session expired or invalid
         return res.json({
           success: false,
-          errorMsg: 'Verification session expired. Please close this modal and try fetching a new CAPTCHA.'
+          errorMsg: results?.error || 'CAPTCHA verification failed, please try again.'
         });
       }
     }
