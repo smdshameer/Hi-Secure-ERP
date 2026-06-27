@@ -82,8 +82,10 @@ log "Database backed up successfully to: ${PRE_DEPLOY_BACKUP}"
 log "Installing dependencies and compiling workspace..."
 cd "$APP_DIR"
 
-# Install dependencies for all workspaces
-npm run install:all
+# Install dependencies including devDependencies for compilation
+npm install --include=dev
+npm install --include=dev --prefix client
+npm install --include=dev --prefix server
 
 # Build static frontend and backend packages
 npm run build
