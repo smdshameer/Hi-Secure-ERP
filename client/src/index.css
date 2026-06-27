@@ -823,7 +823,7 @@ body {
   }
 }
 
-/* --- THEME 1: CLASSIC (Ledger Serif) --- */
+/* Legacy Theme CSS overrides commented out to let PrintTemplates Tailwind rules take effect
 .theme-classic {
   font-family: 'Times New Roman', Times, serif !important;
   font-size: 9.5pt;
@@ -839,8 +839,6 @@ body {
   text-transform: uppercase;
   font-size: 9pt;
 }
-
-/* --- THEME 2: MODERN BLUE (Corporate Navy) --- */
 .theme-modern-blue {
   font-family: 'Inter', sans-serif !important;
 }
@@ -861,8 +859,6 @@ body {
   padding: 6px 12px;
   font-weight: 600;
 }
-
-/* --- THEME 3: MINIMAL (Modern Clean) --- */
 .theme-minimal {
   font-family: 'Inter', sans-serif !important;
 }
@@ -883,8 +879,6 @@ body {
   border-bottom: none !important;
   font-weight: 700;
 }
-
-/* --- THEME 4: SAFFRON (Indian Accent) --- */
 .theme-saffron {
   font-family: 'Inter', sans-serif !important;
 }
@@ -908,11 +902,6 @@ body {
   background-color: #ea580c !important;
   color: #ffffff;
 }
-
-
-
-
-/* --- THEME 6: TALLY (Dense Grid) --- */
 .theme-tally {
   font-family: 'Consolas', 'Courier New', Courier, monospace !important;
   font-size: 8.5pt;
@@ -937,8 +926,6 @@ body {
   border-top: 1px solid #000000 !important;
   border-bottom: 3px double #000000 !important;
 }
-
-/* --- THEME 7: LEGACY (Box Layout) --- */
 .theme-legacy {
   font-family: Arial, Helvetica, sans-serif !important;
   font-size: 9.5pt;
@@ -969,6 +956,7 @@ body {
   padding: 8px 8px !important;
   border: 1.5px solid #000000 !important;
 }
+*/
 
 /* Thermal Size Overrides */
 .size-thermal-80mm, .size-thermal-58mm {
