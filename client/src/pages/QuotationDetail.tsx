@@ -192,6 +192,13 @@ export default function QuotationDetail() {
             logo_url: settings.logo_url || settings.logo_path || '',
           }));
         }
+        if (settings?.print?.default_theme) {
+          const defaultTheme = settings.print.default_theme === 'legacy' ? 'default' : settings.print.default_theme;
+          setTheme(defaultTheme as any);
+        }
+        if (settings?.print?.default_size) {
+          setSize(settings.print.default_size as any);
+        }
       })
       .catch(() => {});
   }, [id]);

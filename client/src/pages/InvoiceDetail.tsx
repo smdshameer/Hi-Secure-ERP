@@ -164,7 +164,8 @@ export default function InvoiceDetail() {
           }));
         }
         if (d?.print?.default_theme) {
-          setTheme(d.print.default_theme as any);
+          const defaultTheme = d.print.default_theme === 'legacy' ? 'default' : d.print.default_theme;
+          setTheme(defaultTheme as any);
         }
         if (d?.print?.default_size) {
           setSize(d.print.default_size as any);
