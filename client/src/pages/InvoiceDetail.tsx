@@ -456,6 +456,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -511,6 +512,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -566,6 +568,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -621,6 +624,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -676,6 +680,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -731,6 +736,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -786,6 +792,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
@@ -841,6 +848,7 @@ export default function InvoiceDetail() {
               grand_total: invoice.grand_total,
               amount_in_words: toRupeesInWords(invoice.grand_total),
             }}
+            upiPaymentId={upiPaymentId}
             logoSize={logoSize}
           />
         )}
