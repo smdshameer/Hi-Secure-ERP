@@ -98,7 +98,7 @@ npx prisma migrate deploy
 
 # Seed settings and administrators
 log "Seeding database configuration..."
-node "${APP_DIR}/seed-admin.js"
+NODE_PATH="${APP_DIR}/server/node_modules" node "${APP_DIR}/seed-admin.js"
 
 # --- START SERVICES WITH PM2 ---
 log "Starting Express backend via PM2..."
