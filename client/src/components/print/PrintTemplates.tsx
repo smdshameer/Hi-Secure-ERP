@@ -2180,7 +2180,7 @@ export function ThemeTally({
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight + summaryHeight > 1000) {
+        if (heightUsed + itemHeight + summaryHeight > 970) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2194,7 +2194,7 @@ export function ThemeTally({
           currentItems.push(item);
         }
       } else {
-        if (heightUsed + itemHeight > 1000) {
+        if (heightUsed + itemHeight > 970) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2303,7 +2303,7 @@ export function ThemeTally({
           <div
             style={{
               border: '2px solid #000',
-              padding: '8px',
+              padding: '4px',
               flexGrow: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -2649,7 +2649,7 @@ export function ThemeTally({
                   >
                     <th
                       style={{
-                        padding: '10px 4px',
+                        padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
                         width: '35px',
@@ -2660,7 +2660,7 @@ export function ThemeTally({
                     </th>
                     <th
                       style={{
-                        padding: '10px 4px',
+                        padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'left',
                         fontWeight: 'bold',
@@ -2671,7 +2671,7 @@ export function ThemeTally({
                     {showHsnSac && (
                       <th
                         style={{
-                          padding: '10px 4px',
+                          padding: '6px 4px',
                           borderRight: '1px solid #000',
                           textAlign: 'center',
                           width: '75px',
@@ -2683,7 +2683,7 @@ export function ThemeTally({
                     )}
                     <th
                       style={{
-                        padding: '10px 4px',
+                        padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
                         width: '55px',
@@ -2694,7 +2694,7 @@ export function ThemeTally({
                     </th>
                     <th
                       style={{
-                        padding: '10px 4px',
+                        padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'right',
                         width: '90px',
@@ -2706,7 +2706,7 @@ export function ThemeTally({
                     {invoice.is_interstate ? (
                       <th
                         style={{
-                          padding: '10px 4px',
+                          padding: '6px 4px',
                           borderRight: '1px solid #000',
                           textAlign: 'right',
                           width: '95px',
@@ -2719,7 +2719,7 @@ export function ThemeTally({
                       <>
                         <th
                           style={{
-                            padding: '10px 4px',
+                            padding: '6px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             width: '80px',
@@ -2730,7 +2730,7 @@ export function ThemeTally({
                         </th>
                         <th
                           style={{
-                            padding: '10px 4px',
+                            padding: '6px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             width: '80px',
@@ -2743,7 +2743,7 @@ export function ThemeTally({
                     )}
                     <th
                       style={{
-                        padding: '10px 4px',
+                        padding: '6px 4px',
                         textAlign: 'right',
                         width: '100px',
                         fontWeight: 'bold',
@@ -2768,7 +2768,7 @@ export function ThemeTally({
                       >
                         <td
                           style={{
-                            padding: '8px 4px',
+                            padding: '5px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'center',
                             verticalAlign: 'middle',
@@ -2778,7 +2778,7 @@ export function ThemeTally({
                         </td>
                         <td
                           style={{
-                            padding: '8px 4px',
+                            padding: '5px 4px',
                             borderRight: '1px solid #000',
                             fontWeight: 'bold',
                             verticalAlign: 'middle',
@@ -2824,7 +2824,7 @@ export function ThemeTally({
                         {showHsnSac && (
                           <td
                             style={{
-                              padding: '8px 4px',
+                              padding: '5px 4px',
                               borderRight: '1px solid #000',
                               textAlign: 'center',
                               verticalAlign: 'middle',
@@ -2835,7 +2835,7 @@ export function ThemeTally({
                         )}
                         <td
                           style={{
-                            padding: '8px 4px',
+                            padding: '5px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'center',
                             fontWeight: 'bold',
@@ -2846,7 +2846,7 @@ export function ThemeTally({
                         </td>
                         <td
                           style={{
-                            padding: '8px 4px',
+                            padding: '5px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             verticalAlign: 'middle',
@@ -2857,7 +2857,7 @@ export function ThemeTally({
                         {invoice.is_interstate ? (
                           <td
                             style={{
-                              padding: '8px 4px',
+                              padding: '5px 4px',
                               borderRight: '1px solid #000',
                               textAlign: 'right',
                               verticalAlign: 'middle',
@@ -2869,7 +2869,7 @@ export function ThemeTally({
                           <>
                             <td
                               style={{
-                                padding: '8px 4px',
+                                padding: '5px 4px',
                                 borderRight: '1px solid #000',
                                 textAlign: 'right',
                                 verticalAlign: 'middle',
@@ -2879,7 +2879,7 @@ export function ThemeTally({
                             </td>
                             <td
                               style={{
-                                padding: '8px 4px',
+                                padding: '5px 4px',
                                 borderRight: '1px solid #000',
                                 textAlign: 'right',
                                 verticalAlign: 'middle',
@@ -2891,7 +2891,7 @@ export function ThemeTally({
                         )}
                         <td
                           style={{
-                            padding: '8px 4px',
+                            padding: '5px 4px',
                             textAlign: 'right',
                             fontWeight: 'bold',
                             verticalAlign: 'middle',
