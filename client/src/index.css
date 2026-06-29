@@ -726,7 +726,8 @@ body {
   /* Reset the Layout wrappers during printing */
   .layout-wrapper,
   .main-container,
-  .content-area {
+  .content-area,
+  .print-page-container {
     display: block !important;
     height: auto !important;
     min-height: 0 !important;
@@ -3636,3 +3637,43 @@ body {
 .theme-saffron .sf-sign-blank { height: 22px; }
 .theme-saffron .sf-sign-label { font-size: 8pt; color: #444; }
 .theme-saffron .sf-sign-co { font-size: 8pt; font-weight: bold; color: #1B5E20; }
+
+/* ── PRINT & PREVIEW SYSTEM FRAMEWORK OVERRIDES ── */
+@media screen {
+  .only-print {
+    display: none !important;
+  }
+  .print-preview-scroll {
+    overflow: auto !important;
+  }
+  /* Style Tally's individual page containers with card sheets on screen */
+  .print-page-break-after {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .only-print {
+    display: block !important;
+  }
+  /* Solve the browser printing flex container clipping bug */
+  .print-document {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  /* Hide shadows/borders during real print */
+  .print-page-break-after {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  /* Avoid page break margins inside root container elements */
+  .print-preview-content {
+    transform: none !important;
+  }
+}

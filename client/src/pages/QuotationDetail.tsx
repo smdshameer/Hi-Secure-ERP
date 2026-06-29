@@ -4,6 +4,7 @@ import { IconChevronLeft, IconPrinter, IconCheck, IconFileInvoice } from '@table
 import api from '../services/api';
 import { toRupeesInWords } from '../utils/numberToWords';
 import { ThemeHiSecure, ThemeClassic, ThemeModernBlue, ThemeMinimal, ThemeSaffron, ThemeDefault, ThemeTally, ThemeEmerald, ThemeCharcoal } from '../components/print/PrintTemplates';
+import PrintPreviewWrapper from '../components/print/PrintPreviewWrapper';
 
 interface QuotationItem {
   quote_item_id: number;
@@ -242,104 +243,9 @@ export default function QuotationDetail() {
     `;
   };
 
-  return (
-    <div className="print-page-container">
-      <style>{getPageSizeCSS()}</style>
+  const renderTemplates = () => (
+    <>
 
-      {/* Toolbar */}
-      <div className="no-print bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <Link to="/quotations" className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
-            <IconChevronLeft size={20} />
-          </Link>
-          <div>
-            <h2 className="text-[16px] font-semibold text-gray-800">Quotation: {quotation.quote_number}</h2>
-            <p className="text-[12px] text-gray-400">Preview and print using custom themes</p>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Theme Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[12px] font-medium text-gray-500">Theme:</span>
-            <select 
-              value={theme} 
-              onChange={(e) => setTheme(e.target.value as any)}
-              className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
-            >
-              <option value="default">Hi Secure Default</option>
-              <option value="tally">Tally (Monospace)</option>
-              <option value="hisecure">HiSecure Premium</option>
-              <option value="classic">Classic (Serif B&W)</option>
-              <option value="modern-blue">Modern Blue</option>
-              <option value="minimal">Minimalist</option>
-              <option value="saffron">Saffron (Tricolor)</option>
-              <option value="emerald">Emerald Green</option>
-              <option value="charcoal">Charcoal Sleek</option>
-            </select>
-          </div>
-
-          {/* Size Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[12px] font-medium text-gray-500">Paper:</span>
-            <select 
-              value={size} 
-              onChange={(e) => setSize(e.target.value as any)}
-              className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
-            >
-              <option value="a4">A4</option>
-              <option value="a5">A5</option>
-              <option value="letter">Letter</option>
-              <option value="legal">Legal</option>
-              <option value="thermal-80mm">Thermal (80mm)</option>
-              <option value="thermal-58mm">Thermal (58mm)</option>
-            </select>
-          </div>
-
-          {/* Logo Size Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[12px] font-medium text-gray-500">Logo Size:</span>
-            <select 
-              value={logoSize} 
-              onChange={(e) => setLogoSize(e.target.value as any)}
-              className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300"
-            >
-              <option value="small">Small</option>
-              <option value="medium">Medium</option>
-              <option value="large">Large</option>
-              <option value="hidden">Hide Logo</option>
-            </select>
-          </div>
-
-          {(quotation.status === 'draft' || quotation.status === 'sent') && (
-            <button 
-              onClick={handleAccept}
-              disabled={actionLoading}
-              className="flex items-center gap-1.5 bg-green-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-            >
-              <IconCheck size={16} /> Accept Quotation
-            </button>
-          )}
-          {quotation.status === 'accepted' && (
-            <button 
-              onClick={handleConvert}
-              disabled={actionLoading}
-              className="flex items-center gap-1.5 bg-emerald-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-            >
-              <IconFileInvoice size={16} /> Convert to Invoice
-            </button>
-          )}
-          <button 
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 bg-[#1a3480] text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-blue-800 transition-colors"
-          >
-            <IconPrinter size={16} /> Print Quotation
-          </button>
-        </div>
-      </div>
-
-      {/* Document Canvas */}
-      <div className={`print-document theme-${theme} size-${size} flex flex-col`}>
         {theme === 'default' && (
           <ThemeDefault
             company={company}
@@ -897,6 +803,121 @@ export default function QuotationDetail() {
             logoSize={logoSize}
           />
         )}
+
+    </>
+  );
+
+  return (
+    <div className="print-page-container flex-grow flex flex-col min-h-0 h-full overflow-hidden">
+      {/* Dynamic Style Injection */}
+      <style>{getPageSizeCSS()}</style>
+
+      {/* Print-only container */}
+      <div className="only-print">
+        <div className={`print-document theme-${theme} size-${size} flex flex-col`}>
+          {renderTemplates()}
+        </div>
+      </div>
+
+      {/* Screen-only preview framework */}
+      <div className="no-print flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-100">
+        <div className="bg-white p-4 border-b border-gray-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Link to="/quotations" className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
+              <IconChevronLeft size={20} />
+            </Link>
+            <div>
+              <h2 className="text-[16px] font-semibold text-gray-800">Quotation: {quotation.quote_number}</h2>
+              <p className="text-[12px] text-gray-400">Preview and print using custom themes</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Theme Selector */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-medium text-gray-500">Theme:</span>
+              <select 
+                value={theme} 
+                onChange={(e) => setTheme(e.target.value as any)}
+                className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300 bg-white"
+              >
+                <option value="default">Hi Secure Default</option>
+                <option value="tally">Tally (Monospace)</option>
+                <option value="hisecure">HiSecure Premium</option>
+                <option value="classic">Classic (Serif B&W)</option>
+                <option value="modern-blue">Modern Blue</option>
+                <option value="minimal">Minimalist</option>
+                <option value="saffron">Saffron (Tricolor)</option>
+                <option value="emerald">Emerald Green</option>
+                <option value="charcoal">Charcoal Sleek</option>
+              </select>
+            </div>
+
+            {/* Size Selector */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-medium text-gray-500">Paper:</span>
+              <select 
+                value={size} 
+                onChange={(e) => setSize(e.target.value as any)}
+                className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300 bg-white"
+              >
+                <option value="a4">A4</option>
+                <option value="a5">A5</option>
+                <option value="letter">Letter</option>
+                <option value="legal">Legal</option>
+                <option value="thermal-80mm">Thermal (80mm)</option>
+                <option value="thermal-58mm">Thermal (58mm)</option>
+              </select>
+            </div>
+
+            {/* Logo Size Selector */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-medium text-gray-500">Logo:</span>
+              <select 
+                value={logoSize} 
+                onChange={(e) => setLogoSize(e.target.value as any)}
+                className="border border-gray-200 rounded-lg px-2 h-[34px] text-[13px] text-gray-700 outline-none focus:border-blue-300 bg-white"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="hidden">Hide</option>
+              </select>
+            </div>
+
+            {(quotation.status === 'draft' || quotation.status === 'sent') && (
+              <button 
+                onClick={handleAccept}
+                disabled={actionLoading}
+                className="flex items-center gap-1.5 bg-green-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                Accept
+              </button>
+            )}
+            {quotation.status === 'accepted' && (
+              <button 
+                onClick={handleConvert}
+                disabled={actionLoading}
+                className="flex items-center gap-1.5 bg-emerald-600 text-white text-[13px] font-semibold px-4 h-[34px] rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              >
+                Convert
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 min-h-0 relative flex flex-col overflow-hidden">
+          <PrintPreviewWrapper 
+            title={`Quotation Preview`}
+            size={size}
+            theme={theme}
+            onPrint={handlePrint}
+          >
+            <div className={`print-document theme-${theme} size-${size} flex flex-col`}>
+              {renderTemplates()}
+            </div>
+          </PrintPreviewWrapper>
+        </div>
       </div>
     </div>
   );
