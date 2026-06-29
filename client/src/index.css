@@ -724,11 +724,17 @@ body {
   }
   
   /* Reset the Layout wrappers during printing */
+  #root,
   .layout-wrapper,
   .main-container,
   .content-area,
-  .print-page-container {
+  .print-page-container,
+  .only-print,
+  .print-preview-scroll,
+  .print-preview-content {
     display: block !important;
+    position: static !important;
+    float: none !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
@@ -805,6 +811,10 @@ body {
 }
 
 @media print {
+  * {
+    transform: none !important;
+    zoom: normal !important;
+  }
   .print-document {
     box-shadow: none !important;
     border: none !important;
@@ -813,6 +823,48 @@ body {
     border-radius: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .print-document > div {
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .print-document > div > div {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+  }
+  .print-page,
+  .print-page-break-after {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+    overflow: visible !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
+    display: block !important;
+  }
+  .print-page:last-child,
+  .print-page-break-after:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+  .print-document thead {
+    display: table-header-group !important;
+  }
+  .print-document tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
 
@@ -3672,8 +3724,17 @@ body {
     box-shadow: none !important;
     padding: 0 !important;
   }
-  /* Avoid page break margins inside root container elements */
+  /* Avoid page break margins inside root container elements and reset zoom to prevent disabling page breaks */
   .print-preview-content {
     transform: none !important;
+    zoom: normal !important;
   }
+}
+
+.invoice-preview-container-element {
+    /* Change 'clip' to 'auto' or 'visible' to allow scrolling */
+    overflow: auto !important; 
+    
+    /* Keep or remove this depending on your layout padding needs */
+    overflow-clip-margin: content-box !important; 
 }

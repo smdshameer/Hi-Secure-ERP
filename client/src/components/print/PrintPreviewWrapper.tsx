@@ -26,36 +26,12 @@ const paperSizes: Record<string, { w: number; h: number }> = {
 
 export default function PrintPreviewWrapper({ children, onPrint, title, size, theme }: PrintPreviewWrapperProps) {
   const [scale, setScale] = useState<number>(1);
-  const [contentHeight, setContentHeight] = useState<number>(1123);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const paper = paperSizes[size] || paperSizes.a4;
   const paperWidth = paper.w;
   const pageHeight = paper.h;
-
-  // Track height of actual content
-  useEffect(() => {
-    if (contentRef.current) {
-      const observer = new ResizeObserver(() => {
-        if (contentRef.current) {
-          setContentHeight(contentRef.current.scrollHeight);
-        }
-      });
-      observer.observe(contentRef.current);
-      
-      const timer = setTimeout(() => {
-        if (contentRef.current) {
-          setContentHeight(contentRef.current.scrollHeight);
-        }
-      }, 500);
-
-      return () => {
-        observer.disconnect();
-        clearTimeout(timer);
-      };
-    }
-  }, [children]);
 
   // Fit Width calculation
   const fitWidth = () => {
@@ -142,15 +118,6 @@ export default function PrintPreviewWrapper({ children, onPrint, title, size, th
     };
   }, []);
 
-  // Calculate page break positions for indicator overlay lines (only for non-tally themes)
-  const numPages = pageHeight > 0 ? Math.max(1, Math.ceil(contentHeight / pageHeight)) : 1;
-  const breakPositions: number[] = [];
-  if (theme !== 'tally' && pageHeight > 0 && numPages > 1) {
-    for (let i = 1; i < numPages; i++) {
-      breakPositions.push(i * pageHeight);
-    }
-  }
-
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 bg-gray-100 relative">
       {/* Sticky controls bar */}
@@ -213,72 +180,23 @@ export default function PrintPreviewWrapper({ children, onPrint, title, size, th
       {/* Screen Preview Container */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto p-4 md:p-6 flex justify-center items-start min-h-0 select-none print-preview-scroll"
+        className="flex-1 overflow-auto p-4 md:p-6 flex justify-center items-start min-h-0 select-none print-preview-scroll invoice-preview-container-element"
         style={{ touchAction: 'pan-x pan-y' }}
       >
-        {/* Scale Container - Wraps content so scroll height is correct */}
         <div
+          ref={contentRef}
           style={{
-            width: `${paperWidth * scale}px`,
-            height: `${contentHeight * scale}px`,
-            position: 'relative',
-            boxSizing: 'border-box'
+            zoom: scale,
+            width: `${paperWidth}px`,
+            backgroundColor: '#ffffff',
+            boxShadow: theme === 'tally' ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            border: theme === 'tally' ? 'none' : '1px solid #e2e8f0',
+            boxSizing: 'border-box',
+            position: 'relative'
           }}
+          className="print-preview-content"
         >
-          {/* Unscaled Content Wrapper */}
-          <div
-            ref={contentRef}
-            style={{
-              width: `${paperWidth}px`,
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              backgroundColor: '#ffffff',
-              boxShadow: theme === 'tally' ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              border: theme === 'tally' ? 'none' : '1px solid #e2e8f0',
-              boxSizing: 'border-box'
-            }}
-            className="print-preview-content"
-          >
-            {children}
-
-            {/* Visual Page Break Indicators */}
-            {breakPositions.map((pos, idx) => (
-              <div
-                key={idx}
-                style={{
-                  position: 'absolute',
-                  top: `${pos}px`,
-                  left: 0,
-                  right: 0,
-                  height: '0px',
-                  borderTop: '2px dashed #ff4d4d',
-                  zIndex: 40,
-                  pointerEvents: 'none'
-                }}
-                className="no-print"
-              >
-                <span
-                  style={{
-                    position: 'absolute',
-                    right: '12px',
-                    top: '-10px',
-                    backgroundColor: '#ff4d4d',
-                    color: '#ffffff',
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  PAGE BREAK {idx + 2}
-                </span>
-              </div>
-            ))}
-          </div>
+          {children}
         </div>
       </div>
     </div>
