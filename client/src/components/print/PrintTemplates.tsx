@@ -2634,6 +2634,7 @@ export function ThemeTally({
               <table
                 style={{
                   width: '100%',
+                  tableLayout: 'fixed',
                   borderCollapse: 'collapse',
                   fontSize: '8.5pt',
                   border: '1.5px solid #000',
@@ -2652,7 +2653,7 @@ export function ThemeTally({
                         padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
-                        width: '35px',
+                        width: '5%',
                         fontWeight: 'bold',
                       }}
                     >
@@ -2663,6 +2664,9 @@ export function ThemeTally({
                         padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'left',
+                        width: invoice.is_interstate 
+                          ? (showHsnSac ? '46%' : '57%') 
+                          : (showHsnSac ? '38%' : '48%'),
                         fontWeight: 'bold',
                       }}
                     >
@@ -2674,7 +2678,7 @@ export function ThemeTally({
                           padding: '6px 4px',
                           borderRight: '1px solid #000',
                           textAlign: 'center',
-                          width: '75px',
+                          width: invoice.is_interstate ? '11%' : '10%',
                           fontWeight: 'bold',
                         }}
                       >
@@ -2686,7 +2690,7 @@ export function ThemeTally({
                         padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
-                        width: '55px',
+                        width: invoice.is_interstate ? '8%' : '7%',
                         fontWeight: 'bold',
                       }}
                     >
@@ -2697,7 +2701,7 @@ export function ThemeTally({
                         padding: '6px 4px',
                         borderRight: '1px solid #000',
                         textAlign: 'right',
-                        width: '90px',
+                        width: invoice.is_interstate ? '12%' : '11%',
                         fontWeight: 'bold',
                       }}
                     >
@@ -2709,7 +2713,7 @@ export function ThemeTally({
                           padding: '6px 4px',
                           borderRight: '1px solid #000',
                           textAlign: 'right',
-                          width: '95px',
+                          width: '10%',
                           fontWeight: 'bold',
                         }}
                       >
@@ -2722,7 +2726,7 @@ export function ThemeTally({
                             padding: '6px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
-                            width: '80px',
+                            width: '9%',
                             fontWeight: 'bold',
                           }}
                         >
@@ -2733,7 +2737,7 @@ export function ThemeTally({
                             padding: '6px 4px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
-                            width: '80px',
+                            width: '9%',
                             fontWeight: 'bold',
                           }}
                         >
@@ -2745,7 +2749,7 @@ export function ThemeTally({
                       style={{
                         padding: '6px 4px',
                         textAlign: 'right',
-                        width: '100px',
+                        width: invoice.is_interstate ? '12%' : '11%',
                         fontWeight: 'bold',
                       }}
                     >
