@@ -2180,7 +2180,7 @@ export function ThemeTally({
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight + summaryHeight > 1020) {
+        if (heightUsed + itemHeight > 970) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2190,11 +2190,43 @@ export function ThemeTally({
           });
           currentItems = [item];
           pageNum++;
+          pageList.push({
+            items: currentItems,
+            isFirst: pageNum === 1,
+            isLast: true,
+            pageNumber: pageNum,
+            startIndex: 0,
+          });
+        } else if (heightUsed + itemHeight + summaryHeight > 970) {
+          currentItems.push(item);
+          pageList.push({
+            items: currentItems,
+            isFirst: pageNum === 1,
+            isLast: false,
+            pageNumber: pageNum,
+            startIndex: 0,
+          });
+          currentItems = [];
+          pageNum++;
+          pageList.push({
+            items: currentItems,
+            isFirst: pageNum === 1,
+            isLast: true,
+            pageNumber: pageNum,
+            startIndex: 0,
+          });
         } else {
           currentItems.push(item);
+          pageList.push({
+            items: currentItems,
+            isFirst: pageNum === 1,
+            isLast: true,
+            pageNumber: pageNum,
+            startIndex: 0,
+          });
         }
       } else {
-        if (heightUsed + itemHeight > 1020) {
+        if (heightUsed + itemHeight > 970) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2211,14 +2243,6 @@ export function ThemeTally({
         }
       }
     }
-
-    pageList.push({
-      items: currentItems,
-      isFirst: pageNum === 1,
-      isLast: true,
-      pageNumber: pageNum,
-      startIndex: 0,
-    });
 
     let indexOffset = 0;
     pageList.forEach((page) => {
