@@ -3726,7 +3726,6 @@ body {
   .print-page-break-after {
     border: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
   }
   /* Avoid page break margins inside root container elements and reset zoom to prevent disabling page breaks */
   .print-preview-content {
