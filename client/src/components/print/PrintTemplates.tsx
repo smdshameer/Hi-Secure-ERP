@@ -1959,7 +1959,7 @@ const getPageMinHeight = (size: string) => {
     case 'letter': return '1075px';
     case 'legal': return '1320px';
     case 'executive': return '930px';
-    default: return '1050px';
+    default: return '1123px';
   }
 };
 
