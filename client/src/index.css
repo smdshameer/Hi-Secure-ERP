@@ -3295,7 +3295,7 @@ body {
 /* ── GLOBAL PRINT SETUP ──────────────────────────────────────── */
 @page {
   size: A4 portrait;
-  margin: 8mm 10mm 8mm 10mm;
+  margin: 0;
 }
 
 @media print {
