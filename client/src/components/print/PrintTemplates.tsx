@@ -2273,6 +2273,17 @@ export function ThemeTally({
       }
     }
 
+    const hasLastPage = pageList.some(p => p.isLast);
+    if (!hasLastPage) {
+      pageList.push({
+        items: currentItems,
+        isFirst: pageNum === 1,
+        isLast: true,
+        pageNumber: pageNum,
+        startIndex: 0,
+      });
+    }
+
     let indexOffset = 0;
     pageList.forEach((page) => {
       page.startIndex = indexOffset;
