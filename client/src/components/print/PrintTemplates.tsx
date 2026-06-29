@@ -2254,7 +2254,7 @@ export function ThemeTally({
             backgroundColor: '#fff',
             color: '#000',
             fontFamily: '"Courier New", Courier, monospace',
-            padding: '12px',
+            padding: '6mm',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
