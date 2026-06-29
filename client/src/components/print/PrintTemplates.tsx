@@ -1956,7 +1956,7 @@ const getPageMinHeight = (size: string) => {
   if (size.startsWith('thermal')) return 'auto';
   switch (size) {
     case 'a5': return '720px';
-    case 'letter': return '1010px';
+    case 'letter': return '1075px';
     case 'legal': return '1320px';
     case 'executive': return '930px';
     default: return '1050px';
@@ -2144,7 +2144,7 @@ export function ThemeTally({
             <span style={{ fontSize: '7pt', color: '#555', marginTop: '2px' }}>Scan to Pay</span>
           </div>
         )}
-        <div style={{ textAlign: 'center', fontSize: '7.5pt', marginTop: '12px', color: '#666' }}>
+        <div style={{ textAlign: 'center', fontSize: '8.5pt', marginTop: '12px', color: '#666' }}>
           Thank you for your business!
         </div>
       </div>
@@ -2180,7 +2180,7 @@ export function ThemeTally({
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight > 1010) {
+        if (heightUsed + itemHeight > 1075) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2197,7 +2197,7 @@ export function ThemeTally({
             pageNumber: pageNum,
             startIndex: 0,
           });
-        } else if (heightUsed + itemHeight + summaryHeight > 1010) {
+        } else if (heightUsed + itemHeight + summaryHeight > 1075) {
           currentItems.push(item);
           pageList.push({
             items: currentItems,
@@ -2226,7 +2226,7 @@ export function ThemeTally({
           });
         }
       } else {
-        if (heightUsed + itemHeight > 1010) {
+        if (heightUsed + itemHeight > 1075) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2371,7 +2371,7 @@ export function ThemeTally({
                     </div>
                     <div
                       style={{
-                        fontSize: '8.5pt',
+                        fontSize: '9.5pt',
                         marginTop: '6px',
                         lineHeight: 1.45,
                       }}
@@ -2461,7 +2461,7 @@ export function ThemeTally({
                         <>
                           <span style={{ fontWeight: 'bold' }}>IRN</span>
                           <span>:</span>
-                          <span style={{ wordBreak: 'break-all', fontSize: '7.5pt' }}>{invoice.irn}</span>
+                          <span style={{ wordBreak: 'break-all', fontSize: '8.5pt' }}>{invoice.irn}</span>
                         </>
                       )}
 
@@ -2675,7 +2675,7 @@ export function ThemeTally({
                   >
                     <th
                       style={{
-                        padding: '6px 4px',
+                        padding: '8px 5px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
                         width: '5%',
@@ -2686,7 +2686,7 @@ export function ThemeTally({
                     </th>
                     <th
                       style={{
-                        padding: '6px 4px',
+                        padding: '8px 5px',
                         borderRight: '1px solid #000',
                         textAlign: 'left',
                         width: invoice.is_interstate 
@@ -2700,7 +2700,7 @@ export function ThemeTally({
                     {showHsnSac && (
                       <th
                         style={{
-                          padding: '6px 4px',
+                          padding: '8px 5px',
                           borderRight: '1px solid #000',
                           textAlign: 'center',
                           width: invoice.is_interstate ? '11%' : '10%',
@@ -2712,7 +2712,7 @@ export function ThemeTally({
                     )}
                     <th
                       style={{
-                        padding: '6px 4px',
+                        padding: '8px 5px',
                         borderRight: '1px solid #000',
                         textAlign: 'center',
                         width: invoice.is_interstate ? '8%' : '7%',
@@ -2723,7 +2723,7 @@ export function ThemeTally({
                     </th>
                     <th
                       style={{
-                        padding: '6px 4px',
+                        padding: '8px 5px',
                         borderRight: '1px solid #000',
                         textAlign: 'right',
                         width: invoice.is_interstate ? '12%' : '11%',
@@ -2735,7 +2735,7 @@ export function ThemeTally({
                     {invoice.is_interstate ? (
                       <th
                         style={{
-                          padding: '6px 4px',
+                          padding: '8px 5px',
                           borderRight: '1px solid #000',
                           textAlign: 'right',
                           width: '10%',
@@ -2748,7 +2748,7 @@ export function ThemeTally({
                       <>
                         <th
                           style={{
-                            padding: '6px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             width: '9%',
@@ -2759,7 +2759,7 @@ export function ThemeTally({
                         </th>
                         <th
                           style={{
-                            padding: '6px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             width: '9%',
@@ -2772,7 +2772,7 @@ export function ThemeTally({
                     )}
                     <th
                       style={{
-                        padding: '6px 4px',
+                        padding: '8px 5px',
                         textAlign: 'right',
                         width: invoice.is_interstate ? '12%' : '11%',
                         fontWeight: 'bold',
@@ -2797,7 +2797,7 @@ export function ThemeTally({
                       >
                         <td
                           style={{
-                            padding: '5px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             textAlign: 'center',
                             verticalAlign: 'middle',
@@ -2807,7 +2807,7 @@ export function ThemeTally({
                         </td>
                         <td
                           style={{
-                            padding: '5px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             fontWeight: 'bold',
                             verticalAlign: 'middle',
@@ -2818,7 +2818,7 @@ export function ThemeTally({
                           {hasModel && item.model && (
                             <div
                               style={{
-                                fontSize: '7.5pt',
+                                fontSize: '8.5pt',
                                 fontWeight: 'normal',
                                 color: '#475569',
                                 marginTop: '3px',
@@ -2830,7 +2830,7 @@ export function ThemeTally({
                           {hasWarranty && item.warranty && (
                             <div
                               style={{
-                                fontSize: '7.5pt',
+                                fontSize: '8.5pt',
                                 fontWeight: 'normal',
                                 color: '#475569',
                               }}
@@ -2841,7 +2841,7 @@ export function ThemeTally({
                           {hasSerial && ((item as any).serialNumber || (item as any).batchNumber) && (
                             <div
                               style={{
-                                fontSize: '7.5pt',
+                                fontSize: '8.5pt',
                                 fontWeight: 'normal',
                                 color: '#475569',
                               }}
@@ -2853,7 +2853,7 @@ export function ThemeTally({
                         {showHsnSac && (
                           <td
                             style={{
-                              padding: '5px 4px',
+                              padding: '8px 5px',
                               borderRight: '1px solid #000',
                               textAlign: 'center',
                               verticalAlign: 'middle',
@@ -2864,7 +2864,7 @@ export function ThemeTally({
                         )}
                         <td
                           style={{
-                            padding: '5px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             textAlign: 'center',
                             fontWeight: 'bold',
@@ -2875,7 +2875,7 @@ export function ThemeTally({
                         </td>
                         <td
                           style={{
-                            padding: '5px 4px',
+                            padding: '8px 5px',
                             borderRight: '1px solid #000',
                             textAlign: 'right',
                             verticalAlign: 'middle',
@@ -2886,7 +2886,7 @@ export function ThemeTally({
                         {invoice.is_interstate ? (
                           <td
                             style={{
-                              padding: '5px 4px',
+                              padding: '8px 5px',
                               borderRight: '1px solid #000',
                               textAlign: 'right',
                               verticalAlign: 'middle',
@@ -2898,7 +2898,7 @@ export function ThemeTally({
                           <>
                             <td
                               style={{
-                                padding: '5px 4px',
+                                padding: '8px 5px',
                                 borderRight: '1px solid #000',
                                 textAlign: 'right',
                                 verticalAlign: 'middle',
@@ -2908,7 +2908,7 @@ export function ThemeTally({
                             </td>
                             <td
                               style={{
-                                padding: '5px 4px',
+                                padding: '8px 5px',
                                 borderRight: '1px solid #000',
                                 textAlign: 'right',
                                 verticalAlign: 'middle',
@@ -2920,7 +2920,7 @@ export function ThemeTally({
                         )}
                         <td
                           style={{
-                            padding: '5px 4px',
+                            padding: '8px 5px',
                             textAlign: 'right',
                             fontWeight: 'bold',
                             verticalAlign: 'middle',
@@ -3090,7 +3090,7 @@ export function ThemeTally({
                               />
                               <span
                                 style={{
-                                  fontSize: '7.5pt',
+                                  fontSize: '8.5pt',
                                   fontWeight: 'bold',
                                   marginTop: '4px',
                                   letterSpacing: '0.5px',
@@ -3102,7 +3102,7 @@ export function ThemeTally({
                           ) : (
                             <span
                               style={{
-                                fontSize: '7.5pt',
+                                fontSize: '8.5pt',
                                 fontStyle: 'italic',
                                 color: '#555',
                               }}
@@ -3119,7 +3119,7 @@ export function ThemeTally({
                         <strong
                           style={{
                             textTransform: 'uppercase',
-                            fontSize: '7.5pt',
+                            fontSize: '8.5pt',
                             display: 'block',
                             marginBottom: '2px',
                           }}
@@ -3133,7 +3133,7 @@ export function ThemeTally({
                     {showTerms && (
                       <div
                         style={{
-                          fontSize: '7.5pt',
+                          fontSize: '8.5pt',
                           color: '#333',
                           lineHeight: 1.35,
                         }}
@@ -3141,7 +3141,7 @@ export function ThemeTally({
                         <strong
                           style={{
                             textTransform: 'uppercase',
-                            fontSize: '7.5pt',
+                            fontSize: '8.5pt',
                             display: 'block',
                             marginBottom: '2px',
                           }}
@@ -3318,7 +3318,7 @@ export function ThemeTally({
                         position: 'relative',
                       }}
                     >
-                      <div style={{ fontSize: '7.5pt', color: '#000' }}>
+                      <div style={{ fontSize: '8.5pt', color: '#000' }}>
                         For <strong>{company.name}</strong>
                       </div>
 
@@ -3365,7 +3365,7 @@ export function ThemeTally({
                         <span />
                         <span
                           style={{
-                            fontSize: '7.5pt',
+                            fontSize: '8.5pt',
                             fontWeight: 'bold',
                           }}
                         >
@@ -3386,7 +3386,7 @@ export function ThemeTally({
                   paddingTop: '10px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  fontSize: '7.5pt',
+                  fontSize: '8.5pt',
                   color: '#333',
                 }}
               >
