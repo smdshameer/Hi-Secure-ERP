@@ -2176,11 +2176,40 @@ export function ThemeTally({
       if (hasModel && item.model) itemHeight += 12;
       if (hasWarranty && item.warranty) itemHeight += 12;
 
+      // Force split if we already have 10 items on Page 1
+      if (pageNum === 1 && currentItems.length === 10) {
+        pageList.push({
+          items: currentItems,
+          isFirst: true,
+          isLast: false,
+          pageNumber: pageNum,
+          startIndex: 0,
+        });
+        currentItems = [item];
+        heightUsed = 100 + itemHeight;
+        pageNum++;
+        continue;
+      }
+      // Force split if we already have 12 items on subsequent pages
+      if (pageNum > 1 && currentItems.length === 12) {
+        pageList.push({
+          items: currentItems,
+          isFirst: false,
+          isLast: false,
+          pageNumber: pageNum,
+          startIndex: 0,
+        });
+        currentItems = [item];
+        heightUsed = 100 + itemHeight;
+        pageNum++;
+        continue;
+      }
+
       const isLastItem = i === items.length - 1;
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight > 1075) {
+        if (heightUsed + itemHeight > 1030) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2197,7 +2226,7 @@ export function ThemeTally({
             pageNumber: pageNum,
             startIndex: 0,
           });
-        } else if (heightUsed + itemHeight + summaryHeight > 1075) {
+        } else if (heightUsed + itemHeight + summaryHeight > 1030) {
           currentItems.push(item);
           pageList.push({
             items: currentItems,
@@ -2226,7 +2255,7 @@ export function ThemeTally({
           });
         }
       } else {
-        if (heightUsed + itemHeight > 1075) {
+        if (heightUsed + itemHeight > 1030) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
