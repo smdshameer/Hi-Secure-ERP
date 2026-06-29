@@ -2357,7 +2357,7 @@ export function ThemeTally({
             style={{
               border: '2px solid #000',
               padding: '4px',
-              height: '278mm',
+              height: '275mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -3411,12 +3411,12 @@ export function ThemeTally({
               <div
                 style={{
                   marginTop: 'auto',
-                  borderTop: '1.5px solid #000',
-                  paddingTop: '10px',
+                  paddingTop: '8px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  fontSize: '8.5pt',
-                  color: '#333',
+                  fontSize: '9.5pt',
+                  color: '#000',
+                  fontWeight: 'bold',
                 }}
               >
                 <span>
