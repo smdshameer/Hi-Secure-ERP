@@ -2180,7 +2180,7 @@ export function ThemeTally({
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight > 970) {
+        if (heightUsed + itemHeight > 1010) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2197,7 +2197,7 @@ export function ThemeTally({
             pageNumber: pageNum,
             startIndex: 0,
           });
-        } else if (heightUsed + itemHeight + summaryHeight > 970) {
+        } else if (heightUsed + itemHeight + summaryHeight > 1010) {
           currentItems.push(item);
           pageList.push({
             items: currentItems,
@@ -2226,7 +2226,7 @@ export function ThemeTally({
           });
         }
       } else {
-        if (heightUsed + itemHeight > 970) {
+        if (heightUsed + itemHeight > 1010) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
