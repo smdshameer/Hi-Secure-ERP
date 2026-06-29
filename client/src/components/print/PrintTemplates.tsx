@@ -2630,13 +2630,14 @@ export function ThemeTally({
               )
             )}
 
-            <div style={{ flexGrow: 1, marginBottom: '16px' }}>
+            <div style={{ flexGrow: 1, marginBottom: '16px', display: 'flex', flexDirection: 'column' }}>
               <table
                 style={{
                   width: '100%',
                   borderCollapse: 'collapse',
                   fontSize: '8.5pt',
                   border: '1.5px solid #000',
+                  flexGrow: 1,
                 }}
               >
                 <thead>
@@ -2900,6 +2901,25 @@ export function ThemeTally({
                       </tr>
                     );
                   })}
+                  {/* Spacer row to fill remaining space and push column lines to the bottom */}
+                  <tr style={{ height: 'auto', flexGrow: 1 }}>
+                    <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    {showHsnSac && (
+                      <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    )}
+                    <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    {invoice.is_interstate ? (
+                      <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                    ) : (
+                      <>
+                        <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                        <td style={{ borderRight: '1px solid #000', padding: '0 4px' }} />
+                      </>
+                    )}
+                    <td style={{ padding: '0 4px' }} />
+                  </tr>
                 </tbody>
               </table>
             </div>
