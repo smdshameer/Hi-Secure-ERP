@@ -2177,18 +2177,24 @@ export function ThemeTally({
       if (hasWarranty && item.warranty) itemHeight += 12;
 
       const isLastItem = i === items.length - 1;
-      const isSecondLastItem = i === items.length - 2;
-      const extraHeight = isLastItem ? (showBankDetails ? 390 : 260) : 0;
 
-      if (isSecondLastItem) {
-        const lastItem = items[i + 1];
-        let lastItemHeight = 38;
-        if (lastItem.description && lastItem.description.length > 30) lastItemHeight += 16;
-        if (hasModel && lastItem.model) lastItemHeight += 12;
-        if (hasWarranty && lastItem.warranty) lastItemHeight += 12;
-        const lastExtra = lastItemHeight + (showBankDetails ? 390 : 260);
-
-        if (heightUsed + itemHeight + lastExtra > 980) {
+      if (isLastItem) {
+        const summaryHeight = showBankDetails ? 390 : 260;
+        if (heightUsed + itemHeight + summaryHeight > 980) {
+          pageList.push({
+            items: currentItems,
+            isFirst: pageNum === 1,
+            isLast: false,
+            pageNumber: pageNum,
+            startIndex: 0,
+          });
+          currentItems = [item];
+          pageNum++;
+        } else {
+          currentItems.push(item);
+        }
+      } else {
+        if (heightUsed + itemHeight > 980) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2199,24 +2205,10 @@ export function ThemeTally({
           currentItems = [item];
           heightUsed = 100 + itemHeight;
           pageNum++;
-          continue;
+        } else {
+          currentItems.push(item);
+          heightUsed += itemHeight;
         }
-      }
-
-      if (heightUsed + itemHeight + extraHeight > 980) {
-        pageList.push({
-          items: currentItems,
-          isFirst: pageNum === 1,
-          isLast: false,
-          pageNumber: pageNum,
-          startIndex: 0,
-        });
-        currentItems = [item];
-        heightUsed = 100 + itemHeight;
-        pageNum++;
-      } else {
-        currentItems.push(item);
-        heightUsed += itemHeight;
       }
     }
 
