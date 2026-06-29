@@ -704,7 +704,14 @@ body {
 
 /* ── Printing Media Queries and Scoped Themes ── */
 @media print {
-  .no-print, header, nav, aside { display: none !important; }
+  .no-print,
+  .no-print *,
+  .no-print-bar,
+  header,
+  nav,
+  aside {
+    display: none !important;
+  }
   body, html {
     background: #ffffff !important;
     color: #000000 !important;
@@ -725,8 +732,8 @@ body {
   
   /* Reset the Layout wrappers during printing using bulletproof recursive selector */
   #root,
-  #root main,
-  #root div:not(.print-document div):not(.print-document) {
+  #root main:not(.no-print),
+  #root div:not(.print-document div):not(.print-document):not(.no-print):not(.no-print div):not(.no-print-bar) {
     display: block !important;
     position: static !important;
     float: none !important;
