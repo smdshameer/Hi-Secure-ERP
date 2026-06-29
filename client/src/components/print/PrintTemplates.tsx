@@ -2763,6 +2763,7 @@ export function ThemeTally({
                           borderBottom: '1px solid #cbd5e1',
                           pageBreakInside: 'avoid',
                           breakInside: 'avoid',
+                          height: '1px',
                         }}
                       >
                         <td
