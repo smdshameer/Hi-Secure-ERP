@@ -2357,7 +2357,7 @@ export function ThemeTally({
             style={{
               border: '2px solid #000',
               padding: '4px',
-              height: '275mm',
+              height: '273mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -3410,8 +3410,10 @@ export function ThemeTally({
             {showFooter && (
               <div
                 style={{
-                  marginTop: 'auto',
-                  paddingTop: '8px',
+                  position: 'absolute',
+                  bottom: '6mm',
+                  left: '6mm',
+                  right: '6mm',
                   display: 'flex',
                   justifyContent: 'space-between',
                   fontSize: '9.5pt',
