@@ -746,6 +746,9 @@ body {
     background: transparent !important;
     width: 100% !important;
     max-width: 100% !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
   }
   main.content-area {
     display: block !important;
