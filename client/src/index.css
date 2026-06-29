@@ -723,15 +723,10 @@ body {
     print-color-adjust: exact !important;
   }
   
-  /* Reset the Layout wrappers during printing */
+  /* Reset the Layout wrappers during printing using bulletproof recursive selector */
   #root,
-  .layout-wrapper,
-  .main-container,
-  .content-area,
-  .print-page-container,
-  .only-print,
-  .print-preview-scroll,
-  .print-preview-content {
+  #root main,
+  #root div:not(.print-document div):not(.print-document) {
     display: block !important;
     position: static !important;
     float: none !important;
@@ -749,9 +744,6 @@ body {
     transform: none !important;
     animation: none !important;
     transition: none !important;
-  }
-  main.content-area {
-    display: block !important;
   }
 
   /* Ensure the page stretches completely */
