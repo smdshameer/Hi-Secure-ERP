@@ -2180,7 +2180,7 @@ export function ThemeTally({
 
       if (isLastItem) {
         const summaryHeight = showBankDetails ? 390 : 260;
-        if (heightUsed + itemHeight + summaryHeight > 980) {
+        if (heightUsed + itemHeight + summaryHeight > 1000) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2194,7 +2194,7 @@ export function ThemeTally({
           currentItems.push(item);
         }
       } else {
-        if (heightUsed + itemHeight > 980) {
+        if (heightUsed + itemHeight > 1000) {
           pageList.push({
             items: currentItems,
             isFirst: pageNum === 1,
@@ -2254,7 +2254,7 @@ export function ThemeTally({
             backgroundColor: '#fff',
             color: '#000',
             fontFamily: '"Courier New", Courier, monospace',
-            padding: '24px',
+            padding: '12px',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
@@ -2303,7 +2303,7 @@ export function ThemeTally({
           <div
             style={{
               border: '2px solid #000',
-              padding: '16px',
+              padding: '8px',
               flexGrow: 1,
               display: 'flex',
               flexDirection: 'column',
