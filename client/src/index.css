@@ -839,8 +839,9 @@ body {
     overflow: visible !important;
   }
   .print-document > div > div {
-    display: block !important;
-    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
     overflow: visible !important;
   }
   .print-page,
@@ -854,7 +855,8 @@ body {
     position: relative !important;
     box-sizing: border-box !important;
     background-color: #ffffff !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   .print-page:last-child,
   .print-page-break-after:last-child {
