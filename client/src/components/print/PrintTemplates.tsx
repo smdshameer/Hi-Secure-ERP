@@ -2304,7 +2304,7 @@ export function ThemeTally({
             style={{
               border: '2px solid #000',
               padding: '4px',
-              height: '272mm',
+              height: '278mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
